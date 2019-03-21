@@ -182,7 +182,7 @@ public class DecisionManager {
 		ArrayList<Agent>myA = new ArrayList<>();
 		ArrayList<Agent>enemyA = new ArrayList<>();
 		
-		if(myUnits.isEmpty() || type.isEmpty()){
+		if(myUnits.isEmpty()){
 			return false;
 		}
 		

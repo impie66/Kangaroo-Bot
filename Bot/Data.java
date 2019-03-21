@@ -98,7 +98,7 @@ public class Data {
 			this.nextAttackPosition = this.enemyBuildings.get(0).getPosition();
 			}
 		}
-		
+				
 
 	}
 	

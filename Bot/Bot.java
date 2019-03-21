@@ -134,9 +134,9 @@ public class Bot implements BWEventListener {
        }
        
    	   if(game.getFrameCount() >= winCheck){
-   		   winCheck = game.getFrameCount() + 300;
+   		   winCheck = game.getFrameCount() + 100;
    		   manager.globalEvaluate(myData.myMilUnits, myData.enemyTypes);
-   		   System.out.println("Can Win Global: " + manager.canWin);
+   		   //System.out.println("Can Win Global: " + manager.canWin);
 		   if(manager.canWin == true){
 		    	allSquadsAttack();
 		    	GlobalState = 1;
@@ -435,7 +435,7 @@ public class Bot implements BWEventListener {
     			assignUnit(unit);
     		}
     				
-    		if(self.completedUnitCount(UnitType.Zerg_Hatchery) == 2){
+    		if(self.completedUnitCount(UnitType.Zerg_Hatchery) == 2 && unit.getType()!=UnitType.Zerg_Lair){
     			pBuildings.add(new pBuilding(UnitType.Zerg_Creep_Colony, Expands.get(0).getLocation(), 10));
     			pBuildings.add(new pBuilding(UnitType.Zerg_Creep_Colony, Expands.get(0).getLocation(), 10));
     			pBuildings.add(new pBuilding(UnitType.Zerg_Creep_Colony, Expands.get(0).getLocation(), 10));
@@ -596,8 +596,10 @@ public class Bot implements BWEventListener {
 			
     		if(unit.getType().isResourceDepot()){
     			Base bass = getClosestBaseLocation(unit.getPosition());
+    			if(!alreadyBasedHere(bass)){
     			myBases.add(new BotBase(game, unit, bass));
     			Production.add(unit);
+    			}
     		}
     		
     		if(unit.getType().equals(UnitType.Zerg_Sunken_Colony)){
@@ -1025,7 +1027,8 @@ public class Bot implements BWEventListener {
 		if(manager.canWin == true){
 			System.out.println("Drones: " + self.allUnitCount(UnitType.Zerg_Drone) + " Max: " + max);
 			if(self.allUnitCount(UnitType.Zerg_Drone) <= max){
-				for(int i = 0; i < 4; i++){
+
+				for(int i = 0; i < 8; i++){
 				UQ.add(UnitType.Zerg_Drone);
 				}
 			}
@@ -1033,7 +1036,7 @@ public class Bot implements BWEventListener {
 		}
 		else {
 			// else if we can't win
-				if(!game.canMake(UnitType.Zerg_Hydralisk)){
+				if(self.completedUnitCount(UnitType.Zerg_Hydralisk_Den) == 0){
 					for(int i = 0; i < 4; i++){
 					UQ.add(UnitType.Zerg_Zergling);
 					}
@@ -1042,10 +1045,12 @@ public class Bot implements BWEventListener {
 					for(int i = 0; i < 4; i++){
 						UQ.add(UnitType.Zerg_Hydralisk);
 					}
-					
+					UQ.add(UnitType.Zerg_Overlord);
 					for(int i = 0; i < 12; i++){
 						UQ.add(UnitType.Zerg_Zergling);
 					}
+					UQ.add(UnitType.Zerg_Drone);
+					UQ.add(UnitType.Zerg_Drone);
 	
 				}
 		}
@@ -1202,6 +1207,17 @@ public class Bot implements BWEventListener {
 		}
 		
 		return null;
+	}
+	
+	boolean alreadyBasedHere(Base bass){
+		
+		for(BotBase vase : myBases){
+			if(vase.Base.equals(bass)){
+				return true;
+			}
+		}
+		
+		return false;
 	}
 	
 }
