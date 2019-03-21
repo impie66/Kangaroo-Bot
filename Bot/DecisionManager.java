@@ -185,7 +185,7 @@ public class DecisionManager {
 		if(myUnits.isEmpty()){
 			return false;
 		}
-		
+					
 		 for(Unit unit : myUnits){
 			 Agent asd = factory.of(unit);
 			 myA.add(asd);
@@ -197,11 +197,16 @@ public class DecisionManager {
 			 enemyA.add(asd);
 		 }
 		 
+		 for(UnitType unit : myData.enemyDTypes){
+			 Agent asd = factory.of(unit);
+			 enemyA.add(asd);
+		 }
+		 
 		//System.out.println("myUnits Size " + myUnits.size());
-		//System.out.println("Type Size: " + type.size());
+		System.out.println("Type Size: " + type.size());
 		double score = evaluator.evaluate(myA, enemyA);
-		//System.out.println("Global Score: " + score);
-		if(score >= 0.55){
+		System.out.println("Global Score: " + score);
+		if(score >= 0.50){
 		this.canWin = true;
 		return true;
 		}

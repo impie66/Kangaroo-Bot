@@ -149,7 +149,6 @@ int SquadsAverageDistTo(Position pos){
 	int o = 0;
 	for(Unit unit : this.getUnits()){
 		o = o + unit.getPosition().getApproxDistance(pos);
-		
 	}
 	ffinal = o / i;
 	return ffinal;
@@ -169,7 +168,8 @@ void Regroup(Position pos){
 }
 
 boolean shouldRegroup(){
-	if(SquadsAverageDistTo(this.getUnits().get(0).getPosition())>=400){
+	Position pos = this.target;
+	if(SquadsAverageDistTo(this.getUnits().get(0).getPosition())>=200){
 		return true;
 	}
 	else {
@@ -180,7 +180,7 @@ boolean shouldRegroup(){
 void squadMicro(){
 	
 	if(this.target == null){
-		if(!myData.nextAttackPosition.equals(null)){
+		if(myData.nextAttackPosition==null){
 			this.target = myData.nextAttackPosition;
 		}
 	}
@@ -191,6 +191,10 @@ void squadMicro(){
 	
 	if(shouldRegroup() && this.State == 2){
 		Regroup(this.getUnits().get(0).getPosition());
+	}
+	
+	if(!shouldRegroup() && this.State == 4){
+		operate();
 	}
 	
 	if(this.State == 1 && target!=null){
@@ -263,19 +267,23 @@ boolean isAtTarget(){
 }
 
 void operate(){
-	
+	if(myData.nextAttackPosition == null){
+		
 	if(this.target==null){
 		this.target = myData.nextAttackPosition;
 	}
 	
 	for(Unit unit : this.units){
-		if(unit.isIdle()){
+		if(unit.isIdle() && target != null){
 			unit.attack(target);
 		}
-		
-		if(unit.getOrderTargetPosition().getApproxDistance(target) > 300 && !isInCombat(unit)){
-		unit.attack(target);
+		if(target != null){
+			if(unit.getOrderTargetPosition().getApproxDistance(target) > 300 && !isInCombat(unit)){
+			unit.attack(target);
+			}
 		}
+	}
+	
 	}
 }
 

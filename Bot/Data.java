@@ -26,6 +26,7 @@ public class Data {
 	Position nextAttackPosition;
 	ArrayList<UnitType> eggs;
 	ArrayList<UnitType> enemyTypes;
+	ArrayList<UnitType> enemyDTypes;
 	
 	public Data(Game gaem, BWEM b, Base myBasee){
 		this.game = gaem;
@@ -43,6 +44,7 @@ public class Data {
 		this.enemyDBuildings = new ArrayList<>();
 		this.eggs = new ArrayList<>();
 		this.enemyTypes = new ArrayList<UnitType>();
+		this.enemyDTypes = new ArrayList<UnitType>();
 		ArrayList<Base> Expands = new ArrayList<Base>();
 		DoTheThing();
 	}
@@ -225,6 +227,7 @@ public class Data {
 		if(game.enemies().contains(unit.getPlayer())){
 			if(!enemyDBuildings.contains(unit)){
 				enemyDBuildings.add(unit);
+				enemyDTypes.add(unit.getType());
 			}
 		}
 	}

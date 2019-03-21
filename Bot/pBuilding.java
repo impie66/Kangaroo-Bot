@@ -7,28 +7,27 @@ public class pBuilding {
 	UnitType type;
 	TilePosition pos;
 	int maxRange;
-	boolean waitForCreep;
+	boolean newBaseonBuild;
 	
 	
 	public pBuilding(UnitType ype, TilePosition where){
 		this.type = ype;
 		this.pos = where;
 		this.maxRange = 200;
-		this.waitForCreep = false;
 	}
 	
 	public pBuilding(UnitType ype, TilePosition where, int max){
 		this.type = ype;
 		this.pos = where;
 		this.maxRange = max;
-		this.waitForCreep = false;
 	}
 	
-	public pBuilding(UnitType ype, TilePosition where, int max, boolean wait){
+	
+	public pBuilding(UnitType ype, TilePosition where, int max, boolean base){
 		this.type = ype;
 		this.pos = where;
 		this.maxRange = max;
-		this.waitForCreep = wait;
+		this.newBaseonBuild = base;
 	}
 	
 	UnitType getType(){

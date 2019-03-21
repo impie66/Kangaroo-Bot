@@ -164,7 +164,6 @@ public class Bot implements BWEventListener {
     	  pBuilding next = pBuildings.get(0);
     	  UnitType item = next.getType();
     	  int max = next.getMaxRange();
-    	  boolean yes = next.waitForCreep;
     	  TilePosition where = next.getTilePosition();
     	  if(game.canMake(item) && !isInQueue(item)){
     		  Unit builder = getWorker();
@@ -246,7 +245,7 @@ public class Bot implements BWEventListener {
       
       for(Squad sq : Squads){
     	  if(!sq.getUnits().isEmpty()){
-    	  game.drawTextMap(sq.getUnits().get(0).getPosition(), "Squad: " + sq.id + "  ");
+    	  game.drawTextMap(sq.getUnits().get(0).getPosition(), "Squad: " + sq.id + "  " + "Units: " + sq.getUnitSize() + " / 25");
 	    	  if(game.getFrameCount() >= microCheck){
 	    	  sq.squadMicro();
 	    	  microCheck = game.getFrameCount() + 100;
@@ -326,7 +325,15 @@ public class Bot implements BWEventListener {
     	 if(!builders.isEmpty()){
 	    	 for(Builder b : new ArrayList<Builder>(builders)){
 	    		 if(b.worker == null || !b.worker.exists()){
-	    			 builders.remove(b);
+	    			 if(game.isVisible(b.where)){
+	         			constructors.remove(myUnit.getID());
+	         			builders.remove(b.worker);
+	  	    			BotBase base = getBase(myUnit);
+	  	    			if(base != null){
+	  	    				base.unVoidWorker(myUnit);
+	  	    				System.out.println("unVoided worker " + myUnit.getID());
+	  	    			}
+	         			System.out.println("Can't build: " + b.type.toString() + " Trying again."); 
 	    		 }
 	    	 }
     	 }
@@ -346,7 +353,7 @@ public class Bot implements BWEventListener {
     			 if(!myUnit.isConstructing()){
     			 myUnit.build(type, where);
     			 }
-    			 
+   			 
     			 if(!game.canBuildHere(where, type, myUnit)){
         			constructors.remove(myUnit.getID());
         			builders.remove(build);
@@ -368,7 +375,7 @@ public class Bot implements BWEventListener {
     		 }
     	 }
     	 
-    	 
+
     	 if(myUnit.getType() == UnitType.Zerg_Creep_Colony && myUnit.canMorph(UnitType.Zerg_Sunken_Colony)){
     		 myUnit.morph(UnitType.Zerg_Sunken_Colony);
     	 }
@@ -377,9 +384,11 @@ public class Bot implements BWEventListener {
     		 // if we havent scouted anything
     		if(!scouter.equals(null) && scouter.isMoving() == false && !scouter.getType().isBuilding()){
    			 scouter.move(self.getStartLocation().toPosition());
-    		 for(Base bass : myData.startLocations){
-    			 scouter.move(bass.getCenter(), true);
-    		 }
+	    		 for(Base bass : myData.startLocations){
+		    		if(!game.isExplored(bass.getLocation())){
+		    			 scouter.move(bass.getCenter(), true);
+		    	     }
+	    		 }
     		}
     		 
     	 }
@@ -414,6 +423,8 @@ public class Bot implements BWEventListener {
     		 simmedUnits.remove(unit);
     	 }
      }
+     
+     }
           
     }
 
@@ -434,18 +445,21 @@ public class Bot implements BWEventListener {
     		if(IsMilitrayUnit(unit)){
     			assignUnit(unit);
     		}
-    				
-    		if(self.completedUnitCount(UnitType.Zerg_Hatchery) == 2 && unit.getType()!=UnitType.Zerg_Lair){
+    			//  myChokes.get(1).getCenter().toTilePosition();
+    		if(self.allUnitCount(UnitType.Zerg_Hatchery) == 2 && unit.getType()!=UnitType.Zerg_Lair){
     			pBuildings.add(new pBuilding(UnitType.Zerg_Creep_Colony, Expands.get(0).getLocation(), 10));
-    			pBuildings.add(new pBuilding(UnitType.Zerg_Creep_Colony, Expands.get(0).getLocation(), 10));
-    			pBuildings.add(new pBuilding(UnitType.Zerg_Creep_Colony, Expands.get(0).getLocation(), 10));
+    			pBuildings.add(new pBuilding(UnitType.Zerg_Creep_Colony, myChokes.get(1).getCenter().toTilePosition(), 10));
+    			pBuildings.add(new pBuilding(UnitType.Zerg_Creep_Colony, myChokes.get(1).getCenter().toTilePosition(), 10));
     			pBuildings.add(new pBuilding(UnitType.Zerg_Hydralisk_Den, null));
+    			pBuildings.add(new pBuilding(UnitType.Zerg_Hatchery, self.getStartLocation()));
     			pBuildings.add(new pBuilding(UnitType.Zerg_Hatchery, Expands.get(1).getLocation()));
     			pBuildings.add(new pBuilding(UnitType.Zerg_Hatchery, Expands.get(2).getLocation()));
     			pBuildings.add(new pBuilding(UnitType.Zerg_Hatchery, Expands.get(3).getLocation()));
-    			pBuildings.add(new pBuilding(UnitType.Zerg_Hatchery, Expands.get(4).getLocation()));
-    			pBuildings.add(new pBuilding(UnitType.Zerg_Hatchery, Expands.get(5).getLocation()));
-    			pBuildings.add(new pBuilding(UnitType.Zerg_Hatchery, Expands.get(6).getLocation()));
+    			pBuildings.add(new pBuilding(UnitType.Zerg_Hatchery, self.getStartLocation()));
+    			pBuildings.add(new pBuilding(UnitType.Zerg_Hatchery, self.getStartLocation()));
+    			pBuildings.add(new pBuilding(UnitType.Zerg_Hatchery, self.getStartLocation()));
+    			pBuildings.add(new pBuilding(UnitType.Zerg_Hatchery, self.getStartLocation()));
+    			pBuildings.add(new pBuilding(UnitType.Zerg_Hatchery, self.getStartLocation()));
     		}
     				
 		}
@@ -489,8 +503,11 @@ public class Bot implements BWEventListener {
     		
     		if(unit.getType().isResourceDepot()){
     			Base bass = getClosestBaseLocation(unit.getPosition());
+    			if(!alreadyBasedHere(bass)){
     			myBases.add(new BotBase(game, unit, bass));
     			Production.add(unit);
+    			pBuildings.add(new pBuilding(UnitType.Zerg_Extractor, null));
+    			}
     		}
     		  		
     		if(constructors.containsValue(unit.getType())){
@@ -505,12 +522,13 @@ public class Bot implements BWEventListener {
     			}
     		}
     		
-  		
     		if(unit.getType().equals(UnitType.Zerg_Overlord) && !myData.startLocations.isEmpty()){
     			for(Base bass : myData.startLocations){
+    				if(!game.isExplored(bass.getLocation())){
     				Position pos = bass.getCenter();
     				unit.move(pos, true);
     				scouts.add(bass);
+    				}
     			}
     		}
     		
@@ -518,7 +536,6 @@ public class Bot implements BWEventListener {
 			
     		if(unit.getType().isWorker()){
     			assignWorkerToBase(unit);
- 
     		}
     		
     		// end of my units creation
@@ -557,6 +574,8 @@ public class Bot implements BWEventListener {
     			Base bass = getClosestBaseLocation(unit.getPosition());
     			myData.newEnemyBase(bass);
     		}
+    		
+    		// end of enemy units
     	}
   	
 		if(IsMilitrayUnit(unit)){
@@ -578,6 +597,11 @@ public class Bot implements BWEventListener {
 			if(isPQueued(unit.getType()) == true){
 				pBuildings.remove(0);
 				constructors.remove(unit.getType());
+				for(Builder build : new ArrayList<Builder>(builders)){
+					if(build.type == unit.getType()){
+						builders.remove(build);
+					}
+				}
 			}
 			
 			Base closest = getClosestBaseLocation(unit.getPosition());
@@ -598,8 +622,8 @@ public class Bot implements BWEventListener {
     			Base bass = getClosestBaseLocation(unit.getPosition());
     			if(!alreadyBasedHere(bass)){
     			myBases.add(new BotBase(game, unit, bass));
-    			Production.add(unit);
     			}
+    			Production.add(unit);
     		}
     		
     		if(unit.getType().equals(UnitType.Zerg_Sunken_Colony)){
@@ -750,15 +774,23 @@ public class Bot implements BWEventListener {
 			return false;
 		}
 		
-		return constructors.containsValue(type);
+		for(Builder build : builders){
+			if(build.type.equals(type)){
+				return true;
+			}
+		}
+		
+		return false;
 	}
 	
 	Unit getWorker(){
 		
 		for(Unit unit : self.getUnits()){
-			if(unit.getType().isWorker()){
-				if(unit.isGatheringMinerals() == true && unit.isCompleted() && !isBuilder(unit)){
-					return unit;
+			if(scouter!=null && unit!=scouter){
+				if(unit.getType().isWorker()){
+					if(unit.isGatheringMinerals() == true && unit.isCompleted() && !isBuilder(unit)){
+						return unit;
+					}
 				}
 			}
 		}
@@ -848,7 +880,7 @@ public class Bot implements BWEventListener {
 			}
 		}
 		
-		if(buildingType.isResourceDepot()){
+		if(buildingType.isResourceDepot() && aroundTile.getDistance(self.getStartLocation()) > 100){
 			return aroundTile;
 		}
 
@@ -1012,8 +1044,10 @@ public class Bot implements BWEventListener {
 	
 	void allSquadsRetreat(){
 		for(Squad sq : Squads){
+			if(sq.State != 2){
 			sq.setState(0);
 			sq.retreat();
+			}
 		}
 	}
 	
