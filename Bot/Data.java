@@ -303,7 +303,43 @@ public class Data {
 		System.out.println("Morphed: " + i);
 		return i;
 	}
-
+	
+	Base nearestUnclaimedBase(Position pos){
+		int i = 0;
+		int lowest = 0;
+		boolean found = false;
+		Base chosen = null;
+			for(Base bass : Expands){
+				int dist = bass.getCenter().getApproxDistance(pos);
+				if(dist <= lowest && !alreadyClaimed(bass)){
+					chosen = bass;
+					lowest = dist;
+				}
+			}
+			
+			return chosen;
+		
+	}
+	
+	boolean alreadyClaimed(Base bass){
+		ArrayList<Base> claimed = new ArrayList<Base>();
+		for(Unit unit : self.getUnits()){
+			Base looped = getClosestBaseLocation(unit.getPosition());
+			if(unit.getType().isResourceDepot()){
+				if(!claimed.contains(looped)){
+					claimed.add(looped);
+				}
+			}
+		}
+		
+		for(Base yes : enemyBases){
+			if(!claimed.contains(yes)){
+				claimed.add(yes);
+			}
+		}
+			
+		return claimed.contains(bass);
+	}
 	
 	
 }

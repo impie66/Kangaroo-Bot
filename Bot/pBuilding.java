@@ -7,7 +7,7 @@ public class pBuilding {
 	UnitType type;
 	TilePosition pos;
 	int maxRange;
-	boolean newBaseonBuild;
+	boolean waitForCreep;
 	
 	
 	public pBuilding(UnitType ype, TilePosition where){
@@ -23,11 +23,11 @@ public class pBuilding {
 	}
 	
 	
-	public pBuilding(UnitType ype, TilePosition where, int max, boolean base){
+	public pBuilding(UnitType ype, TilePosition where, int max, boolean creep){
 		this.type = ype;
 		this.pos = where;
 		this.maxRange = max;
-		this.newBaseonBuild = base;
+		this.waitForCreep = creep;
 	}
 	
 	UnitType getType(){

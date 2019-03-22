@@ -100,6 +100,11 @@ Game game;
 	}
 	
 	void DoThingsYouLazyCunt(Unit worker){
+		
+		if(voidedWorkers.contains(worker)){
+			return;
+		}
+		
 		if(this.Gases.isEmpty() == false){
 			for(Unit unit : this.Gases){
 				if(isGas(unit)){

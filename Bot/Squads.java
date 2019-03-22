@@ -7,7 +7,6 @@ import com.sun.jna.platform.win32.Sspi.SecPkgContext_Lifespan;
 
 import Bot.*;
 
-
 class Squad {
 ArrayList<Unit> units;	
 int score;
@@ -25,26 +24,31 @@ int type;
 String squadName;
 int id;
 Data myData;
+DecisionManager manager;
+Game game;
+Unit detector;
 // 1 == attacker, 2 == defender, 3 == harasser
 
 
-public Squad(ArrayList<Unit> unitss, int idd, Data Data, Game game){
+public Squad(ArrayList<Unit> unitss, int idd, Data Data, Game gam, DecisionManager man){
 	this.units = unitss;
 	this.score = getSquadScore();
 	this.target = null;
 	this.State = 0;
 	this.AWR = false;
 	this.targetScore = 0;
+	this.game = gam;
 	this.retreatPos = game.self().getStartLocation().toPosition();
 	this.priority = 3;
 	this.retreating = false;
 	this.type = 0;
 	this.squadName = "asdf";
 	this.id = idd;
-	myData = Data;
+	this.myData = Data;
+	this.manager = man;
 }
 
-public Squad(ArrayList<Unit> unitss, int idd, int targets, Data Data, Game game){
+public Squad(ArrayList<Unit> unitss, int idd, int targets, Data Data, Game gam, DecisionManager man){
 	this.units = unitss;
 	this.score = getSquadScore();
 	this.target = null;
@@ -57,7 +61,9 @@ public Squad(ArrayList<Unit> unitss, int idd, int targets, Data Data, Game game)
 	this.type = 0;
 	this.squadName = "asdf";
 	this.id = idd;
-	myData = Data;
+	this.myData = Data;
+	this.manager = man;
+	this.game = gam;
 }
 
 boolean isDefending(){
@@ -216,11 +222,24 @@ void squadMicro(){
 	}
 	
 	
-	if(isAtTarget() == true){
-		if(myData.nextAttackPosition!=null){
-			this.target = myData.nextAttackPosition;
+	if(this.State == 2){
+		// for defenders we wan't to check if they are IDLE.
+		// if they are IDLE means they have defended that area
+		if(EnemysNearby(this.target) == true && manager.canWin){
+			if(myData.nextAttackPosition!=null){
+				this.target = myData.nextAttackPosition;
+			}
 		}
 	}
+	else {
+		if(isAtTarget(true) == true){
+			if(myData.nextAttackPosition!=null){
+				this.target = myData.nextAttackPosition;
+			}
+		}
+	}
+	
+	
 	
 	
 }
@@ -242,7 +261,7 @@ public boolean isInCombat(Unit unit){
 }
 
 
-boolean isAtTarget(){
+boolean isAtTarget(boolean idle){
 	int i = 0;
 	int max = 0;
 	
@@ -251,10 +270,17 @@ boolean isAtTarget(){
 	}
 	
 	if(this.units.isEmpty() == false){
-		max = (int) ((this.units.size()) - (this.units.size() * 0.45));
+		max = (int) ((this.units.size()) - (this.units.size() * 0.75));
 		for(Unit unit : this.units){
-			if(unit.getPosition().getApproxDistance(this.target) < 200){
-				i++;
+			if(idle == true){
+				if(unit.isIdle() && unit.getPosition().getApproxDistance(this.target) < 200){
+					i++;
+				}
+			}
+			else {
+				if(unit.getPosition().getApproxDistance(this.target) < 200){
+					i++;
+				}
 			}
 		}
 		
@@ -267,7 +293,7 @@ boolean isAtTarget(){
 }
 
 void operate(){
-	if(myData.nextAttackPosition == null){
+	if(myData.nextAttackPosition != null){
 		
 	if(this.target==null){
 		this.target = myData.nextAttackPosition;
@@ -300,10 +326,23 @@ void unitDeath(Unit unit){
 }
 
 boolean isSquadFull(){
-	if(this.units.size() > 35){
+	if(this.units.size() >= 25){
 		return true;
 	}
 	return false;
 }
+
+boolean EnemysNearby(Position pos){
+	ArrayList<Unit> units = new ArrayList<> (game.getUnitsInRadius(pos, 500));
+		for(Unit unit : units){
+			if(game.enemies().contains(unit.getPlayer())){
+				return true;
+			}
+		}
+		
+		return false;
+	
+}
+
 
 }
