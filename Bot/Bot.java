@@ -9,9 +9,11 @@ import bwapi.Flag;
 import bwapi.Game;
 import bwapi.Player;
 import bwapi.Position;
+import bwapi.TechType;
 import bwapi.TilePosition;
 import bwapi.Unit;
 import bwapi.UnitType;
+import bwapi.UpgradeType;
 import bwem.BWEM;
 import bwem.Base;
 import bwem.ChokePoint;
@@ -42,6 +44,10 @@ public class Bot implements BWEventListener {
 	ArrayList<Base> scouts = new ArrayList<>();
 	ArrayList<UnitType> placements = new ArrayList<>();
 	ArrayList<Unit> retreaters = new ArrayList<>();
+	ArrayList<UnitType> morphQueue = new ArrayList<>();
+	ArrayList<UpgradeType> upgradeQueue = new ArrayList<>();
+	ArrayList<TechType> techQueue = new ArrayList<>();
+	Position globalRetreat;
 	DecisionManager manager;
 	int GlobalState;
 	Unit scouter;
@@ -52,9 +58,10 @@ public class Bot implements BWEventListener {
 	int sGas = 0;
 	int winCheck = 0;
 	int microCheck = 0;
+	int simCheck = 0;
 	Base myStartLocation;
 	int baseCheck = 0;
-	
+	int improveCheck = 0;
 	static BWEM bewb;
 	
     Bot() {
@@ -68,6 +75,7 @@ public class Bot implements BWEventListener {
 		game = bwClient.getGame();
 		self = game.self();
 		GlobalState = 0;
+		game.setLocalSpeed(0);
 		bewb = new BWEM(game);
 		bewb.initialize();
 		bewb.getMap().getData();
@@ -79,8 +87,8 @@ public class Bot implements BWEventListener {
 	    Expands = myData.getExpands();
 	    myChokes = myData.myChokes;
 	    manager = new DecisionManager(game, myData);
+		globalRetreat = self.getStartLocation().toPosition();
 		game.enableFlag(Flag.UserInput);
-		
 		for(int i = 0; i < 8; i++){
 			UQ.add(UnitType.Zerg_Drone);
 		}
@@ -110,19 +118,35 @@ public class Bot implements BWEventListener {
 		pBuildings.add(new pBuilding(UnitType.Zerg_Spawning_Pool, null, 300));
 		pBuildings.add(new pBuilding(UnitType.Zerg_Extractor, null));
 		pBuildings.add(new pBuilding(UnitType.Zerg_Evolution_Chamber, null));
-		pBuildings.add(new pBuilding(UnitType.Zerg_Creep_Colony, Expands.get(0).getLocation(), 10, true));
-		pBuildings.add(new pBuilding(UnitType.Zerg_Creep_Colony, Expands.get(0).getLocation(), 10, true));
-		pBuildings.add(new pBuilding(UnitType.Zerg_Creep_Colony, Expands.get(0).getLocation(), 10, true));
+		pBuildings.add(new pBuilding(UnitType.Zerg_Creep_Colony, Expands.get(0).getLocation(), 6, true));
+		pBuildings.add(new pBuilding(UnitType.Zerg_Creep_Colony, Expands.get(0).getLocation(), 12, true));
+		pBuildings.add(new pBuilding(UnitType.Zerg_Creep_Colony, Expands.get(0).getLocation(), 18, true));
 		pBuildings.add(new pBuilding(UnitType.Zerg_Hydralisk_Den, null));
 		pBuildings.add(new pBuilding(UnitType.Zerg_Hatchery, self.getStartLocation()));
 		pBuildings.add(new pBuilding(UnitType.Zerg_Hatchery, self.getStartLocation()));
+		pBuildings.add(new pBuilding(UnitType.Zerg_Evolution_Chamber, null));
 		pBuildings.add(new pBuilding(UnitType.Zerg_Hatchery, Expands.get(1).getLocation()));
+		pBuildings.add(new pBuilding(UnitType.Zerg_Queens_Nest, self.getStartLocation()));
 		pBuildings.add(new pBuilding(UnitType.Zerg_Hatchery, Expands.get(2).getLocation()));
+		pBuildings.add(new pBuilding(UnitType.Zerg_Ultralisk_Cavern, self.getStartLocation()));
+		pBuildings.add(new pBuilding(UnitType.Zerg_Hatchery, self.getStartLocation()));
+		pBuildings.add(new pBuilding(UnitType.Zerg_Hatchery, self.getStartLocation()));
+		pBuildings.add(new pBuilding(UnitType.Zerg_Hatchery, self.getStartLocation()));
+		pBuildings.add(new pBuilding(UnitType.Zerg_Hatchery, self.getStartLocation()));
 		pBuildings.add(new pBuilding(UnitType.Zerg_Hatchery, Expands.get(3).getLocation()));
-		pBuildings.add(new pBuilding(UnitType.Zerg_Hatchery, self.getStartLocation()));
-		pBuildings.add(new pBuilding(UnitType.Zerg_Hatchery, self.getStartLocation()));
-		pBuildings.add(new pBuilding(UnitType.Zerg_Hatchery, self.getStartLocation()));
-		pBuildings.add(new pBuilding(UnitType.Zerg_Hatchery, self.getStartLocation()));
+		upgradeQueue.add(UpgradeType.Metabolic_Boost);
+		upgradeQueue.add(UpgradeType.Muscular_Augments);
+		upgradeQueue.add(UpgradeType.Grooved_Spines);
+		upgradeQueue.add(UpgradeType.Zerg_Melee_Attacks);
+		upgradeQueue.add(UpgradeType.Zerg_Missile_Attacks);
+		upgradeQueue.add(UpgradeType.Zerg_Carapace);
+		upgradeQueue.add(UpgradeType.Pneumatized_Carapace);
+		morphQueue.add(UnitType.Zerg_Sunken_Colony);
+		morphQueue.add(UnitType.Zerg_Sunken_Colony);
+		morphQueue.add(UnitType.Zerg_Sunken_Colony);
+		morphQueue.add(UnitType.Zerg_Lair);
+		morphQueue.add(UnitType.Zerg_Hive);
+		techQueue.add(TechType.Lurker_Aspect);
     }
 
     @Override	
@@ -130,7 +154,7 @@ public class Bot implements BWEventListener {
     	StringBuilder cqs = new StringBuilder("Construction Queue:\n");
     	StringBuilder cqss = new StringBuilder("Unit Queue:\n");
     	StringBuilder sqs = new StringBuilder("Squads:\n");
-    	game.drawTextScreen(250, 10, "Kangaroo Bot (Unfortunally) Running with " + game.getAPM() + " APM.");
+    	game.drawTextScreen(250, 10, "LeapingDingoAI (fortunally) lagging the game with " + game.getAPM() + " APM.");
     	
        if(UQ.isEmpty() == false){
     	   UnitType next = UQ.get(0);
@@ -141,6 +165,14 @@ public class Bot implements BWEventListener {
     			   UQ.remove(0);
     			   }
     		   }
+    		   // an issue where an hatch/lair is morphing to a lair/hive while the bot is being raped by the enemy
+    		  // Doesn't build units because .isIdle returns false when morphing
+    		   if(unit.getType().equals(UnitType.Zerg_Hatchery) || unit.getType().equals(UnitType.Zerg_Lair) && unit.canTrain(next) && unit.isMorphing()){
+    			   unit.train(next);
+    			   if(!UQ.isEmpty()){
+    			   UQ.remove(0);
+    			   } 
+    		   }
     	   }
        }
        else {
@@ -148,9 +180,17 @@ public class Bot implements BWEventListener {
        }
        
    	   if(game.getFrameCount() >= winCheck){
-   		   winCheck = game.getFrameCount() + 100;
-   		   manager.globalEvaluate(myData.myMilUnits, myData.enemyTypes);
-   		   //System.out.println("Can Win Global: " + manager.canWin);
+   		   winCheck = game.getFrameCount() + 250;
+   		   ArrayList<UnitType> enemies = new ArrayList<>();
+   		   for(UnitType unit : myData.enemyTypes){
+   			   enemies.add(unit);
+   		   }
+   		   for(UnitType type : myData.enemyDTypes){
+   			   enemies.add(type);
+   		   }
+   		  manager.globalEvaluate(myData.myMilUnits, enemies);
+   		  // manager.simBattle(myData.myMilUnits, enemies);
+   		   System.out.println("Can Win Global: " + manager.canWin);
 		   if(manager.canWin == true){
 		    	allSquadsAttack();
 		    	GlobalState = 1;
@@ -160,8 +200,13 @@ public class Bot implements BWEventListener {
 			   GlobalState = 0;
 		   }
    	   }
-    	     
-        
+
+    
+   	   if(game.getFrameCount() >= simCheck){
+   		GlobalSimCheck();
+   		simCheck = simCheck + 100;
+   	   }
+       
        myData.onFrame();
        
       if(myBases.isEmpty() == false){
@@ -181,6 +226,10 @@ public class Bot implements BWEventListener {
     	  TilePosition where = next.getTilePosition();
     	  boolean creep = next.waitForCreep;
     	  boolean cont = true;
+    	  if(item.equals(self.getRace().getRefinery()) && AllGeysersBuilt()){
+    		  pBuildings.remove(0);
+    		  System.out.println("Removed unnesscary refinery queued");
+    	  }
     	  if(creep == true){
     		  if(!game.hasCreep(where)){
     			 cont = false;
@@ -268,6 +317,8 @@ public class Bot implements BWEventListener {
       }
          
       for(Squad sq : Squads){
+    	  
+    	  sq.onFrame();
     	  if(!sq.getUnits().isEmpty()){
     		 Unit leader = sq.getUnits().get(0);
     		game.drawTextMap(leader.getPosition(), "Squad: " + sq.id + "  " + "Units: " + sq.getUnitSize() + " / 25");
@@ -277,22 +328,13 @@ public class Bot implements BWEventListener {
 		    	if(game.getFrameCount() >= microCheck){
 		    	 sq.squadMicro();
 		    	 microCheck = game.getFrameCount() + 100;
-		    	 squadDebug();
+		    	 //squadDebug();
 		    	}
     	  }
       }
       
       game.drawTextScreen(10, 500, sqs.toString());
-      
-      if(UQ.isEmpty() && self.supplyUsed() >= self.supplyTotal()){
-    	  UQ.add(0, UnitType.Zerg_Overlord);
-      }
-      
-      if(self.supplyUsed() >= self.supplyTotal() && myData.howManyBeingMorphed(UnitType.Zerg_Overlord) == 0 && UQ.get(0)!=UnitType.Zerg_Overlord){
-    	  UQ.add(0, UnitType.Zerg_Overlord);
-      }
-      
-      
+              
       if(!Expands.isEmpty()){
     	  int i = 0;
 	      for(Base bass : Expands){
@@ -312,57 +354,79 @@ public class Bot implements BWEventListener {
       }
       
       
-      
-     for(Unit myUnit : self.getUnits()){
+     if(game.getFrameCount() >= improveCheck){
     	 
+    	 improveCheck = game.getFrameCount() + 20;
+	 	 if(!morphQueue.isEmpty()){
+	 	 UnitType nextMorph = morphQueue.get(0);
+	 	 int minsCost = nextMorph.mineralPrice();
+	 	 int gasCost = nextMorph.gasPrice();
+		 	 for(Unit myUnit : self.getUnits()){
+		 	 //canMake doesn't count cost
+			    	 if(myUnit.canMorph(nextMorph) && self.minerals() >= minsCost && self.gas() >= gasCost && myUnit.isCompleted() && !myUnit.isMorphing()){
+			    		 myUnit.morph(nextMorph);
+			    		 System.out.println("Morphing: " + nextMorph.toString());
+			    		 morphQueue.remove(0);
+			    		 break;
+			    	 }
+		 	 }
+	 	 }
+	 	 
+	 	 if(!upgradeQueue.isEmpty()){
+	 		 UpgradeType next = upgradeQueue.get(0);
+	     	 int minsCost = next.mineralPrice();
+	     	 int gasCost = next.gasPrice();
+	     	 for(Unit myUnit : self.getUnits()){
+		     	 if(myUnit.canUpgrade(next) && self.minerals() >= minsCost && self.gas() >= gasCost && myUnit.isCompleted() && !myUnit.isUpgrading()){
+		     		 myUnit.upgrade(next);
+		     		 System.out.println("Upgrading: " + next.toString());
+		     		 upgradeQueue.remove(0);
+		     		 break;
+		     	 }
+	     	 }
+	 	 }
+	 	 
+	 	 if(!techQueue.isEmpty()){
+	 		 TechType next = techQueue.get(0);
+	     	 int minsCost = next.mineralPrice();
+	     	 int gasCost = next.gasPrice();
+	     	 for(Unit myUnit : self.getUnits()){
+		     	 if(game.canResearch(next) && self.minerals() >= minsCost && self.gas() >= gasCost && myUnit.isCompleted() && !myUnit.isResearching()){
+		     		 myUnit.research(next);
+		     		 System.out.println("Researching " + next.toString());
+		     		 upgradeQueue.remove(0);
+		     		 break;
+		     	 }
+	     	 }
+	 	 }
+	 	 
+     }
+ 	 
+     if(self.supplyUsed() >= self.supplyTotal() && myData.howManyBeingMorphed(UnitType.Zerg_Overlord) == 0 && !UQ.contains(UnitType.Zerg_Overlord) && self.supplyTotal() != 200){
+   	  UQ.add(0, UnitType.Zerg_Overlord);
+   	  return;
+     }
+       
+     for(Unit myUnit : self.getUnits()){
+    	 	  	 
     	 if(!scouter.equals(null)){
     	 game.drawCircleMap(scouter.getPosition(), 60, Color.Yellow);
     	 }
-    	 
-    	 if(myUnit.isSelected() && IsMilitrayUnit(myUnit)){
-    		 Squad sq =  getSquad(myUnit);
-    		 if(sq==null){
-    			 System.out.println("Unit: " + myUnit.getID() + " Squads is null"); 
-    		 }
-    		 else {
-    		 System.out.println("Unit Squad: " + sq.id);
-    		 System.out.println("Squad State: " + sq.State);
-    		 }
-    		 
-    	 }
-    	 
-    	 if(isInCombat(myUnit) && !simmedUnits.containsKey(myUnit) && IsMilitrayUnit(myUnit)){
-    		 // BITCH LASAGNA
-    		// System.out.println("Sim Trigger");
-    		 ArrayList<Unit> mine = myData.GetMyUnitsNearby(myUnit.getPosition(), 450, true);
-    		 ArrayList<Unit> enemy = myData.GetEnemyUnitsNearby(myUnit.getPosition(), 450, true);
-    		 //System.out.println("Mine: " + mine.size());
-    		// System.out.println("Enemy: " + enemy.size());
-    		 boolean canWin = manager.evaluateBattle(mine, enemy);
-			 for(Unit unit : mine){
-				 if(!simmedUnits.containsKey(unit)){
-					 simmedUnits.put(unit, game.getFrameCount() + 200);
-				 }
-			 }
-    		 if(!canWin){
-    			// System.out.println("Can Win: " + canWin);
-    			 if(!enemy.isEmpty()){
-        			 Position retreat = util.GetKitePos(mine.get(0), enemy.get(0));
-	    			 for(Unit unit : mine){
-	    				 if(myUnit.getPosition().getApproxDistance(self.getStartLocation().toPosition()) > 2000){
-	    					 // NO RETREAT IN STALINGRAD
-	    					 unit.move(retreat); 
-	    					 if(!retreaters.contains(unit)){
-	    						 retreaters.add(unit);
-	    					 }
-	    				 }
-	    				 
-	    			 }
-    			 }
-    		 }
 
-    	 }
     	 
+//    	 if(myUnit.isSelected() && IsMilitrayUnit(myUnit)){
+//    		 Squad sq =  getSquad(myUnit);
+//    		 if(sq==null){
+//    			 System.out.println("Unit: " + myUnit.getID() + " Squads is null"); 
+//    		 }
+//    		 else {
+//    		 System.out.println("Unit Squad: " + sq.id);
+//    		 System.out.println("Squad State: " + sq.State);
+//    		 }
+//    		 
+//    	 }
+    	 
+  	 
     	 if(myUnit.getType().isWorker() == true && assignedToBase(myUnit) == false){
     		 assignWorkerToBase(myUnit);
     	 }
@@ -370,7 +434,7 @@ public class Bot implements BWEventListener {
     	 if(!builders.isEmpty()){
 	    	 for(Builder b : new ArrayList<Builder>(builders)){
 	    		 if(b.worker == null || !b.worker.exists()){
-	         			builders.remove(b.worker);
+	         			builders.remove(b);
 	  	    			BotBase base = getBase(myUnit);
 	  	    			placements.remove(b.type);
 	  	    			if(base != null){
@@ -391,7 +455,7 @@ public class Bot implements BWEventListener {
     		 UnitType type = build.type;
     		 BotBase base = getBase(myUnit);
     		 
-    		 if(!game.isVisible(where) && myUnit.isMoving() == false){
+    		 if(!game.isVisible(where) && myUnit.isMoving() == false && myUnit.getPosition().getApproxDistance(where.toPosition()) > 30){
     			 myUnit.move(where.toPosition());
     		 }	
     		 
@@ -409,6 +473,7 @@ public class Bot implements BWEventListener {
  	    			}
         			 //System.out.println("Can't build: " + type.toString() + " Trying again.");
     			 }
+    			 
     		 }
     		 
     		 if(base != null){
@@ -416,7 +481,7 @@ public class Bot implements BWEventListener {
 	    			 base.newVoidedWorker(myUnit);
 	    		 }
     		 }
-
+    		 
     	 }
     	 
     	 if(isBuilder(myUnit) && myUnit.getType().isBuilding()){
@@ -426,9 +491,6 @@ public class Bot implements BWEventListener {
     		 }
     	 }
     	 
-
-    	 if(myUnit.getType() == UnitType.Zerg_Creep_Colony && myUnit.canMorph(UnitType.Zerg_Sunken_Colony)){
-    		 myUnit.morph(UnitType.Zerg_Sunken_Colony);
     	 }
     	 
     	 if(myData.enemyBuildings.isEmpty()){
@@ -481,10 +543,21 @@ public class Bot implements BWEventListener {
 	    		 simmedUnits.remove(unit);
 	    	 }
 	     }
-     
+	     
+	     for(Unit unit : game.enemy().getUnits()){
+	    	 
+	    	 if(unit.isCloaked() || unit.isBurrowed()){
+	    		 game.drawTextMap(unit.getPosition(), "" + unit.getType().toString());
+	    	 }
+	    	 
+	    	 // end of enemyUnits
+	     }
+	     
+	     
+	     // end on onFrame
      }
           
-    }
+    
 
     public static void main(String[] args) {
         new Bot();
@@ -506,7 +579,7 @@ public class Bot implements BWEventListener {
     			//  myChokes.get(1).getCenter().toTilePosition();
     		
     		if(unit.getType().equals(UnitType.Zerg_Hatchery) && myBases.size() > 1){
-    			pBuildings.add(new pBuilding(UnitType.Zerg_Extractor, null));
+    			pBuildings.add(0, new pBuilding(UnitType.Zerg_Extractor, null));
     		}
     				
 		}
@@ -523,7 +596,7 @@ public class Bot implements BWEventListener {
 			myData.unitDeath(unit);
 		}
 		
-		if(unit.getType().isResourceDepot()){
+		if(unit.getType().isResourceDepot() && !game.enemies().contains(unit.getPlayer())){
 			Base bass = getClosestBaseLocation(unit.getPosition());
 			BotBase remove = getBaseAt(bass);
 			ArrayList<Unit> pawns = remove.Pawns;
@@ -583,8 +656,11 @@ public class Bot implements BWEventListener {
     			}
     		}
     		
+    		if(!myData.enemyBuildings.isEmpty() && unit.getType().isDetector() && !unit.getType().isBuilding()){
+    			assignDetecter(unit);
+    		}
     		
-			
+    		
     		if(unit.getType().isWorker()){
     			assignWorkerToBase(unit);
     		}
@@ -681,6 +757,7 @@ public class Bot implements BWEventListener {
     			for(Squad sq : Squads){
     				sq.retreatPos = unit.getPosition();
     			}
+    			globalRetreat = unit.getPosition();
     		}
     		
 		}
@@ -973,7 +1050,7 @@ public class Bot implements BWEventListener {
 	
 	
 	void createSquad(ArrayList<Unit> units){
-		Squads.add(new Squad(units, Squads.size() + 1, myData, game, manager));
+		Squads.add(new Squad(units, Squads.size() + 1, myData, game, manager, globalRetreat));
 	}
 	
 	void assignUnit(Unit unit){
@@ -1013,7 +1090,7 @@ public class Bot implements BWEventListener {
 				
 				if(ii >= max){
 					//System.out.println("All squads goals filled, new squad");
-					Squad neww = new Squad(list, Squads.size() + 1, myData, game, manager);
+					Squad neww = new Squad(list, Squads.size() + 1, myData, game, manager, globalRetreat);
 					Squads.add(neww);
 					found = true;
 					break;
@@ -1026,7 +1103,7 @@ public class Bot implements BWEventListener {
 		}
 		else {
 			//System.out.println("NO squads");
-			Squad neww = new Squad(list, Squads.size() + 1, myData, game, manager);
+			Squad neww = new Squad(list, Squads.size() + 1, myData, game, manager, globalRetreat);
 			Squads.add(neww);
 		}
 
@@ -1112,15 +1189,18 @@ public class Bot implements BWEventListener {
 		for(BotBase bass : myBases){
 			max = max + bass.maxWorkers;
 		}
-				
+		
+		
+		
 		if(manager.canWin == true){
 			System.out.println("Drones: " + self.allUnitCount(UnitType.Zerg_Drone) + " Max: " + max);
-			if(self.allUnitCount(UnitType.Zerg_Drone) + self.incompleteUnitCount(UnitType.Zerg_Drone) <= max){
+			if(self.allUnitCount(UnitType.Zerg_Drone) <= max - 3){
 				for(int i = 0; i < 8; i++){
 				UQ.add(UnitType.Zerg_Drone);
 				}
 				
 			}
+			// else if we are maxed with drones, just make units
 			else {
 				if(self.completedUnitCount(UnitType.Zerg_Hydralisk_Den) == 0){
 					for(int i = 0; i < 4; i++){
@@ -1138,11 +1218,19 @@ public class Bot implements BWEventListener {
 						UQ.add(UnitType.Zerg_Drone);
 					}
 				}
+				
+				if(self.hasUnitTypeRequirement(UnitType.Zerg_Lurker) && !morphQueue.contains(UnitType.Zerg_Lurker)){
+					morphQueue.add(0, UnitType.Zerg_Lurker);
+				}
 			}
 
 		}
 		else {
-			// else if we can't win
+			// If we are currently behind in military strength
+				if(self.completedUnitCount(UnitType.Zerg_Ultralisk_Cavern) > 0){
+					UQ.add(UnitType.Zerg_Ultralisk);
+				}
+				
 				if(self.completedUnitCount(UnitType.Zerg_Hydralisk_Den) == 0){
 					for(int i = 0; i < 4; i++){
 					UQ.add(UnitType.Zerg_Zergling);
@@ -1335,10 +1423,114 @@ public class Bot implements BWEventListener {
 		}
 	}
 	
-	public boolean isRetreating(Unit unit){
-		return retreaters.contains(unit);
+
+	void GlobalSimCheck(){
+		for(Unit myUnit : new ArrayList<>(myData.myMilUnits)){
+			ArrayList<Integer> done = new ArrayList<>();
+	    	 if(isInCombat(myUnit) && !done.contains(myUnit.getID()) && IsMilitrayUnit(myUnit)){
+	    		 // BITCH LASAGNA
+	    		// System.out.println("Sim Trigger");
+	    		 ArrayList<Unit> mine = myData.GetMyUnitsNearby(myUnit.getPosition(), 500, true);
+	    		 ArrayList<Unit> enemy = myData.GetEnemyUnitsNearby(myUnit.getPosition(), 500, true);
+	    		 //System.out.println("Mine: " + mine.size());
+	    		// System.out.println("Enemy: " + enemy.size());
+	    		 boolean canWin = manager.evaluateBattle(mine, enemy);
+				 for(Unit unit : mine){
+					 if(!done.contains(unit.getID())){
+						done.add(myUnit.getID());
+					 }
+				 }
+	    		 if(!canWin){
+	    			System.out.println("Can Win: " + canWin);
+	    			 if(!enemy.isEmpty()){
+		    			 for(Unit unit : mine){
+		        			 Position retreat = util.GetKitePos(unit, enemy.get(0));
+		    				 if(myUnit.getPosition().getApproxDistance(self.getStartLocation().toPosition()) > 2000){
+		    					 // NO RETREAT IN STALINGRAD
+		    					 // URAAAAAAAAAAAAAAAAAAAAA
+		    					 unit.move(retreat); 
+		    					 Squad SQ = getSquad(myUnit);
+		    					 if(SQ != null){
+		    						 SQ.newRetreater(unit, 200);
+		    					 }
+
+		    				 }
+		    				 
+		    			 }
+	    			 }
+	    		 }
+	    		 else {
+	    			 // if we can win
+	    			 // check for those whom are retreating
+	    			 Position ey = null;
+	    			 if(!enemy.isEmpty()){
+	    				ey = enemy.get(0).getPosition();
+	    			 }
+	    			 
+	    			 for(Unit unit : mine){
+    					 Squad SQ = getSquad(myUnit);
+    					 if(SQ != null){
+    						 SQ.removeFlee(unit);
+    					 }
+    					 
+    					 if(!unit.isAttacking() && ey != null){
+    						 unit.attack(ey);
+    					 }
+	    			 }
+	    		 }
+
+	    	 }
+		}
 	}
 	
+	void assignDetecter(Unit unit){
+		for(Squad sq : Squads){
+			if(sq.detector == null){
+				System.out.println("New Detecter for squad: " + sq.id);
+				sq.detector = unit;
+				break;
+			}
+		}
+	}
+	
+	Unit getDetector(){
+		for(Unit myUnit : self.getUnits()){
+			if(myUnit.getType().isDetector() && !myUnit.getType().isBuilding()){
+				return myUnit;
+			}
+		}
+		
+		return null;
+	}
+	
+	boolean AllGeysersBuilt(){
+		int max = 0;
+		int i = 0;
+		for(BotBase bass : myBases){
+			if(!bass.Geysers.isEmpty()){
+				max = max + bass.Geysers.size();
+			}
+		}
+		
+//		for(pBuilding p : pBuildings){
+//			if(p.type.equals(self.getRace().getRefinery())){
+//				i++;
+//			}
+//		}
+		
+		for(Builder build : builders){
+			if(build.type.equals(self.getRace().getRefinery())){
+				i++;
+			}
+		}
+		
+		if(self.allUnitCount(self.getRace().getRefinery()) >= max){
+			return true;
+		}
+		
+		return false;
+	}
+		
 	
 }
 

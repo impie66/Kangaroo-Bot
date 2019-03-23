@@ -2,6 +2,7 @@ package Bot;
 import bwapi.*;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 
 import com.sun.jna.platform.win32.Sspi.SecPkgContext_Lifespan;
 
@@ -27,6 +28,7 @@ Data myData;
 DecisionManager manager;
 Game game;
 Unit detector;
+HashMap<Unit, Integer> flee;
 // 1 == attacker, 2 == defender, 3 == harasser
 
 
@@ -46,6 +48,26 @@ public Squad(ArrayList<Unit> unitss, int idd, Data Data, Game gam, DecisionManag
 	this.id = idd;
 	this.myData = Data;
 	this.manager = man;
+	this.flee = new HashMap<>();
+}
+
+public Squad(ArrayList<Unit> unitss, int idd, Data Data, Game gam, DecisionManager man, Position ret){
+	this.units = unitss;
+	this.score = getSquadScore();
+	this.target = null;
+	this.State = 0;
+	this.AWR = false;
+	this.targetScore = 0;
+	this.game = gam;
+	this.retreatPos = ret;
+	this.priority = 3;
+	this.retreating = false;
+	this.type = 0;
+	this.squadName = "asdf";
+	this.id = idd;
+	this.myData = Data;
+	this.manager = man;
+	this.flee = new HashMap<>();
 }
 
 public Squad(ArrayList<Unit> unitss, int idd, int targets, Data Data, Game gam, DecisionManager man){
@@ -64,6 +86,45 @@ public Squad(ArrayList<Unit> unitss, int idd, int targets, Data Data, Game gam, 
 	this.myData = Data;
 	this.manager = man;
 	this.game = gam;
+	this.flee = new HashMap<>();
+}
+
+void onFrame(){
+	
+	
+	for(Unit unit : new ArrayList<>(flee.keySet())){
+		if(this.flee.get(unit) >= game.getFrameCount()){
+			this.flee.remove(unit);
+		}
+	}
+	
+	if(this.detector != null && !this.units.isEmpty()){
+		Unit det = this.detector;
+		game.drawCircleMap(this.detector.getPosition(), this.detector.getType().width(), Color.Green);
+		Position pos = null;
+		if(det.isIdle()){
+			for(Unit unit : new ArrayList<Unit>(this.units)){
+				if(unit.isAttacking() && det.getPosition().getApproxDistance(unit.getPosition()) >= 100){
+					pos = unit.getPosition();
+					break;
+				}
+			}
+			
+			if(pos == null){
+				if(det.getPosition().getApproxDistance(pos) >= 100){
+				pos = this.units.get(0).getPosition();
+				det.move(pos);
+				}
+			}
+		}
+	}
+	if(!this.units.isEmpty()){
+		for(Unit unit : new ArrayList<>(this.units)){
+			if(unit.getType().equals(UnitType.Zerg_Lurker) && unit.isUnderAttack() && !unit.isBurrowed()){
+				unit.burrow();
+			}
+		}
+	}
 }
 
 boolean isDefending(){
@@ -73,6 +134,8 @@ boolean isDefending(){
 	
 	return false;
 }
+
+
 
 void setState(int state){
 	this.State = state;
@@ -169,6 +232,9 @@ void Regroup(Position pos){
 				if(unit.getOrderTargetPosition()!=pos){
 				unit.move(pos);
 				}
+				if(unit.isBurrowed()){
+					unit.canUnburrow();
+				}
 			}
 		}
 }
@@ -206,8 +272,12 @@ void squadMicro(){
 	if(this.State == 1 && target!=null){
 		// attacking
 		for(Unit unit : new ArrayList<>(this.units)){
-			if(unit.getOrder() != Order.AttackMove && !isInCombat(unit)){
+			if(unit.getOrder() != Order.AttackMove && !isInCombat(unit) && !flee.containsKey(unit)){
 				unit.attack(this.target);
+			}
+			
+			if(flee.containsKey(unit) && unit.isIdle() && !EnemysNearby(unit.getPosition())){
+				flee.remove(unit);
 			}
 		}
 	}
@@ -293,36 +363,52 @@ boolean isAtTarget(boolean idle){
 }
 
 void operate(){
+	
 	if(myData.nextAttackPosition != null){
 		
-	if(this.target==null){
-		this.target = myData.nextAttackPosition;
-	}
-	
-	for(Unit unit : this.units){
-		if(unit.isIdle() && target != null){
-			unit.attack(target);
+		if(this.target==null){
+			this.target = myData.nextAttackPosition;
 		}
-		if(target != null){
-			if(unit.getOrderTargetPosition().getApproxDistance(target) > 300 && !isInCombat(unit)){
-			unit.attack(target);
+		
+		for(Unit unit : this.units){
+			if(!flee.containsKey(unit)){
+				if(unit.isIdle() && target != null){
+					unit.attack(target);
+				}
+				
+				if(target != null){
+					if(unit.getOrderTargetPosition().getApproxDistance(target) > 300 && !isInCombat(unit)){
+					unit.attack(target);
+					}
+				}
 			}
 		}
+		
+		
+		
 	}
 	
-	}
 }
 
 void retreat(){
 	for(Unit unit : this.units){
 		if(unit.getPosition().getApproxDistance(this.retreatPos) > 200){
 		unit.move(this.retreatPos);
+			if(unit.isBurrowed()){
+				unit.unburrow();
+				unit.move(this.retreatPos);
+			}
 		}
 	}
 }
 
 void unitDeath(Unit unit){
 	this.units.remove(unit);
+	if(this.detector != null){
+		if(this.detector.equals(unit)){
+			this.detector = null;
+		}
+	}
 }
 
 boolean isSquadFull(){
@@ -342,6 +428,21 @@ boolean EnemysNearby(Position pos){
 		
 		return false;
 	
+}
+
+void newRetreater(Unit unit, int value){
+	if(!this.flee.containsKey(unit)){
+		this.flee.put(unit, value);
+	}
+	else {
+		this.flee.put(unit, value);
+	}
+}
+
+void removeFlee(Unit unit){
+	if(flee.containsKey(unit)){
+		flee.remove(unit);
+	}
 }
 
 

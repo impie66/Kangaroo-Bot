@@ -82,6 +82,10 @@ public class DecisionManager {
 		return ((auxType.destroyScore() * auxType.maxHitPoints()) / (auxType.maxHitPoints() * 2));
 	}
 	
+	int getScoreOf(UnitType auxType){
+		return ((auxType.destroyScore() * auxType.maxHitPoints()) / (auxType.maxHitPoints() * 2));
+	}
+	
 	public boolean IsMilitrayBuilding(Unit unit) {
 		if(unit.getType() == UnitType.Terran_Bunker ||
 		unit.getType() == UnitType.Terran_Missile_Turret ||
@@ -96,55 +100,62 @@ public class DecisionManager {
 
 }
 	
-	boolean simBattle(ArrayList<Unit> myUnits, ArrayList<Unit> enemyUnits){
+	boolean simBattle(ArrayList<Unit> myUnits, ArrayList<UnitType> enemyUnits){
 		//Special thanks to Jabbo for telling me how to wipe my ass.
 		// Heheh, get it? ASS?? hahahah XDDDDDDDDDDDDDDDDDDDDDDDDD
 		// God i need to stop drinking
 		this.simulator = new Simulator();
 		this.factory = new BWMirrorAgentFactory();
-		int i = 0;
+		int myScoreBefore = 0;
+		int myScoreAfter = 0;
+		int enemyScoreBefore = 0;
+		int enemyScoreAfter = 0;
 		int ii = 0;
 		simulator.reset();
 		
 		 for(Unit unit : myUnits){
 			 Agent asd = factory.of(unit);
 			 simulator.addAgentA(asd);
-			 i = i + unit.getHitPoints();
+			 myScoreBefore = myScoreBefore + asd.getHealth() + asd.getShields();
 			 
 		 }
 		 
-		 for(Unit unit : enemyUnits){
+		 for(UnitType unit : enemyUnits){
 			 Agent asd = factory.of(unit);
-			 simulator.addAgentA(asd);
-			 ii = ii + unit.getHitPoints();
+			 simulator.addAgentB(asd);
+			 enemyScoreBefore = enemyScoreBefore + asd.getHealth() + asd.getShields();
 		 }
 		 
-		int preSimMyScore = i;
-		int preSimEnemyScore = ii;
-		// fuck im too lazy to type that whole word
-
-		simulator.simulate(300);
+		System.out.println("My Size Before: " + simulator.getAgentsA().size());
+		System.out.println("Enemy Size Before: " + simulator.getAgentsB().size());
 		
-		int iii = 0;
-		int iiii = 0;
+		simulator.simulate(200);
 		
 		for(Agent unit : simulator.getAgentsA()){
-			iii = iii + unit.getHealth();
+			myScoreAfter = myScoreAfter + unit.getHealth() + unit.getShields();
 		}
 		
 		for(Agent unit : simulator.getAgentsB()){
-			iiii = iiii + unit.getHealth();
+			enemyScoreAfter = enemyScoreAfter + unit.getHealth() + unit.getShields();
 		}
 		
-		int p1D = iii - iiii;
-		int p2D = i - ii;
+		System.out.println("My Size After: " + simulator.getAgentsA().size());
+		System.out.println("Enemy Size After: " + simulator.getAgentsB().size());
+
+		int P1 = myScoreBefore - myScoreAfter;
+		int P2 = enemyScoreBefore - enemyScoreAfter;
+		System.out.println("" + P1);
+		System.out.println("" + P2);
 		
-		if(p1D > p2D){
+		if(P1 >= P2){
+			this.canWin = true;
 			return true;
 		}
 		else {
-		return false;
+			this.canWin = false;
+			return false;
 		}
+		
 		
 	}
 	
@@ -153,6 +164,16 @@ public class DecisionManager {
 		
 		ArrayList<Agent>myA = new ArrayList<>();
 		ArrayList<Agent>enemyA = new ArrayList<>();
+		
+		
+		if(myData.enemyMilUnits.isEmpty()){
+			if(myData.myScore >= myData.enemyScore * 0.25){
+				System.out.println("Global Win by score");
+				this.canWin = true;
+				return true;
+				
+			}
+		}
 			
 		 for(Unit unit : myUnits){
 			 Agent asd = factory.of(unit);
@@ -168,9 +189,11 @@ public class DecisionManager {
 		double score = evaluator.evaluate(myA, enemyA);
 		//System.out.println("Local Score: " + score);
 		if(score >= 0.35){
+			this.canWin = true;
 			return true;
 		}
 		else {
+		this.canWin = false;
 		return false;
 		
 		}
@@ -203,10 +226,10 @@ public class DecisionManager {
 		 }
 		 
 		//System.out.println("myUnits Size " + myUnits.size());
-		System.out.println("Type Size: " + type.size());
+		//System.out.println("Type Size: " + type.size());
 		double score = evaluator.evaluate(myA, enemyA);
 		System.out.println("Global Score: " + score);
-		if(score >= 0.50){
+		if(score >= 0.35){
 		this.canWin = true;
 		return true;
 		}

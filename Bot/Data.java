@@ -27,6 +27,8 @@ public class Data {
 	ArrayList<UnitType> eggs;
 	ArrayList<UnitType> enemyTypes;
 	ArrayList<UnitType> enemyDTypes;
+	int enemyScore;
+	int myScore;
 	
 	public Data(Game gaem, BWEM b, Base myBasee){
 		this.game = gaem;
@@ -45,6 +47,8 @@ public class Data {
 		this.eggs = new ArrayList<>();
 		this.enemyTypes = new ArrayList<UnitType>();
 		this.enemyDTypes = new ArrayList<UnitType>();
+		this.enemyScore = 0;
+		this.myScore = 0;
 		ArrayList<Base> Expands = new ArrayList<Base>();
 		DoTheThing();
 	}
@@ -148,6 +152,7 @@ public class Data {
 		if(unit.getPlayer().equals(self)){
 			if(!this.myMilUnits.contains(unit)){
 				this.myMilUnits.add(unit);
+				this.myScore = this.myScore + getScoreOf(unit);
 				//System.out.println("My Unit: " + unit.getType().toString());
 			}
 		}
@@ -156,6 +161,7 @@ public class Data {
 			if(!this.enemyMilUnits.contains(unit)){
 				this.enemyMilUnits.add(unit);
 				this.enemyTypes.add(unit.getType());
+				this.enemyScore = this.enemyScore + getScoreOf(unit);
 				//System.out.println("Enemy Unit: " + unit.getType().toString());
 			}
 		}
@@ -165,6 +171,8 @@ public class Data {
 		if(unit.getPlayer().equals(self)){
 			if(this.myMilUnits.contains(unit)){
 				this.myMilUnits.remove(unit);
+				this.myScore = this.myScore - getScoreOf(unit);
+				
 			}
 			
 			
@@ -174,6 +182,7 @@ public class Data {
 			if(this.enemyMilUnits.contains(unit)){
 				this.enemyMilUnits.remove(unit);
 				this.enemyTypes.remove(unit.getType());
+				this.enemyScore = this.enemyScore - getScoreOf(unit);
 				//System.out.println("Enemy Unit Death: " + unit.getType().toString());
 			}
 		}
@@ -340,6 +349,13 @@ public class Data {
 			
 		return claimed.contains(bass);
 	}
+	
+	int getScoreOf(Unit unit){
+		UnitType auxType = unit.getType();
+		return ((auxType.destroyScore() * auxType.maxHitPoints()) / (auxType.maxHitPoints() * 2));
+	}
+	
+	
 	
 	
 }
