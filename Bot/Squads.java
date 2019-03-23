@@ -110,7 +110,14 @@ void onFrame(){
 				}
 			}
 			
-			if(pos == null){
+			for(Unit unit : new ArrayList<Unit>(this.units)){
+				if(unit.isMoving() && det.getPosition().getApproxDistance(unit.getPosition()) >= 100){
+					pos = unit.getPosition();
+					break;
+				}
+			}
+			
+			if(pos != null){
 				if(det.getPosition().getApproxDistance(pos) >= 100){
 				pos = this.units.get(0).getPosition();
 				det.move(pos);
@@ -225,7 +232,7 @@ int SquadsAverageDistTo(Position pos){
 
 void Regroup(Position pos){
 		if(this.units.isEmpty() == false){
-			for(Unit unit : units){
+			for(Unit unit : new ArrayList<>(this.units)){
 				if(unit.isIdle()){
 					unit.move(pos);
 				}
@@ -341,7 +348,7 @@ boolean isAtTarget(boolean idle){
 	
 	if(this.units.isEmpty() == false){
 		max = (int) ((this.units.size()) - (this.units.size() * 0.75));
-		for(Unit unit : this.units){
+		for(Unit unit : new ArrayList<>(this.units)){
 			if(idle == true){
 				if(unit.isIdle() && unit.getPosition().getApproxDistance(this.target) < 200){
 					i++;
@@ -370,14 +377,14 @@ void operate(){
 			this.target = myData.nextAttackPosition;
 		}
 		
-		for(Unit unit : this.units){
+		for(Unit unit : new ArrayList<>(this.units)){
 			if(!flee.containsKey(unit)){
 				if(unit.isIdle() && target != null){
 					unit.attack(target);
 				}
 				
 				if(target != null){
-					if(unit.getOrderTargetPosition().getApproxDistance(target) > 300 && !isInCombat(unit)){
+					if(unit.getOrderTargetPosition().getApproxDistance(target) > 300 && !isInCombat(unit) && IsAttackMoving(unit)){
 					unit.attack(target);
 					}
 				}
@@ -391,7 +398,7 @@ void operate(){
 }
 
 void retreat(){
-	for(Unit unit : this.units){
+	for(Unit unit : new ArrayList<>(this.units)){
 		if(unit.getPosition().getApproxDistance(this.retreatPos) > 200){
 		unit.move(this.retreatPos);
 			if(unit.isBurrowed()){

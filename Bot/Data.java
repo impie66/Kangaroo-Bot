@@ -185,6 +185,10 @@ public class Data {
 				this.enemyScore = this.enemyScore - getScoreOf(unit);
 				//System.out.println("Enemy Unit Death: " + unit.getType().toString());
 			}
+			
+			if(this.enemyBuildings.contains(unit)){
+				this.enemyBuildings.remove(unit);
+			}
 		}
 	}
 	

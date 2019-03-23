@@ -105,7 +105,7 @@ Game game;
 			return;
 		}
 		
-		if(this.Gases.isEmpty() == false){
+		if(this.Gases.isEmpty() == false && this.Pawns.size() >= 6){
 			for(Unit unit : this.Gases){
 				if(isGas(unit)){
 					if(this.gasWorkers.containsKey(unit) == true){

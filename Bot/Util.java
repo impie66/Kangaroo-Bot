@@ -21,6 +21,15 @@ public class Util {
 		int Int2 = (int) (64 * Math.sin(Kite2));
 		Kite1 = new Position(Int1, Int2);
 		return Kite1;
+	}
+	
+	public Position GetKitePos(Unit unit, Position pos) {
+		Position Kite1 = new Position(pos.getX() - unit.getX(), pos.getY() - unit.getY());
+		double Kite2 = Math.atan2(Kite1.getX(), Kite1.getY());
+		int Int1 = (int) (64 * Math.cos(Kite2));
+		int Int2 = (int) (64 * Math.sin(Kite2));
+		Kite1 = new Position(Int1, Int2);
+		return Kite1;
 	}	
 	
 	

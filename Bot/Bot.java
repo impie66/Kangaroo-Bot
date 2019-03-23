@@ -167,12 +167,6 @@ public class Bot implements BWEventListener {
     		   }
     		   // an issue where an hatch/lair is morphing to a lair/hive while the bot is being raped by the enemy
     		  // Doesn't build units because .isIdle returns false when morphing
-    		   if(unit.getType().equals(UnitType.Zerg_Hatchery) || unit.getType().equals(UnitType.Zerg_Lair) && unit.canTrain(next) && unit.isMorphing()){
-    			   unit.train(next);
-    			   if(!UQ.isEmpty()){
-    			   UQ.remove(0);
-    			   } 
-    		   }
     	   }
        }
        else {
@@ -366,7 +360,12 @@ public class Bot implements BWEventListener {
 			    	 if(myUnit.canMorph(nextMorph) && self.minerals() >= minsCost && self.gas() >= gasCost && myUnit.isCompleted() && !myUnit.isMorphing()){
 			    		 myUnit.morph(nextMorph);
 			    		 System.out.println("Morphing: " + nextMorph.toString());
-			    		 morphQueue.remove(0);
+			     		 if(morphQueue.size() == 0){
+			     			 morphQueue.clear();
+			     		 }
+			     		 else {
+			     			 morphQueue.remove(0);
+			     		 }
 			    		 break;
 			    	 }
 		 	 }
@@ -380,7 +379,12 @@ public class Bot implements BWEventListener {
 		     	 if(myUnit.canUpgrade(next) && self.minerals() >= minsCost && self.gas() >= gasCost && myUnit.isCompleted() && !myUnit.isUpgrading()){
 		     		 myUnit.upgrade(next);
 		     		 System.out.println("Upgrading: " + next.toString());
-		     		 upgradeQueue.remove(0);
+		     		 if(upgradeQueue.size() == 0){
+		     			 upgradeQueue.clear();
+		     		 }
+		     		 else {
+		     			 upgradeQueue.remove(0);
+		     		 }
 		     		 break;
 		     	 }
 	     	 }
@@ -394,7 +398,12 @@ public class Bot implements BWEventListener {
 		     	 if(game.canResearch(next) && self.minerals() >= minsCost && self.gas() >= gasCost && myUnit.isCompleted() && !myUnit.isResearching()){
 		     		 myUnit.research(next);
 		     		 System.out.println("Researching " + next.toString());
-		     		 upgradeQueue.remove(0);
+		     		 if(techQueue.size() == 0){
+		     			 upgradeQueue.clear();
+		     		 }
+		     		 else {
+		     			 techQueue.remove(0);
+		     		 }
 		     		 break;
 		     	 }
 	     	 }
@@ -474,6 +483,12 @@ public class Bot implements BWEventListener {
         			 //System.out.println("Can't build: " + type.toString() + " Trying again.");
     			 }
     			 
+    		 }
+    		 
+    		 
+    		 if(!where.isValid(game)){
+    			 builders.remove(build);
+    			 System.out.println("invalid placement for " + type.toString());
     		 }
     		 
     		 if(base != null){
@@ -581,6 +596,10 @@ public class Bot implements BWEventListener {
     		if(unit.getType().equals(UnitType.Zerg_Hatchery) && myBases.size() > 1){
     			pBuildings.add(0, new pBuilding(UnitType.Zerg_Extractor, null));
     		}
+    		
+    		if(unit.getType().isDetector() && !unit.getType().isBuilding()){
+    			assignDetecter(unit);
+    		}
     				
 		}
 	}
@@ -614,6 +633,11 @@ public class Bot implements BWEventListener {
 			if(pBuildings.contains(self.getRace().getRefinery())){
 				pBuildings.remove(self.getRace().getRefinery());
 			}
+		}
+		
+		
+		if(game.enemies().contains(unit.getPlayer()) && unit.getType().isBuilding()){
+			myData.unitDeath(unit);
 		}
 		
 		
@@ -655,12 +679,7 @@ public class Bot implements BWEventListener {
     				}
     			}
     		}
-    		
-    		if(!myData.enemyBuildings.isEmpty() && unit.getType().isDetector() && !unit.getType().isBuilding()){
-    			assignDetecter(unit);
-    		}
-    		
-    		
+    				
     		if(unit.getType().isWorker()){
     			assignWorkerToBase(unit);
     		}
@@ -1453,6 +1472,10 @@ public class Bot implements BWEventListener {
 		    					 if(SQ != null){
 		    						 SQ.newRetreater(unit, 200);
 		    					 }
+		    					 
+		    					 if(unit.isBurrowed() && unit.canUnburrow()){
+		    						 unit.unburrow();
+		    					 }
 
 		    				 }
 		    				 
@@ -1473,6 +1496,10 @@ public class Bot implements BWEventListener {
     						 SQ.removeFlee(unit);
     					 }
     					 
+    					 if(unit.getType().equals(UnitType.Zerg_Lurker) && !unit.isBurrowed() && unit.canBurrow(true)){
+    						 unit.burrow();
+    					 }
+    					 
     					 if(!unit.isAttacking() && ey != null){
     						 unit.attack(ey);
     					 }
@@ -1484,11 +1511,13 @@ public class Bot implements BWEventListener {
 	}
 	
 	void assignDetecter(Unit unit){
-		for(Squad sq : Squads){
-			if(sq.detector == null){
-				System.out.println("New Detecter for squad: " + sq.id);
-				sq.detector = unit;
-				break;
+		if(!Squads.isEmpty()){
+			for(Squad sq : Squads){
+				if(sq.detector == null){
+					System.out.println("New Detecter for squad: " + sq.id);
+					sq.detector = unit;
+					break;
+				}
 			}
 		}
 	}
