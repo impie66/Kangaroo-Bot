@@ -21,8 +21,9 @@ The Bot is no where near done.
 * Highly advanced If Statements
 * Hyper passive zerg
 * Alcoholism
-* good very manny ouf speeling arnd grahamer
-highly advanced code
+* good very manny ouf speeling und gramamah
+* Google Home integration
+
 
 
 
