@@ -9,7 +9,9 @@ The Bot is no where near done.
 <h1>Current Features</h1>
 
 * Crashing on Null Values
+* getBuildLocation spam
 * Horrible and mostly incorrect retreat manager
+* A pure diet of ConcurrentModificationExceptions
 * Invalid buildLocations
 * Hatred for the protoss race
 * Violent Seizures
@@ -20,7 +22,6 @@ The Bot is no where near done.
 * Hyper passive zerg
 * Alcoholism
 * good very manny ouf speeling arnd grahamer
-* <h1>HI</h1>gh<b>l</b><i>adv</i>anced<h2>code</h2>
 highly advanced code
 
 
