@@ -2,6 +2,9 @@
 
 A fork from McRaveZ
 
+Developed by that one Australian guy that shitposts all day. 
+The.. uhh dumb cunt who made If Bot. Who was that guy again? I swear he was fucked in the head or something.
+
 <h1>Current Features</h1>
 
 * Crashing on Null Values
@@ -21,8 +24,5 @@ A fork from McRaveZ
 * Google Home integration
 
 
-
-
-
-
 https://www.youtube.com/watch?v=UG3VcCAlUgE
+
