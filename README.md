@@ -1,11 +1,6 @@
 # Kangaroo-Bot
-A fork from McRavez
-see [here:] (https://github.com/Cmccrave/McRave)
 
-
-Backing up on github just before the cyclone hits
-
-The Bot is no where near done.
+A fork from McRaveZ
 
 <h1>Current Features</h1>
 
