@@ -1,5 +1,6 @@
 # Kangaroo-Bot
-I'm here to eat gum and chew ass
+A fork from McRavez
+see [here:] (https://github.com/Cmccrave/McRave)
 
 
 Backing up on github just before the cyclone hits
