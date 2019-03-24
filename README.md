@@ -20,9 +20,10 @@ The Bot is no where near done.
 * Hyper passive zerg
 * Alcoholism
 * good very manny ouf speeling arnd grahamer
+* <h1>HI</h1>gh<b>l</b><i>adv</i>anced<h2>code</h2>
+highly advanced code
 
 
-No korean children were harmed during the making of this bot.
 
 
 
