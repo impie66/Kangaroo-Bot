@@ -11,12 +11,15 @@ The Bot is no where near done.
 * Crashing on Null Values
 * Horrible and mostly incorrect retreat manager
 * Invalid buildLocations
+* Hatred for the protoss race
+* Violent Seizures
 * Spending all the minerals on overlords
 * Advanced Gas floating 
 * Perfect simCity
 * Highly advanced If Statements
-* Squad Effectiveness
 * Hyper passive zerg
+* Alcoholism
+* good very manny ouf speeling arnd grahamer
 
 
 No korean children were harmed during the making of this bot.
