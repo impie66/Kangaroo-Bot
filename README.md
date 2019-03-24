@@ -1,10 +1,11 @@
 # Kangaroo-Bot
 
-A fork from McRaveZ
+A fork from McRaveZ using [jBWAPI](https://github.com/JavaBWAPI/JBWAPI)
 
 <h1>Current Features</h1>
 
 * Crashing on Null Values
+* Runs on Computer Startup
 * getBuildLocation spam
 * Horrible and mostly incorrect retreat manager
 * A pure diet of ConcurrentModificationExceptions
