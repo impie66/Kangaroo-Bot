@@ -4,8 +4,6 @@ import bwapi.*;
 import java.util.ArrayList;
 import java.util.HashMap;
 
-import com.sun.jna.platform.win32.Sspi.SecPkgContext_Lifespan;
-
 import Bot.*;
 
 class Squad {
@@ -125,13 +123,22 @@ void onFrame(){
 			}
 		}
 	}
+	
 	if(!this.units.isEmpty()){
 		for(Unit unit : new ArrayList<>(this.units)){
 			if(unit.getType().equals(UnitType.Zerg_Lurker) && unit.isUnderAttack() && !unit.isBurrowed()){
 				unit.burrow();
 			}
+			
+			if(unit.isBurrowed()){
+				if(!EnemysNearby(unit.getPosition(), 300) && unit.canUnburrow()){
+					unit.unburrow();
+				}
+			}
 		}
 	}
+	
+	
 }
 
 boolean isDefending(){
@@ -182,7 +189,7 @@ int getTargetScore(){
 }
 
 int getUnitSize(){
-return units.size();
+return this.units.size();
 }
 
 int priority(){
@@ -195,7 +202,7 @@ int getSquadScore(){
 		return i;
 	}
 	
-	for(Unit unit : this.units){
+	for(Unit unit : new ArrayList<Unit>(this.units)){
 		i = i + getScoreOf(unit);
 	}
 	
@@ -223,7 +230,7 @@ int SquadsAverageDistTo(Position pos){
 	int ffinal = 0;
 	int i = this.getUnitSize();
 	int o = 0;
-	for(Unit unit : this.getUnits()){
+	for(Unit unit : new ArrayList<Unit>(this.units)){
 		o = o + unit.getPosition().getApproxDistance(pos);
 	}
 	ffinal = o / i;
@@ -239,8 +246,9 @@ void Regroup(Position pos){
 				if(unit.getOrderTargetPosition()!=pos){
 				unit.move(pos);
 				}
-				if(unit.isBurrowed()){
-					unit.canUnburrow();
+				
+				if(unit.isBurrowed() && unit.canUnburrow()){
+					unit.unburrow();
 				}
 			}
 		}
@@ -258,34 +266,34 @@ boolean shouldRegroup(){
 
 void squadMicro(){
 	
-	if(this.target == null){
+	if(shouldRegroup()){
+		Regroup(this.getUnits().get(0).getPosition());
+	}
+	
+	if(this.target == null && State == 1){
 		if(myData.nextAttackPosition==null){
 			this.target = myData.nextAttackPosition;
 		}
 	}
 	
-	if(shouldRegroup() && this.State == 1){
-		Regroup(this.getUnits().get(0).getPosition());
+	if(this.isAtTarget(false) && myData.nextAttackPosition != null && this.State == 1){
+		System.out.println("is at Target: " + this.id);
+		this.target = myData.nextAttackPosition;
 	}
 	
-	if(shouldRegroup() && this.State == 2){
-		Regroup(this.getUnits().get(0).getPosition());
-	}
-	
-	if(!shouldRegroup() && this.State == 4){
-		operate();
-	}
-	
-	if(this.State == 1 && target!=null){
+
+		
+	if(this.State == 1 && this.target!=null){
 		// attacking
 		for(Unit unit : new ArrayList<>(this.units)){
-			if(unit.getOrder() != Order.AttackMove && !isInCombat(unit) && !flee.containsKey(unit)){
+			if(unit.getOrder() != Order.AttackMove && !isInCombat(unit) && !this.flee.containsKey(unit)){
 				unit.attack(this.target);
 			}
 			
-			if(flee.containsKey(unit) && unit.isIdle() && !EnemysNearby(unit.getPosition())){
-				flee.remove(unit);
+			if(unit.getType().equals(UnitType.Zerg_Lurker) && !unit.isMoving() && !isInCombat(unit)){
+				unit.move(this.target);
 			}
+			
 		}
 	}
 	
@@ -295,31 +303,19 @@ void squadMicro(){
 			if(!IsAttackMoving(unit) && !isInCombat(unit)){
 				unit.attack(this.target);
 			}
-		}
-	}
-	
-	
-	if(this.State == 2){
-		// for defenders we wan't to check if they are IDLE.
-		// if they are IDLE means they have defended that area
-		if(EnemysNearby(this.target) == true && manager.canWin){
-			if(myData.nextAttackPosition!=null){
-				this.target = myData.nextAttackPosition;
+			
+			if(unit.getType().equals(UnitType.Zerg_Lurker) && !unit.isMoving() && !isInCombat(unit)){
+				unit.move(this.target);
 			}
 		}
 	}
-	else {
-		if(isAtTarget(true) == true){
-			if(myData.nextAttackPosition!=null){
-				this.target = myData.nextAttackPosition;
-			}
-		}
-	}
-	
 	
 	
 	
 }
+	
+		
+
 
 public boolean IsAttackMoving(Unit unit){
 	if(unit.getOrder() == Order.AttackMove){
@@ -378,17 +374,21 @@ void operate(){
 		}
 		
 		for(Unit unit : new ArrayList<>(this.units)){
-			if(!flee.containsKey(unit)){
-				if(unit.isIdle() && target != null){
-					unit.attack(target);
+			if(!this.flee.containsKey(unit)){
+				if(unit.isIdle() && this.target != null){
+					unit.attack(this.target);
 				}
 				
-				if(target != null){
-					if(unit.getOrderTargetPosition().getApproxDistance(target) > 300 && !isInCombat(unit) && IsAttackMoving(unit)){
-					unit.attack(target);
+				if(this.target != null){
+					if(unit.getOrderTargetPosition().getApproxDistance(this.target) > 300 && !isInCombat(unit) && !IsAttackMoving(unit)){
+					unit.attack(this.target);
 					}
 				}
 			}
+		}
+		
+		if(this.detector!=null){
+			this.detector.move(this.target);
 		}
 		
 		
@@ -406,6 +406,10 @@ void retreat(){
 				unit.move(this.retreatPos);
 			}
 		}
+	}
+	
+	if(this.detector != null){
+		this.detector.move(this.retreatPos);
 	}
 }
 
@@ -427,6 +431,18 @@ boolean isSquadFull(){
 
 boolean EnemysNearby(Position pos){
 	ArrayList<Unit> units = new ArrayList<> (game.getUnitsInRadius(pos, 500));
+		for(Unit unit : units){
+			if(game.enemies().contains(unit.getPlayer())){
+				return true;
+			}
+		}
+		
+		return false;
+	
+}
+
+boolean EnemysNearby(Position pos, int max){
+	ArrayList<Unit> units = new ArrayList<> (game.getUnitsInRadius(pos, max));
 		for(Unit unit : units){
 			if(game.enemies().contains(unit.getPlayer())){
 				return true;

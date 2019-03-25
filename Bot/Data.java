@@ -135,7 +135,7 @@ public class Data {
 	void newEnemyBuilding(Unit unit){
 		if(!this.enemyBuildings.contains(unit)){
 			this.enemyBuildings.add(unit);
-			System.out.println("Enemy Building Discovered: " + unit.getType().toString());
+			//System.out.println("Enemy Building Discovered: " + unit.getType().toString());
 		}
 	}
 	
@@ -313,7 +313,7 @@ public class Data {
 				}
 			}
 		}
-		System.out.println("Morphed: " + i);
+		//System.out.println("Morphed: " + i);
 		return i;
 	}
 	

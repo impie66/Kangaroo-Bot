@@ -86,6 +86,7 @@ public class DecisionManager {
 		return ((auxType.destroyScore() * auxType.maxHitPoints()) / (auxType.maxHitPoints() * 2));
 	}
 	
+	
 	public boolean IsMilitrayBuilding(Unit unit) {
 		if(unit.getType() == UnitType.Terran_Bunker ||
 		unit.getType() == UnitType.Terran_Missile_Turret ||
@@ -112,6 +113,17 @@ public class DecisionManager {
 		int enemyScoreAfter = 0;
 		int ii = 0;
 		simulator.reset();
+		
+		if(myUnits.isEmpty()){
+			this.canWin = false;
+			return false;
+		}
+		
+		 
+		if(enemyUnits.isEmpty()){
+			this.canWin = true;
+			return true;
+		}
 		
 		 for(Unit unit : myUnits){
 			 Agent asd = factory.of(unit);
@@ -147,7 +159,16 @@ public class DecisionManager {
 		System.out.println("" + P1);
 		System.out.println("" + P2);
 		
-		if(P1 >= P2){
+		if(myScoreBefore == myScoreAfter && enemyScoreBefore == enemyScoreAfter){
+			if(myScoreBefore >= enemyScoreBefore){
+				if(this.globalEvaluate(myUnits, enemyUnits) == true){
+					this.canWin = true;
+					return true;
+				}
+			}
+		}
+		
+		if(P1 > P2){
 			this.canWin = true;
 			return true;
 		}
@@ -164,17 +185,7 @@ public class DecisionManager {
 		
 		ArrayList<Agent>myA = new ArrayList<>();
 		ArrayList<Agent>enemyA = new ArrayList<>();
-		
-		
-		if(myData.enemyMilUnits.isEmpty()){
-			if(myData.myScore >= myData.enemyScore * 0.25){
-				System.out.println("Global Win by score");
-				this.canWin = true;
-				return true;
-				
-			}
-		}
-			
+					
 		 for(Unit unit : myUnits){
 			 Agent asd = factory.of(unit);
 			 myA.add(asd);	 
@@ -188,14 +199,13 @@ public class DecisionManager {
 		 
 		double score = evaluator.evaluate(myA, enemyA);
 		//System.out.println("Local Score: " + score);
-		if(score >= 0.35){
+		if(score >= 0.50){
 			this.canWin = true;
 			return true;
 		}
 		else {
 		this.canWin = false;
 		return false;
-		
 		}
 		
 		}
@@ -207,6 +217,10 @@ public class DecisionManager {
 		
 		if(myUnits.isEmpty()){
 			return false;
+		}
+		
+		if(myData.myScore >= myData.enemyScore * 3){
+			System.out.println("Global Attack via score");
 		}
 					
 		 for(Unit unit : myUnits){
