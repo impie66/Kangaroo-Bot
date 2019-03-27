@@ -8,6 +8,7 @@ A fork from McRaveZ using [jBWAPI](https://github.com/JavaBWAPI/JBWAPI)
 * Runs on Computer Startup
 * getBuildLocation spam
 * Horrible and mostly incorrect retreat manager
+* `if(canWin()){Retreat()}`
 * A pure diet of ConcurrentModificationExceptions
 * Invalid buildLocations
 * Hatred for the protoss race
@@ -18,6 +19,7 @@ A fork from McRaveZ using [jBWAPI](https://github.com/JavaBWAPI/JBWAPI)
 * Highly advanced If Statements
 * Hyper passive zerg
 * Alcoholism
+* Buggy as hell building system
 * Not making workers when dieing
 * Spamming attack orders
 * good very manny ouf speeling und gramamah
