@@ -19,7 +19,7 @@ A fork from McRaveZ using [jBWAPI](https://github.com/JavaBWAPI/JBWAPI)
 * Hyper passive zerg
 * Alcoholism
 * Not making workers when dieing
-* Making workers when about to die
+* Spamming attack orders
 * good very manny ouf speeling und gramamah
 * Google Home integration
 
