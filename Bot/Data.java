@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import bwapi.Game;
 import bwapi.Player;
 import bwapi.Position;
+import bwapi.Race;
 import bwapi.Unit;
 import bwapi.UnitType;
 
@@ -29,6 +30,7 @@ public class Data {
 	ArrayList<UnitType> enemyDTypes;
 	int enemyScore;
 	int myScore;
+	Race enemyRace;
 	
 	public Data(Game gaem, BWEM b, Base myBasee){
 		this.game = gaem;
@@ -49,6 +51,7 @@ public class Data {
 		this.enemyDTypes = new ArrayList<UnitType>();
 		this.enemyScore = 0;
 		this.myScore = 0;
+		this.enemyRace = game.enemy().getRace();
 		ArrayList<Base> Expands = new ArrayList<Base>();
 		DoTheThing();
 	}
@@ -135,6 +138,9 @@ public class Data {
 	void newEnemyBuilding(Unit unit){
 		if(!this.enemyBuildings.contains(unit)){
 			this.enemyBuildings.add(unit);
+			if(!this.enemyRace.equals(unit.getPlayer().getRace() ) ){
+				this.enemyRace = unit.getPlayer().getRace();
+			}
 			//System.out.println("Enemy Building Discovered: " + unit.getType().toString());
 		}
 	}
@@ -142,8 +148,9 @@ public class Data {
 	void newEnemyBase(Base unit){
 		if(!this.enemyBases.contains(unit)){
 			this.enemyBases.add(unit);
-			if(this.Expands.contains(unit)){
-				this.Expands.remove(unit);
+			Base bass = getClosestBaseLocation(unit.getCenter());
+			if(this.Expands.contains(bass)){
+				this.Expands.remove(bass);
 			}
 		}
 	}

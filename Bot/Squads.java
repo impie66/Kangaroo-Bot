@@ -91,9 +91,14 @@ void onFrame(){
 	
 	
 	for(Unit unit : new ArrayList<>(flee.keySet())){
-		if(this.flee.get(unit) >= game.getFrameCount()){
+		int a = this.flee.get(unit);
+		int left = a - game.getFrameCount();
+		game.drawTextMap(unit.getPosition(), "" + left);
+		if(a <= game.getFrameCount()){
 			this.flee.remove(unit);
 		}
+		
+	
 	}
 	
 	if(this.detector != null && !this.units.isEmpty()){
@@ -126,15 +131,17 @@ void onFrame(){
 	
 	if(!this.units.isEmpty()){
 		for(Unit unit : new ArrayList<>(this.units)){
-			if(unit.getType().equals(UnitType.Zerg_Lurker) && unit.isUnderAttack() && !unit.isBurrowed()){
+			if(unit.getType().equals(UnitType.Zerg_Lurker) && !unit.isUnderAttack() && !unit.isBurrowed()){
 				unit.burrow();
 			}
 			
-			if(unit.isBurrowed()){
-				if(!EnemysNearby(unit.getPosition(), 300) && unit.canUnburrow()){
+			if(unit.getType().equals(UnitType.Zerg_Lurker) && unit.isBurrowed()){
+				WeaponType type = unit.getType().groundWeapon();
+				if(!EnemysNearbyInWeaponRange(type, unit)){
 					unit.unburrow();
 				}
 			}
+			
 		}
 	}
 	
@@ -148,8 +155,6 @@ boolean isDefending(){
 	
 	return false;
 }
-
-
 
 void setState(int state){
 	this.State = state;
@@ -201,7 +206,6 @@ int getSquadScore(){
 	if(this.units.isEmpty()){
 		return i;
 	}
-	
 	for(Unit unit : new ArrayList<Unit>(this.units)){
 		i = i + getScoreOf(unit);
 	}
@@ -226,7 +230,6 @@ void absorbUnit(Unit unit){
 }
 
 int SquadsAverageDistTo(Position pos){
-	
 	int ffinal = 0;
 	int i = this.getUnitSize();
 	int o = 0;
@@ -239,24 +242,32 @@ int SquadsAverageDistTo(Position pos){
 
 void Regroup(Position pos){
 		if(this.units.isEmpty() == false){
+			
 			for(Unit unit : new ArrayList<>(this.units)){
-				if(unit.isIdle()){
-					unit.move(pos);
-				}
-				if(unit.getOrderTargetPosition()!=pos){
-				unit.move(pos);
-				}
 				
-				if(unit.isBurrowed() && unit.canUnburrow()){
-					unit.unburrow();
+				int dist = unit.getPosition().getApproxDistance(pos);
+				
+				if(!this.flee.containsKey(unit)){
+					if(unit.isIdle() && dist >= 100){
+						unit.move(pos);
+					}
+					
+					if(unit.getOrderTargetPosition().getApproxDistance(pos) > 100){
+					unit.move(pos);
+					}
+					
+					if(unit.isBurrowed() && unit.canUnburrow() && !isInCombat(unit)){
+						unit.unburrow();
+					}
 				}
 			}
+			
 		}
 }
 
-boolean shouldRegroup(){
+boolean shouldRegroup(){	
 	Position pos = this.target;
-	if(SquadsAverageDistTo(this.getUnits().get(0).getPosition())>=200){
+	if(SquadsAverageDistTo(this.getUnits().get(0).getPosition())>=100 + (this.getUnitSize() * 2)){
 		return true;
 	}
 	else {
@@ -270,19 +281,17 @@ void squadMicro(){
 		Regroup(this.getUnits().get(0).getPosition());
 	}
 	
-	if(this.target == null && State == 1){
-		if(myData.nextAttackPosition==null){
-			this.target = myData.nextAttackPosition;
+	if(this.target == null && this.State == 1){
+		if(myData.nextAttackPosition!=null){
+			this.target = this.myData.nextAttackPosition;
 		}
 	}
 	
-	if(this.isAtTarget(false) && myData.nextAttackPosition != null && this.State == 1){
+	if(isAtTarget(false) && this.myData.nextAttackPosition != null && this.State == 1){
 		System.out.println("is at Target: " + this.id);
-		this.target = myData.nextAttackPosition;
+		this.target = this.myData.nextAttackPosition;
 	}
 	
-
-		
 	if(this.State == 1 && this.target!=null){
 		// attacking
 		for(Unit unit : new ArrayList<>(this.units)){
@@ -310,7 +319,15 @@ void squadMicro(){
 		}
 	}
 	
-	
+	//general loop
+	for(Unit unit : new ArrayList<>(this.units)){
+		if(unit.getType().equals(UnitType.Zerg_Lurker)){
+			WeaponType type = unit.getType().groundWeapon();
+			if(EnemysNearbyInWeaponRange(type, unit) && unit.canBurrow()){
+				unit.burrow();
+			}
+		}
+	}
 	
 }
 	
@@ -324,6 +341,7 @@ public boolean IsAttackMoving(Unit unit){
 	
 	return false;
 }
+
 
 public boolean isInCombat(Unit unit){
 	if(unit.isAttacking() || unit.isUnderAttack() || unit.isStartingAttack()){
@@ -356,7 +374,7 @@ boolean isAtTarget(boolean idle){
 				}
 			}
 		}
-		
+		System.out.println("Is at Target i: " + i + " / " + max);
 		if(i>=max){
 			return true;
 		}
@@ -384,13 +402,25 @@ void operate(){
 					unit.attack(this.target);
 					}
 				}
+					
+				if(unit.getType().equals(UnitType.Zerg_Lurker) && !unit.isMoving() && !isInCombat(unit)){
+					unit.move(this.target);
+				}
+				
 			}
 		}
 		
 		if(this.detector!=null){
-			this.detector.move(this.target);
+			if(!this.units.isEmpty() && !this.detector.isMoving()){
+			this.detector.move(this.units.get(0).getPosition());
+			}
+			else {
+				if(!this.detector.isMoving()){
+				this.detector.move(this.target);
+				}
+			}
+			
 		}
-		
 		
 		
 	}
@@ -443,6 +473,18 @@ boolean EnemysNearby(Position pos){
 
 boolean EnemysNearby(Position pos, int max){
 	ArrayList<Unit> units = new ArrayList<> (game.getUnitsInRadius(pos, max));
+		for(Unit unit : units){
+			if(game.enemies().contains(unit.getPlayer())){
+				return true;
+			}
+		}
+		
+		return false;
+	
+}
+
+boolean EnemysNearbyInWeaponRange(WeaponType type, Unit unitt){
+	ArrayList<Unit> units = new ArrayList<> (unitt.getUnitsInWeaponRange(type));
 		for(Unit unit : units){
 			if(game.enemies().contains(unit.getPlayer())){
 				return true;

@@ -10,6 +10,7 @@ import bwapi.Game;
 import bwapi.Order;
 import bwapi.Player;
 import bwapi.Position;
+import bwapi.Race;
 import bwapi.TechType;
 import bwapi.TilePosition;
 import bwapi.Unit;
@@ -156,17 +157,27 @@ public class Bot implements BWEventListener {
     	StringBuilder cqs = new StringBuilder("Construction Queue:\n");
     	StringBuilder cqss = new StringBuilder("Unit Queue:\n");
     	StringBuilder sqs = new StringBuilder("Squads:\n");
-    	game.drawTextScreen(250, 10, "LeapingDingoAI (fortunally) lagging the game with " + game.getAPM() + " APM.");
-    	game.drawTextScreen(250, 40, "Versing " + game.enemy().getName() + " playing as: " + game.enemy().getRace());
+    	game.drawTextScreen(150, 10, "LeapingDingoAI (fortunally) lagging the game with " + game.getAPM() + " APM.");
+    	game.drawTextScreen(150, 30, "Versing " + game.enemy().getName() + " playing as: " + myData.enemyRace.toString());
     	
        if(UQ.isEmpty() == false){
     	   UnitType next = UQ.get(0);
     	   for(Unit unit : Production){
-    		   if(unit.canTrain(next) && unit.isIdle() == true){
-    			   unit.train(next);
-    			   if(!UQ.isEmpty()){
-    			   UQ.remove(0);
-    			   }
+    		   if(unit.getType().equals(UnitType.Zerg_Hatchery) || unit.getType().equals(UnitType.Zerg_Lair) ){
+	    		   if(unit.canTrain(next)){
+	    			   unit.train(next);
+	    			   if(!UQ.isEmpty()){
+	    			   UQ.remove(0);
+	    			   }
+	    		   }
+    		   }
+    		   else {
+	    		   if(unit.canTrain(next) && unit.isIdle() == true){
+	    			   unit.train(next);
+	    			   if(!UQ.isEmpty()){
+	    			   UQ.remove(0);
+	    			   }
+	    		   }
     		   }
     	   }
        }
@@ -184,8 +195,8 @@ public class Bot implements BWEventListener {
    		   for(UnitType type : myData.enemyDTypes){
    			   enemies.add(type);
    		   }
-   		  manager.globalEvaluate(myData.myMilUnits, enemies);
-   		  //manager.simBattle(myData.myMilUnits, enemies);
+   		  //manager.globalEvaluate(myData.myMilUnits, enemies);
+   		  manager.simBattle(myData.myMilUnits, enemies);
    		   System.out.println("Can Win Global: " + manager.canWin);
 		   if(manager.canWin == true){
 		    	allSquadsAttack();
@@ -313,8 +324,8 @@ public class Bot implements BWEventListener {
       }
          
       for(Squad sq : Squads){
-    	  
     	  sq.onFrame();
+    	  
     	  if(!sq.getUnits().isEmpty()){
     		 Unit leader = sq.getUnits().get(0);
     		game.drawTextMap(leader.getPosition(), "Squad: " + sq.id + "  " + "Units: " + sq.getUnitSize() + " / 25");
@@ -533,7 +544,7 @@ public class Bot implements BWEventListener {
     		 // if the enemy is scouted
     		 if(!scouter.equals(null) && !scouter.getType().isBuilding()){
     		 // move around and do shit
-	    		if(!myData.enemyBases.isEmpty() && myUnit.isMoving()){
+	    		if(!myData.enemyBases.isEmpty() && !myUnit.isMoving()){
 	    			for(Base bass : myData.enemyBases){
 	    			Position one = bass.getArea().getTopLeft().toPosition();
 	    			Position two = bass.getArea().getBottomRight().toPosition();
@@ -595,8 +606,9 @@ public class Bot implements BWEventListener {
 
 	@Override
 	public void onUnitComplete(Unit unit) {
+		
 		if(unit.getPlayer().equals(self)){
-			  		
+			
     		if(IsMilitrayUnit(unit)){
     			assignUnit(unit);
     		}
@@ -791,8 +803,9 @@ public class Bot implements BWEventListener {
     		
 		}
 		
-		if(isPQueued(unit.getType())){
+		if(placements.contains(unit.getType())){
 			pBuildings.remove(0);
+			placements.remove(unit.getType());
 			sMins=sMins-unit.getType().mineralPrice();
 			sGas=sGas-unit.getType().gasPrice();
 		}
@@ -1159,7 +1172,7 @@ public class Bot implements BWEventListener {
 		
 		for(Squad squad : Squads){
 			if(squad.getTarget() != null){
-				if(squad.getTarget().getDistance(pos) < 800){
+				if(squad.getTarget().getDistance(pos) < 400){
 					return squad;
 				}
 			}
@@ -1193,7 +1206,7 @@ public class Bot implements BWEventListener {
 	void allSquadsAttack(){
 		for(Squad squad : Squads){
 			squad.setState(1);
-			if(myData.nextAttackPosition != null && squad.target != myData.nextAttackPosition){
+			if(myData.nextAttackPosition != null ){
 				squad.target = myData.nextAttackPosition;
 			}
 			squad.operate();
@@ -1243,15 +1256,12 @@ public class Bot implements BWEventListener {
 					for(int i = 0; i < 4; i++){
 						UQ.add(UnitType.Zerg_Hydralisk);
 					}
-					for(int i = 0; i < 12; i++){
-						UQ.add(UnitType.Zerg_Zergling);
-					}
 					for(int i = 0; i < 6; i++){
-						UQ.add(UnitType.Zerg_Drone);
+						UQ.add(UnitType.Zerg_Zergling);
 					}
 				}
 				
-				if(self.hasResearched(TechType.Lurker_Aspect) && !morphQueue.contains(UnitType.Zerg_Lurker) && self.allUnitCount(UnitType.Zerg_Lurker) <= 9){
+				if(self.hasResearched(TechType.Lurker_Aspect) && !morphQueue.contains(UnitType.Zerg_Lurker) && self.allUnitCount(UnitType.Zerg_Lurker) <= 5){
 					morphQueue.add(UnitType.Zerg_Lurker);
 				}
 			}
@@ -1261,22 +1271,26 @@ public class Bot implements BWEventListener {
 			// If we are currently behind in military strength
 				if(self.completedUnitCount(UnitType.Zerg_Ultralisk_Cavern) > 0){
 					UQ.add(UnitType.Zerg_Ultralisk);
+					// ALWAYS BUILD ULTRAS CAUSE WHY NOT
 				}
 				
-				if(self.hasResearched(TechType.Lurker_Aspect) && !morphQueue.contains(UnitType.Zerg_Lurker) && self.allUnitCount(UnitType.Zerg_Lurker) <= 9){
+				if(self.hasResearched(TechType.Lurker_Aspect) && !morphQueue.contains(UnitType.Zerg_Lurker) && self.allUnitCount(UnitType.Zerg_Lurker) <= 5){
 					morphQueue.add(UnitType.Zerg_Lurker);
+					// NEED ME SOME SPINY BOIS
 				}
 				
+				if(myData.enemyRace.equals(Race.Protoss)){
+					// Hydra Spam
 				if(self.completedUnitCount(UnitType.Zerg_Hydralisk_Den) == 0){
 					for(int i = 0; i < 4; i++){
 					UQ.add(UnitType.Zerg_Zergling);
 					}
 				}
 				else{
-					for(int i = 0; i < 4; i++){
+					for(int i = 0; i < 8; i++){
 						UQ.add(UnitType.Zerg_Hydralisk);
 					}
-					for(int i = 0; i < 12; i++){
+					for(int i = 0; i < 6; i++){
 						UQ.add(UnitType.Zerg_Zergling);
 					}
 					
@@ -1286,6 +1300,52 @@ public class Bot implements BWEventListener {
 						}
 					}
 			}
+				
+			if(myData.enemyRace.equals(Race.Terran)){	
+				if(self.completedUnitCount(UnitType.Zerg_Hydralisk_Den) == 0){
+					for(int i = 0; i < 10; i++){
+					UQ.add(UnitType.Zerg_Zergling);
+					}
+				}
+				else{
+					for(int i = 0; i < 3; i++){
+						UQ.add(UnitType.Zerg_Hydralisk);
+					}
+					for(int i = 0; i < 20; i++){
+						UQ.add(UnitType.Zerg_Zergling);
+					}
+					
+					if(self.allUnitCount(UnitType.Zerg_Drone) <= max - 3){
+						UQ.add(UnitType.Zerg_Drone);
+						UQ.add(UnitType.Zerg_Drone);
+						}
+					}
+			}
+					
+			if(myData.enemyRace.equals(Race.Zerg) || myData.enemyRace.equals(Race.Unknown)){	
+				if(self.completedUnitCount(UnitType.Zerg_Hydralisk_Den) == 0){
+					for(int i = 0; i < 4; i++){
+					UQ.add(UnitType.Zerg_Zergling);
+					}
+				}
+				else{
+					for(int i = 0; i < 8; i++){
+						UQ.add(UnitType.Zerg_Hydralisk);
+					}
+					for(int i = 0; i < 6; i++){
+						UQ.add(UnitType.Zerg_Zergling);
+					}
+					
+					if(self.allUnitCount(UnitType.Zerg_Drone) <= max - 3){
+						UQ.add(UnitType.Zerg_Drone);
+						UQ.add(UnitType.Zerg_Drone);
+						}
+					}
+			}
+		
+		// end of else	
+		
+		}
 
 	
 		}
@@ -1352,8 +1412,19 @@ public class Bot implements BWEventListener {
 			// do nothing for now
 		}
 		
+		
 		for(Unit unit : ass2){
 			eScore = eScore + manager.getScoreOf(unit);
+		}
+		
+		if(myData.enemyScore >= myData.myScore){
+			for(Squad squad : Squads){
+				squad.target = pos;
+				squad.setState(2);
+				squad.operate();
+				// 0 = idle, 1 = attacking, 2 is attacking;
+			}
+			return;
 		}
 		
 		if(GlobalState == 1){
@@ -1489,7 +1560,7 @@ public class Bot implements BWEventListener {
 		    					 // URAAAAAAAAAAAAAAAAAAAAA
 		    					 Squad SQ = getSquad(myUnit);
 		    					 if(SQ != null){
-		    						 SQ.newRetreater(unit, 200);
+		    						 SQ.newRetreater(unit, game.getFrameCount() + 200);
 		    						 System.out.println("New retreater");
 		    					 }
 		    					 unit.move(retreat); 

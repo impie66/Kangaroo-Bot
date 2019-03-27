@@ -111,7 +111,8 @@ public class DecisionManager {
 		int myScoreAfter = 0;
 		int enemyScoreBefore = 0;
 		int enemyScoreAfter = 0;
-		int ii = 0;
+		int myScore;
+		int enemyScore;
 		simulator.reset();
 		
 		if(myUnits.isEmpty()){
@@ -119,7 +120,12 @@ public class DecisionManager {
 			return false;
 		}
 		
-		 
+		if(myData.myScore >= myData.enemyScore * 2){
+			System.out.println("Global Attack via score");
+			this.canWin = true;
+			return true;
+		}
+		
 		if(enemyUnits.isEmpty()){
 			this.canWin = true;
 			return true;
@@ -140,8 +146,13 @@ public class DecisionManager {
 		 
 		System.out.println("My Size Before: " + simulator.getAgentsA().size());
 		System.out.println("Enemy Size Before: " + simulator.getAgentsB().size());
+		//ArrayList<Agent> p1Before = new ArrayList<>(simulator.getAgentsA());
+		//ArrayList<Agent> p2Before = new ArrayList<>(simulator.getAgentsB());
 		
 		simulator.simulate(200);
+		
+		//ArrayList<Agent> p1After = new ArrayList<>(simulator.getAgentsA());
+		//ArrayList<Agent> p2After = new ArrayList<>(simulator.getAgentsB());
 		
 		for(Agent unit : simulator.getAgentsA()){
 			myScoreAfter = myScoreAfter + unit.getHealth() + unit.getShields();
@@ -151,13 +162,20 @@ public class DecisionManager {
 			enemyScoreAfter = enemyScoreAfter + unit.getHealth() + unit.getShields();
 		}
 		
-		System.out.println("My Size After: " + simulator.getAgentsA().size());
-		System.out.println("Enemy Size After: " + simulator.getAgentsB().size());
+		//System.out.println("My Size After: " + simulator.getAgentsA().size());
+		//System.out.println("Enemy Size After: " + simulator.getAgentsB().size());
 
 		int P1 = myScoreBefore - myScoreAfter;
 		int P2 = enemyScoreBefore - enemyScoreAfter;
-		System.out.println("" + P1);
-		System.out.println("" + P2);
+		System.out.println("P1 " + P1);
+		System.out.println("P2 " + P2);
+		
+		if(P1 == P2){
+			if(this.globalEvaluate(myUnits, enemyUnits) == true){
+				this.canWin = true;
+				return true;
+			}
+		}
 		
 		if(myScoreBefore == myScoreAfter && enemyScoreBefore == enemyScoreAfter){
 			if(myScoreBefore >= enemyScoreBefore){
@@ -168,7 +186,7 @@ public class DecisionManager {
 			}
 		}
 		
-		if(P1 > P2){
+		if(P1 >= P2){
 			this.canWin = true;
 			return true;
 		}
@@ -219,7 +237,10 @@ public class DecisionManager {
 			return false;
 		}
 		
-		if(myData.myScore >= myData.enemyScore * 3){
+		System.out.println("My Score: " + myData.myScore);
+		System.out.println("Enemy Score: " + myData.enemyScore);
+		
+		if(myData.myScore >= myData.enemyScore * 2){
 			System.out.println("Global Attack via score");
 		}
 					
