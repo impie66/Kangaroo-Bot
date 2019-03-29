@@ -7,7 +7,7 @@ Designed purely while sober*.
 
 
 <h1>Current Features</h1>
-
+* Building 3 overlords before hatch
 * Crashing on Null Values
 * Runs on Computer Startup
 * getBuildLocation spam
