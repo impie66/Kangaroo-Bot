@@ -1,6 +1,7 @@
 # Kangaroo-Bot
 
-A fork from McRaveZ using [jBWAPI](https://github.com/JavaBWAPI/JBWAPI)
+The big Brother of [ifBot](https://github.com/impie66/If-Bot) A fork from McRaveZ using [jBWAPI](https://github.com/JavaBWAPI/JBWAPI)
+Designed purely while sober.
 
 <h1>Current Features</h1>
 
