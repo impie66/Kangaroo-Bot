@@ -3,10 +3,11 @@
 The big Brother of [IfBot](https://github.com/impie66/If-Bot) 
 A fork from McRaveZ using [jBWAPI](https://github.com/JavaBWAPI/JBWAPI)
 
-Designed purely while sober*.
+Designed purely while sober(subjected to change)
 
 
 <h1>Current Features</h1>
+
 * Building 3 overlords before hatch
 * Crashing on Null Values
 * Runs on Computer Startup
@@ -34,4 +35,4 @@ Designed purely while sober*.
 https://www.youtube.com/watch?v=UG3VcCAlUgE
 
 
-*subjected to change
+
