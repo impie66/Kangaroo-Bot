@@ -131,17 +131,21 @@ void onFrame(){
 	
 	if(!this.units.isEmpty()){
 		for(Unit unit : new ArrayList<>(this.units)){
-			if(unit.getType().equals(UnitType.Zerg_Lurker) && !unit.isUnderAttack() && !unit.isBurrowed()){
-				unit.burrow();
-			}
 			
 			if(unit.getType().equals(UnitType.Zerg_Lurker) && unit.isBurrowed()){
 				WeaponType type = unit.getType().groundWeapon();
-				if(!EnemysNearbyInWeaponRange(type, unit)){
+				if(!EnemysNearby(unit.getPosition(), 200)){
 					unit.unburrow();
 				}
 			}
 			
+				if(unit.getType().equals(UnitType.Zerg_Lurker) && !unit.isBurrowed()){
+					WeaponType type = unit.getType().groundWeapon();
+					if(EnemysNearby(unit.getPosition(), 200) && unit.canBurrow()){
+						unit.burrow();
+					}
+				}
+								
 		}
 	}
 	
@@ -267,7 +271,7 @@ void Regroup(Position pos){
 
 boolean shouldRegroup(){	
 	Position pos = this.target;
-	if(SquadsAverageDistTo(this.getUnits().get(0).getPosition())>=100 + (this.getUnitSize() * 2)){
+	if(SquadsAverageDistTo(this.getUnits().get(0).getPosition())>=150 + (this.getUnitSize() * 2)){
 		return true;
 	}
 	else {
@@ -277,9 +281,18 @@ boolean shouldRegroup(){
 
 void squadMicro(){
 	
-	if(shouldRegroup()){
+	if(shouldRegroup() && SquadsAverageDistTo(this.retreatPos) > 2000 && this.State == 1){
 		Regroup(this.getUnits().get(0).getPosition());
 	}
+	
+	targetChecking();
+	
+	
+	if(this.State == 2 && !EnemysNearby(this.target, 500)){
+		this.State = 0;
+		this.retreat();
+	}
+	
 	
 	if(this.target == null && this.State == 1){
 		if(myData.nextAttackPosition!=null){
@@ -319,15 +332,7 @@ void squadMicro(){
 		}
 	}
 	
-	//general loop
-	for(Unit unit : new ArrayList<>(this.units)){
-		if(unit.getType().equals(UnitType.Zerg_Lurker)){
-			WeaponType type = unit.getType().groundWeapon();
-			if(EnemysNearbyInWeaponRange(type, unit) && unit.canBurrow()){
-				unit.burrow();
-			}
-		}
-	}
+
 	
 }
 	
@@ -485,6 +490,7 @@ boolean EnemysNearby(Position pos, int max){
 
 boolean EnemysNearbyInWeaponRange(WeaponType type, Unit unitt){
 	ArrayList<Unit> units = new ArrayList<> (unitt.getUnitsInWeaponRange(type));
+		System.out.println("Lurker Size: " + units.size());
 		for(Unit unit : units){
 			if(game.enemies().contains(unit.getPlayer())){
 				return true;
@@ -508,6 +514,52 @@ void removeFlee(Unit unit){
 	if(flee.containsKey(unit)){
 		flee.remove(unit);
 	}
+}
+
+void targetChecking(){
+	ArrayList<Unit> checked = new ArrayList<>();
+	for(Unit unit : new ArrayList<>(this.units)){
+	 ArrayList<Unit> enemy = myData.GetEnemyUnitsNearby(unit.getPosition(), 300, true);
+		for(Unit enemies : enemy){
+			if(game.enemies().contains(unit.getPlayer()) && ShouldBeFocused(enemies)){
+				if(unit.isInWeaponRange(enemies)){
+					unit.attack(enemies);
+					break;
+				}
+			}	
+		}
+	}
+}
+
+public boolean ShouldBeFocused(Unit weeheads){
+	
+	if(weeheads.getType() == UnitType.Terran_Vulture_Spider_Mine){
+		return true;
+	}
+	
+	if(weeheads.getType() == UnitType.Zerg_Lurker){
+		return true;
+	}
+	
+	if(weeheads.getType() == UnitType.Terran_SCV && weeheads.isRepairing() == true){
+		return true;
+	}
+	
+	if(weeheads.getType() == UnitType.Terran_Medic){
+		return true;
+	}
+	
+	if(weeheads.getType() == UnitType.Protoss_High_Templar){
+		return true;
+	}
+	
+	if(weeheads.getType() == UnitType.Protoss_Carrier){
+		return true;
+	}
+	
+
+	return false;
+	
 }
 
 

@@ -101,10 +101,8 @@ Game game;
 	
 	void DoThingsYouLazyCunt(Unit worker){
 		
-		if(voidedWorkers.contains(worker)){
-			return;
-		}
-		
+		if(!voidedWorkers.contains(worker)){
+
 		if(this.Gases.isEmpty() == false && this.Pawns.size() >= 6){
 			for(Unit unit : this.Gases){
 				if(isGas(unit)){
@@ -138,6 +136,8 @@ Game game;
 				worker.gather(closestMineral, false);
 			}
 		}
+		
+	}
 	
 	
 	boolean isGas(Unit unit){

@@ -179,7 +179,6 @@ public class Data {
 			if(this.myMilUnits.contains(unit)){
 				this.myMilUnits.remove(unit);
 				this.myScore = this.myScore - getScoreOf(unit);
-				
 			}
 			
 			
@@ -248,6 +247,7 @@ public class Data {
 			if(!enemyDBuildings.contains(unit)){
 				enemyDBuildings.add(unit);
 				enemyDTypes.add(unit.getType());
+				this.enemyScore = this.enemyScore + getScoreOf(unit);
 			}
 		}
 	}

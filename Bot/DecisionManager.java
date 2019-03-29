@@ -120,7 +120,7 @@ public class DecisionManager {
 			return false;
 		}
 		
-		if(myData.myScore >= myData.enemyScore * 2){
+		if(myData.myScore >= myData.enemyScore * 2.5){
 			System.out.println("Global Attack via score");
 			this.canWin = true;
 			return true;
@@ -139,13 +139,13 @@ public class DecisionManager {
 		 }
 		 
 		 for(UnitType unit : enemyUnits){
-			 Agent asd = factory.of(unit);
+			 Agent asd = FogAgent(unit, game.enemy());
 			 simulator.addAgentB(asd);
 			 enemyScoreBefore = enemyScoreBefore + asd.getHealth() + asd.getShields();
 		 }
 		 
 		System.out.println("My Size Before: " + simulator.getAgentsA().size());
-		System.out.println("Enemy Size Before: " + simulator.getAgentsB().size());
+		//System.out.println("Enemy Size Before: " + simulator.getAgentsB().size());
 		//ArrayList<Agent> p1Before = new ArrayList<>(simulator.getAgentsA());
 		//ArrayList<Agent> p2Before = new ArrayList<>(simulator.getAgentsB());
 		
@@ -164,30 +164,18 @@ public class DecisionManager {
 		
 		//System.out.println("My Size After: " + simulator.getAgentsA().size());
 		//System.out.println("Enemy Size After: " + simulator.getAgentsB().size());
-
+		
+		System.out.println("P1 Health Before: " + myScoreBefore);
+		System.out.println("P2 Health Before: " + enemyScoreBefore);
+		System.out.println("P1 Health After: " + myScoreAfter);
+		System.out.println("P2 Health after: " + enemyScoreAfter);
 		int P1 = myScoreBefore - myScoreAfter;
 		int P2 = enemyScoreBefore - enemyScoreAfter;
 		System.out.println("P1 " + P1);
 		System.out.println("P2 " + P2);
 		
-		if(P1 == P2){
-			if(this.globalEvaluate(myUnits, enemyUnits) == true){
-				this.canWin = true;
-				return true;
-			}
-		}
-		
-		if(myScoreBefore == myScoreAfter && enemyScoreBefore == enemyScoreAfter){
-			if(myScoreBefore >= enemyScoreBefore){
-				if(this.globalEvaluate(myUnits, enemyUnits) == true){
-					this.canWin = true;
-					return true;
-				}
-			}
-		}
-		
-		if(P1 >= P2){
-			this.canWin = true;
+		if(myScoreAfter >= enemyScoreAfter){
+			this.canWin = true;	
 			return true;
 		}
 		else {
@@ -228,6 +216,7 @@ public class DecisionManager {
 		
 		}
 	
+	
 	boolean globalEvaluate(ArrayList<Unit> myUnits, ArrayList<UnitType> type){
 		this.evaluator = new Evaluator();
 		ArrayList<Agent>myA = new ArrayList<>();
@@ -243,7 +232,7 @@ public class DecisionManager {
 		if(myData.myScore >= myData.enemyScore * 2){
 			System.out.println("Global Attack via score");
 		}
-					
+			
 		 for(Unit unit : myUnits){
 			 Agent asd = factory.of(unit);
 			 myA.add(asd);
@@ -256,24 +245,97 @@ public class DecisionManager {
 		 }
 		 
 		 for(UnitType unit : myData.enemyDTypes){
-			 Agent asd = factory.of(unit);
+			 Agent asd = FogAgent(unit, game.enemy());
 			 enemyA.add(asd);
 		 }
 		 
 		//System.out.println("myUnits Size " + myUnits.size());
 		//System.out.println("Type Size: " + type.size());
+		 
 		double score = evaluator.evaluate(myA, enemyA);
 		System.out.println("Global Score: " + score);
-		if(score >= 0.35){
-		this.canWin = true;
-		return true;
+		if(score >= 0.25){
+			// if we can win
+			this.canWin = true;
+			return true;
 		}
 		else {
-		this.canWin = false;
-		return false;
+			// if we can't
+			this.canWin = false;
+			return false;
 		}
+		
 	}
 		
+	Agent FogAgent(UnitType unit, Player ply){
+		 Agent asd = factory.of(unit);
+		 asd.setHealth(unit.maxHitPoints());
+		 asd.setMaxHealth(unit.maxHitPoints());
+		 asd.setSpeed((float) unit.topSpeed());
+		 asd.setMaxShields(unit.maxShields());
+		 if(unit.isFlyer()){
+			 asd.setFlyer(true);
+		 }
+		 else {
+			 asd.setFlyer(false);
+		 }
+		 
+		 if(unit.equals(UnitType.Zerg_Scourge)){
+			 asd.setSuicider(true);
+		 }
+		 else {
+			 asd.setSuicider(false);
+		 }
 
+		 Race race = myData.enemyRace;
+		 
+		 
+		 
+		 
+		 if(race.equals(Race.Zerg)){
+			 asd.setArmor(ply.getUpgradeLevel(UpgradeType.Zerg_Carapace));
+			 asd.setRegeneratesHealth(true);
+			 if(unit.equals(UnitType.Zerg_Lurker)){
+				 asd.setBurrowedAttacker(true);
+				 
+			 }
+			 else {
+				 asd.setBurrowedAttacker(false);
+			 }
+			 
+		 }
+		 
+		 if(race.equals(Race.Terran)){
+			 if(!unit.isMechanical()){
+				 // if bio
+				 asd.setArmor(ply.getUpgradeLevel(UpgradeType.Terran_Infantry_Armor));
+				 if(ply.hasResearched(TechType.Stim_Packs)){
+					 asd.setCanStim(true);
+				 }
+				 else {
+					 asd.setCanStim(false);
+				 }
+
+			 }
+			 else {
+				 // if vic
+				 asd.setArmor(ply.getUpgradeLevel(UpgradeType.Terran_Vehicle_Plating)); 
+			 }
+			 
+		 }
+		 
+		 if(race.equals(Race.Protoss)){
+			 if(!unit.isFlyer()){
+				 asd.setArmor(ply.getUpgradeLevel(UpgradeType.Protoss_Ground_Armor));
+			 }
+			 else {
+				asd.setArmor(ply.getUpgradeLevel(UpgradeType.Protoss_Air_Armor));
+			 }
+			 asd.setShieldUpgrades(ply.getUpgradeLevel(UpgradeType.Protoss_Plasma_Shields));
+			 
+		 }
+		 
+		 return asd;
+	}
 		
 }

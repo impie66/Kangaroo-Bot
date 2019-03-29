@@ -64,6 +64,7 @@ public class Bot implements BWEventListener {
 	Base myStartLocation;
 	int baseCheck = 0;
 	int improveCheck = 0;
+	int defenceCheck = 0;
 	static BWEM bewb;
 	
     Bot() {
@@ -156,9 +157,9 @@ public class Bot implements BWEventListener {
     public void onFrame() {
     	StringBuilder cqs = new StringBuilder("Construction Queue:\n");
     	StringBuilder cqss = new StringBuilder("Unit Queue:\n");
-    	StringBuilder sqs = new StringBuilder("Squads:\n");
     	game.drawTextScreen(150, 10, "LeapingDingoAI (fortunally) lagging the game with " + game.getAPM() + " APM.");
-    	game.drawTextScreen(150, 30, "Versing " + game.enemy().getName() + " playing as: " + myData.enemyRace.toString());
+    	game.drawTextScreen(150, 20, "Versing " + game.enemy().getName() + " playing as: " + myData.enemyRace.toString());
+    	game.drawTextScreen(150, 30, "Debug:" + " My Units Size: " + myData.myMilUnits.size());
     	
        if(UQ.isEmpty() == false){
     	   UnitType next = UQ.get(0);
@@ -188,15 +189,15 @@ public class Bot implements BWEventListener {
    	   if(game.getFrameCount() >= winCheck){
    		   winCheck = game.getFrameCount() + 250;
    		   ArrayList<UnitType> enemies = new ArrayList<>();
-   		   
    		   for(UnitType unit : myData.enemyTypes){
    			   enemies.add(unit);
    		   }
    		   for(UnitType type : myData.enemyDTypes){
    			   enemies.add(type);
    		   }
+   		   
    		  //manager.globalEvaluate(myData.myMilUnits, enemies);
-   		  manager.simBattle(myData.myMilUnits, enemies);
+   		   manager.simBattle(myData.myMilUnits, enemies);
    		   System.out.println("Can Win Global: " + manager.canWin);
 		   if(manager.canWin == true){
 		    	allSquadsAttack();
@@ -211,7 +212,7 @@ public class Bot implements BWEventListener {
     
    	   if(game.getFrameCount() >= simCheck){
    		GlobalSimCheck();
-   		simCheck = simCheck + 100;
+   		simCheck = simCheck + 75;
    	   }
        
        myData.onFrame();
@@ -235,7 +236,7 @@ public class Bot implements BWEventListener {
     	  boolean cont = true;
     	  if(item.equals(self.getRace().getRefinery()) && AllGeysersBuilt()){
     		  pBuildings.remove(0);
-    		  System.out.println("Removed unnesscary refinery queued");
+    		  //System.out.println("Removed unnesscary refinery queued");
     	  }
     	  if(creep == true){
     		  if(!game.hasCreep(where)){
@@ -340,8 +341,7 @@ public class Bot implements BWEventListener {
     	  }
       }
       
-      game.drawTextScreen(10, 500, sqs.toString());
-              
+           
       if(!Expands.isEmpty()){
     	  int i = 0;
 	      for(Base bass : Expands){
@@ -443,11 +443,11 @@ public class Bot implements BWEventListener {
     	 if(myUnit.isSelected() && IsMilitrayUnit(myUnit)){
     		 Squad sq =  getSquad(myUnit);
     		 if(sq==null){
-   			 System.out.println("Unit: " + myUnit.getID() + " Squads is null"); 
+   			// System.out.println("Unit: " + myUnit.getID() + " Squads is null"); 
     		 }
     		 else {
-	    		 System.out.println("Unit Squad: " + sq.id);
-	    		 System.out.println("Squad State: " + sq.State);
+	    		// System.out.println("Unit Squad: " + sq.id);
+	    		 //System.out.println("Squad State: " + sq.State);
 	    		 if(sq.target != null){
 	    		 game.drawLineMap(myUnit.getPosition(), sq.target, Color.Purple);
 	    		 }
@@ -557,7 +557,8 @@ public class Bot implements BWEventListener {
     	 }
     	 
     	 
-    	 if(myUnit.getType().isWorker() && myUnit.isUnderAttack() == true){
+    	 if(myUnit.getType().isWorker() && myUnit.isUnderAttack() == true && defenceCheck < game.getFrameCount()){
+    		 defenceCheck = game.getFrameCount() + 24;
     		 if(scouter == null){
     			 DefenceCall(myUnit.getPosition());
     		 }
@@ -568,6 +569,13 @@ public class Bot implements BWEventListener {
     	 
     	 if(myUnit.getType().isBuilding() && myUnit.isUnderAttack() == true){
     		 DefenceCall(myUnit.getPosition());
+    	 }
+    	 
+    	 if(scouter!=null && myUnit.equals(scouter) && myUnit.exists()){
+    		 BotBase bass = getBase(myUnit);
+    		 if(!bass.voidedWorkers.contains(myUnit)){
+    			 bass.newVoidedWorker(myUnit);
+    		 }
     	 }
      
     	 //end of my units
@@ -668,7 +676,13 @@ public class Bot implements BWEventListener {
     @Override
     public void onUnitCreate(Unit unit) {
     	
+    	
+		if(IsMilitrayUnit(unit)){
+			myData.newMilUnit(unit);
+		}
+    	  	
     	if(unit.getPlayer().equals(self)){
+    		UnitType type = unit.getType();
     		
     		if(unit.getType().isResourceDepot()){
     			Base bass = getClosestBaseLocation(unit.getPosition());
@@ -678,7 +692,7 @@ public class Bot implements BWEventListener {
     			}
     		}
     		  		
-    		if(placements.contains(unit.getType())){
+    		if(pBuildings.get(0).type.equals(type) && placements.contains(type)){
     			pBuildings.remove(0);
     			placements.remove(unit.getType());
     		}
@@ -716,6 +730,10 @@ public class Bot implements BWEventListener {
 	@Override
 	public void onUnitDiscover(Unit unit) {
 		
+		if(IsMilitrayUnit(unit)){
+			myData.newMilUnit(unit);
+		}
+		
     	if(game.enemies().contains(unit.getPlayer())){
     		if(unit.getType().isBuilding() == true){
     			if(myData.enemyBuildings.isEmpty() && !scouter.equals(null)){
@@ -744,11 +762,11 @@ public class Bot implements BWEventListener {
     		
     		// end of enemy units
     	}
-  	
+    	
 		if(IsMilitrayUnit(unit)){
 			myData.newMilUnit(unit);
 		}
-		
+  			
 	}
 
 	@Override
@@ -759,9 +777,15 @@ public class Bot implements BWEventListener {
 
 	@Override
 	public void onUnitMorph(Unit unit) {
+		UnitType type = unit.getType();
 		
-		if(unit.getType().isRefinery() && unit.getPlayer().equals(self)){
-			if(isPQueued(unit.getType()) == true){
+		if(IsMilitrayUnit(unit)){
+			myData.newMilUnit(unit);
+		}
+		
+		
+		if(type.isRefinery() && unit.getPlayer().equals(self)){
+			if(pBuildings.get(0).type.equals(type)){
 				pBuildings.remove(0);
 				placements.remove(unit.getType());
 				constructors.remove(unit.getType());
@@ -785,6 +809,7 @@ public class Bot implements BWEventListener {
 		
 		
 		if(unit.getPlayer().equals(self)){
+	
 			
     		if(unit.getType().isResourceDepot()){
     			Base bass = getClosestBaseLocation(unit.getPosition());
@@ -801,15 +826,21 @@ public class Bot implements BWEventListener {
     			globalRetreat = unit.getPosition();
     		}
     		
+    		if(pBuildings.get(0).type.equals(type) && placements.contains(type)){
+    			pBuilding p = getPBuilding(type);
+    			placements.remove(unit.getType());
+    			if(p != null){
+    				pBuildings.remove(p);
+    			}
+    			else {
+    				pBuildings.remove(0);
+    			}
+
+    		}
+    		
+    		
 		}
-		
-		if(placements.contains(unit.getType())){
-			pBuildings.remove(0);
-			placements.remove(unit.getType());
-			sMins=sMins-unit.getType().mineralPrice();
-			sGas=sGas-unit.getType().gasPrice();
-		}
-		
+				
 		if(assignedToBase(unit)){
 			BotBase bass = getBase(unit);
 			if(bass != null){
@@ -1269,7 +1300,7 @@ public class Bot implements BWEventListener {
 		}
 		else {
 			// If we are currently behind in military strength
-				if(self.completedUnitCount(UnitType.Zerg_Ultralisk_Cavern) > 0){
+				if(self.completedUnitCount(UnitType.Zerg_Ultralisk_Cavern) > 0 && self.allUnitCount(UnitType.Zerg_Ultralisk) <= 5){
 					UQ.add(UnitType.Zerg_Ultralisk);
 					// ALWAYS BUILD ULTRAS CAUSE WHY NOT
 				}
@@ -1460,7 +1491,7 @@ public class Bot implements BWEventListener {
 		if(breaking != true){
 		int newscore = 0;
 		ArrayList<Unit> list = new ArrayList<>();
-		for(Unit unit : myData.myMilUnits){
+		for(Unit unit : new ArrayList<>(myData.myMilUnits)){
 			if(!list.contains(unit)){
 				list.add(unit);
 				newscore = newscore + manager.getScoreOf(unit);
@@ -1524,6 +1555,7 @@ public class Bot implements BWEventListener {
 	}
 	
 	
+	
 	public void squadDebug() {
 		for(Squad sq : Squads){
    		 System.out.println("Squad State: " + sq.State);
@@ -1552,7 +1584,7 @@ public class Bot implements BWEventListener {
 	    		 if(!canWin){
 	    			System.out.println("Can Win: " + canWin);
 	    			 if(!enemy.isEmpty()){
-	    				 System.out.println("Enemies is not empty");
+	    				// System.out.println("Enemies is not empty");
 		    			 for(Unit unit : mine){
 	        				 Position retreat = self.getStartLocation().toPosition();
 		    				 if(myUnit.getPosition().getApproxDistance(self.getStartLocation().toPosition()) > 2000){
@@ -1561,10 +1593,10 @@ public class Bot implements BWEventListener {
 		    					 Squad SQ = getSquad(myUnit);
 		    					 if(SQ != null){
 		    						 SQ.newRetreater(unit, game.getFrameCount() + 200);
-		    						 System.out.println("New retreater");
+		    						// System.out.println("New retreater");
 		    					 }
 		    					 unit.move(retreat); 
-		    					 System.out.println("Move");
+		    					// System.out.println("Move");
 		    					 if(unit.isBurrowed() && unit.canUnburrow()){
 		    						 unit.unburrow();
 		    					 }
@@ -1587,11 +1619,7 @@ public class Bot implements BWEventListener {
     					 if(SQ != null){
     						 SQ.removeFlee(unit);
     					 }
-    					 
-    					 if(unit.getType().equals(UnitType.Zerg_Lurker) && !unit.isBurrowed() && unit.canBurrow(true)){
-    						 unit.burrow();
-    					 }
-    					 
+    					    					 
     					 if(!unit.isAttacking() && ey != null){
     						 unit.attack(ey);
     					 }
