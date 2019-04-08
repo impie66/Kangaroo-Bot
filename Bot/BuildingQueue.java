@@ -3,6 +3,13 @@ package Bot;
 import bwapi.*;
 import Bot.*;
 
+
+
+
+// LOVE ME BABY BABY
+// GIVE ME VERY VERY
+
+
 public class BuildingQueue{
 UnitType type;
 TilePosition pos;
@@ -49,4 +56,5 @@ TilePosition getPos(){
 boolean checkIfBuilt(){
 	return this.checkIfBuilt;
 }
+
 }

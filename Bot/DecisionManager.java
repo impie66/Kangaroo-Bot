@@ -120,7 +120,7 @@ public class DecisionManager {
 			return false;
 		}
 		
-		if(myData.myScore >= myData.enemyScore * 2.5){
+		if(myData.myScore >= myData.enemyScore * 2.5 + 1){
 			System.out.println("Global Attack via score");
 			this.canWin = true;
 			return true;

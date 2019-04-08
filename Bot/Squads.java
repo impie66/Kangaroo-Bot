@@ -121,10 +121,7 @@ void onFrame(){
 			}
 			
 			if(pos != null){
-				if(det.getPosition().getApproxDistance(pos) >= 100){
-				pos = this.units.get(0).getPosition();
 				det.move(pos);
-				}
 			}
 		}
 	}
@@ -271,7 +268,7 @@ void Regroup(Position pos){
 
 boolean shouldRegroup(){	
 	Position pos = this.target;
-	if(SquadsAverageDistTo(this.getUnits().get(0).getPosition())>=150 + (this.getUnitSize() * 2)){
+	if(SquadsAverageDistTo(this.getUnits().get(0).getPosition())>=75 + (this.getUnitSize() * 2)){
 		return true;
 	}
 	else {
@@ -281,7 +278,7 @@ boolean shouldRegroup(){
 
 void squadMicro(){
 	
-	if(shouldRegroup() && SquadsAverageDistTo(this.retreatPos) > 2000 && this.State == 1){
+	if(shouldRegroup() && SquadsAverageDistTo(this.retreatPos) > 2000 && this.State == 1 && !myData.enemyMilUnits.isEmpty()){
 		Regroup(this.getUnits().get(0).getPosition());
 	}
 	
@@ -294,14 +291,15 @@ void squadMicro(){
 	}
 	
 	
+	
+	
 	if(this.target == null && this.State == 1){
 		if(myData.nextAttackPosition!=null){
 			this.target = this.myData.nextAttackPosition;
 		}
 	}
 	
-	if(isAtTarget(false) && this.myData.nextAttackPosition != null && this.State == 1){
-		System.out.println("is at Target: " + this.id);
+	if(isAtTarget(true) && this.target != this.myData.nextAttackPosition && this.State == 1){
 		this.target = this.myData.nextAttackPosition;
 	}
 	

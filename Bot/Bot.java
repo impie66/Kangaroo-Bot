@@ -43,7 +43,6 @@ public class Bot implements BWEventListener {
 	ArrayList<ChokePoint> myChokes;
 	ArrayList<Squad> Squads = new ArrayList<Squad>();
 	ArrayList<Builder> builders = new ArrayList<Builder>();
-	ArrayList<Base> scouts = new ArrayList<>();
 	ArrayList<UnitType> placements = new ArrayList<>();
 	ArrayList<Unit> retreaters = new ArrayList<>();
 	ArrayList<UnitType> morphQueue = new ArrayList<>();
@@ -65,6 +64,7 @@ public class Bot implements BWEventListener {
 	int baseCheck = 0;
 	int improveCheck = 0;
 	int defenceCheck = 0;
+	int supplyCheck = 0;
 	static BWEM bewb;
 	
     Bot() {
@@ -120,9 +120,9 @@ public class Bot implements BWEventListener {
 		pBuildings.add(new pBuilding(UnitType.Zerg_Hatchery, Expands.get(0).getLocation()));
 		pBuildings.add(new pBuilding(UnitType.Zerg_Spawning_Pool, null, 300));
 		pBuildings.add(new pBuilding(UnitType.Zerg_Extractor, null));
-		pBuildings.add(new pBuilding(UnitType.Zerg_Creep_Colony, Expands.get(0).getLocation(), 6, true));
-		pBuildings.add(new pBuilding(UnitType.Zerg_Creep_Colony, Expands.get(0).getLocation(), 12, true));
-		pBuildings.add(new pBuilding(UnitType.Zerg_Creep_Colony, Expands.get(0).getLocation(), 18, true));
+		pBuildings.add(new pBuilding(UnitType.Zerg_Creep_Colony, Expands.get(0).getLocation(), 5, true));
+		pBuildings.add(new pBuilding(UnitType.Zerg_Creep_Colony, Expands.get(0).getLocation(), 10, true));
+		pBuildings.add(new pBuilding(UnitType.Zerg_Creep_Colony, Expands.get(0).getLocation(), 15, true));
 		pBuildings.add(new pBuilding(UnitType.Zerg_Hydralisk_Den, null));
 		pBuildings.add(new pBuilding(UnitType.Zerg_Evolution_Chamber, null));
 		pBuildings.add(new pBuilding(UnitType.Zerg_Hatchery, self.getStartLocation()));
@@ -159,7 +159,7 @@ public class Bot implements BWEventListener {
     	StringBuilder cqss = new StringBuilder("Unit Queue:\n");
     	game.drawTextScreen(150, 10, "LeapingDingoAI (fortunally) lagging the game with " + game.getAPM() + " APM.");
     	game.drawTextScreen(150, 20, "Versing " + game.enemy().getName() + " playing as: " + myData.enemyRace.toString());
-    	game.drawTextScreen(150, 30, "Debug:" + " My Units Size: " + myData.myMilUnits.size());
+    	game.drawTextScreen(150, 30, "Debug:" + " My Units Size: " + myData.myMilUnits.size() + " Current State: " + manager.canWin + " Frame Count: " + game.getFrameCount());
     	
        if(UQ.isEmpty() == false){
     	   UnitType next = UQ.get(0);
@@ -209,10 +209,9 @@ public class Bot implements BWEventListener {
 		   }
    	   }
 
-    
    	   if(game.getFrameCount() >= simCheck){
    		GlobalSimCheck();
-   		simCheck = simCheck + 75;
+   		simCheck = game.getFrameCount() + myData.myMilUnits.size();
    	   }
        
        myData.onFrame();
@@ -255,9 +254,6 @@ public class Bot implements BWEventListener {
     			  //TilePosition build = getBuildTile(builder, item, where, 300);
     			  TilePosition build; 
     			  if(item.requiresCreep() == true){
-    				  if(item.equals(UnitType.Zerg_Creep_Colony)){
-    					  build = game.getBuildLocation(item, where, max, true);
-    				  } 
     				// build = game.getBuildLocation(item, where, max, true);
     				  build = getBuildTile(builder, item, where, max);
     			  }
@@ -428,9 +424,9 @@ public class Bot implements BWEventListener {
      	 game.drawTextScreen(500, 100, next.toString());
      }
  	 
-     if(self.supplyUsed() >= self.supplyTotal() && myData.howManyBeingMorphed(UnitType.Zerg_Overlord) <= myBases.size() && !UQ.contains(UnitType.Zerg_Overlord) && self.supplyTotal() != 200){
-   	  UQ.add(0, UnitType.Zerg_Overlord);
-   	  return;
+     if(self.supplyUsed() >= self.supplyTotal() && supplyQueued(self.getRace().getSupplyProvider()) == false && self.supplyTotal() != 200 && game.getFrameCount() >= supplyCheck){
+      	 supplyCheck = game.getFrameCount() + 20;
+    	 UQ.add(0, UnitType.Zerg_Overlord);
      }
      
      for(Unit myUnit : self.getUnits()){
@@ -439,7 +435,6 @@ public class Bot implements BWEventListener {
     	 game.drawCircleMap(scouter.getPosition(), 60, Color.Yellow);
     	 }
 
-    	 
     	 if(myUnit.isSelected() && IsMilitrayUnit(myUnit)){
     		 Squad sq =  getSquad(myUnit);
     		 if(sq==null){
@@ -456,7 +451,7 @@ public class Bot implements BWEventListener {
     	 }
     	 
   	 
-    	 if(myUnit.getType().isWorker() == true && assignedToBase(myUnit) == false){
+    	 if(myUnit.getType().isWorker() == true && myUnit.isCompleted() && assignedToBase(myUnit) == false){
     		 assignWorkerToBase(myUnit);
     	 }
     	 
@@ -528,35 +523,14 @@ public class Bot implements BWEventListener {
     	 
     	 }
     	 	 
-    	 if(myData.enemyBuildings.isEmpty()){
-    		 // if we havent scouted anything
-    		if(!scouter.equals(null) && scouter.isMoving() == false && !scouter.getType().isBuilding()){
-   			 scouter.move(self.getStartLocation().toPosition());
-	    		 for(Base bass : myData.startLocations){
-		    		if(!game.isExplored(bass.getLocation())){
-		    			 scouter.move(bass.getCenter(), true);
-		    	     }
-	    		 }
+    	 if(myData.nextAttackPosition != null){
+    		if(scouter != null && scouter.isMoving() == false && !scouter.getType().isBuilding() && scouter.getDistance(myData.nextAttackPosition) > 100){
+    			scouter.move(myData.nextAttackPosition);
     		}
     		 
     	 }
-    	 else {
-    		 // if the enemy is scouted
-    		 if(!scouter.equals(null) && !scouter.getType().isBuilding()){
-    		 // move around and do shit
-	    		if(!myData.enemyBases.isEmpty() && !myUnit.isMoving()){
-	    			for(Base bass : myData.enemyBases){
-	    			Position one = bass.getArea().getTopLeft().toPosition();
-	    			Position two = bass.getArea().getBottomRight().toPosition();
-	    			scouter.move(one, true);
-	    			scouter.move(two, true);
-	    			}
-	    		}
-	    	 }
-    		 //end of basic scouting
-    	 }
-    	 
-    	 
+
+    	   	 
     	 if(myUnit.getType().isWorker() && myUnit.isUnderAttack() == true && defenceCheck < game.getFrameCount()){
     		 defenceCheck = game.getFrameCount() + 24;
     		 if(scouter == null){
@@ -669,7 +643,12 @@ public class Bot implements BWEventListener {
 			myData.unitDeath(unit);
 		}
 		
-		
+		if(unit.getType().isMineralField()){
+			Base bass = getClosestBaseLocation(unit.getPosition());
+			if(bass != null){
+				
+			}
+		}
 		
 	}
 	
@@ -704,17 +683,7 @@ public class Bot implements BWEventListener {
     				bass.newVoidedWorker(unit);
     			}
     		}
-    		
-    		if(unit.getType().equals(UnitType.Zerg_Overlord) && !myData.startLocations.isEmpty()){
-    			for(Base bass : myData.startLocations){
-    				if(!game.isExplored(bass.getLocation())){
-    				Position pos = bass.getCenter();
-    				unit.move(pos, true);
-    				scouts.add(bass);
-    				}
-    			}
-    		}
-    				
+    		  				
     		if(unit.getType().isWorker()){
     			assignWorkerToBase(unit);
     		}
@@ -1321,9 +1290,6 @@ public class Bot implements BWEventListener {
 					for(int i = 0; i < 8; i++){
 						UQ.add(UnitType.Zerg_Hydralisk);
 					}
-					for(int i = 0; i < 6; i++){
-						UQ.add(UnitType.Zerg_Zergling);
-					}
 					
 					if(self.allUnitCount(UnitType.Zerg_Drone) <= max - 3){
 						UQ.add(UnitType.Zerg_Drone);
@@ -1592,7 +1558,7 @@ public class Bot implements BWEventListener {
 		    					 // URAAAAAAAAAAAAAAAAAAAAA
 		    					 Squad SQ = getSquad(myUnit);
 		    					 if(SQ != null){
-		    						 SQ.newRetreater(unit, game.getFrameCount() + 200);
+		    						 SQ.newRetreater(unit, game.getFrameCount() + 100);
 		    						// System.out.println("New retreater");
 		    					 }
 		    					 unit.move(retreat); 
@@ -1679,6 +1645,40 @@ public class Bot implements BWEventListener {
 		
 		return false;
 	}
+	
+	
+	boolean supplyQueued(UnitType type){
+		
+		if(type.equals(UnitType.Zerg_Overlord)){
+			// if zerg
+			if(UQ.contains(type)){
+				return true;
+			}
+			
+			if(myData.howManyBeingMorphed(UnitType.Zerg_Overlord) > 0){
+				return true;
+			}
+
+		}
+		else {
+			 // if not
+			if(type.supplyProvided() != 0){
+				for(pBuilding p : pBuildings){
+					if(p.type.equals(type)){
+						return true;
+					}
+				}
+			}
+		}
+		
+		
+		
+		
+		return false;
+		
+	}
+	
+	
 		
 	
 }

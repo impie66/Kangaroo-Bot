@@ -53,9 +53,9 @@ Game game;
 	
 	void doThings(){
 		
-		
 		if(this.Pawns.isEmpty() == false){
 			for(Unit unit : new ArrayList<>(this.Pawns)){
+				
 				if(unit.isIdle() == true && unit.isCompleted() == true && !voidedWorkers.contains(unit)){
 					if(unit.getDistance(this.Base.getCenter()) > 500){
 						unit.move(this.Base.getCenter());
@@ -85,7 +85,12 @@ Game game;
 					this.Pawns.remove(unit);
 				}
 				
+				if(this.Pawns.size() > this.maxWorkers){
+					pawnDeath(unit);
+				}
+				
 				// end of pawn loop
+				
 				
 			}
 			
@@ -93,6 +98,8 @@ Game game;
 				ArrayList<Unit> workers = gasWorkers.get(unit);
 				game.drawTextMap(unit.getPosition(), "Workers: " + workers.size() + " /3");
 			}
+			
+
 		}
 		// update the list with the new shit
 				
@@ -104,7 +111,7 @@ Game game;
 		if(!voidedWorkers.contains(worker)){
 
 		if(this.Gases.isEmpty() == false && this.Pawns.size() >= 6){
-			for(Unit unit : this.Gases){
+			for(Unit unit : new ArrayList<Unit>(this.Gases)){
 				if(isGas(unit)){
 					if(this.gasWorkers.containsKey(unit) == true){
 						if(this.gasWorkers.get(unit).size() != 3){
@@ -122,7 +129,7 @@ Game game;
 		}
 		
 			Unit closestMineral = null;
-			for (Mineral things : this.Mins) {
+			for (Mineral things : new ArrayList<Mineral>(this.Mins)) {
 				Unit neutralUnit = things.getUnit();
 				if (neutralUnit.isBeingGathered() == false) {
 					if (closestMineral == null
@@ -154,7 +161,7 @@ Game game;
 	int workerCount(Unit resource){
 		int i = 0;
 		if(this.Pawns.isEmpty() == false){
-			for(Unit unit : this.Pawns){
+			for(Unit unit : new ArrayList<>(this.Pawns)){
 				if(unit.isGatheringGas() || unit.isGatheringMinerals()){
 					if(unit.getTarget() != null){
 						if(unit.getTarget().equals(resource)){
@@ -221,7 +228,7 @@ Game game;
 	}
 	
 	boolean isGasWorker(Unit unit){
-		for(Unit as : this.gasWorkers.keySet()){
+		for(Unit as : new ArrayList<>(this.gasWorkers.keySet())){
 			ArrayList<Unit> list = this.gasWorkers.get(as);
 			if(list.contains(unit) == true){
 				return true;
@@ -232,7 +239,7 @@ Game game;
 	}
 	
 	Unit getAssignedRefinery(Unit unit){
-		for(Unit as : this.gasWorkers.keySet()){
+		for(Unit as : new ArrayList<>(this.gasWorkers.keySet())){
 			ArrayList<Unit> list = this.gasWorkers.get(as);
 			if(list.contains(unit) == true){
 				return as;
@@ -279,6 +286,13 @@ Game game;
 	
 	void EmptyPawns(){
 		this.Pawns.clear();
+	}
+	
+	void MineralDeplete(Unit min){
+		if(this.Mins.contains(min)){
+			this.Mins.remove(min);
+			this.maxWorkers = this.maxWorkers - 2;
+		}
 	}
 	
 

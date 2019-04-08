@@ -6,6 +6,7 @@ import bwapi.Game;
 import bwapi.Player;
 import bwapi.Position;
 import bwapi.Race;
+import bwapi.TilePosition;
 import bwapi.Unit;
 import bwapi.UnitType;
 
@@ -25,9 +26,11 @@ public class Data {
 	ArrayList<Unit> myMilUnits;
 	ArrayList<Unit> enemyDBuildings;
 	Position nextAttackPosition;
+	ArrayList<Position> attackPositions;
 	ArrayList<UnitType> eggs;
 	ArrayList<UnitType> enemyTypes;
 	ArrayList<UnitType> enemyDTypes;
+	ArrayList<Base> scouts;
 	int enemyScore;
 	int myScore;
 	Race enemyRace;
@@ -40,6 +43,7 @@ public class Data {
 		this.enemyChokes = new ArrayList<ChokePoint>();
 		this.myBase = myBasee;
 		this.startLocations = new ArrayList<Base>();
+		this.scouts = new ArrayList<Base>();
 		this.enemyMilUnits = new ArrayList<>();
 		this.enemyBuildings = new ArrayList<Unit>();
 		this.enemyBases = new ArrayList<Base>();
@@ -51,6 +55,7 @@ public class Data {
 		this.enemyDTypes = new ArrayList<UnitType>();
 		this.enemyScore = 0;
 		this.myScore = 0;
+		this.attackPositions = new ArrayList<>();
 		this.enemyRace = game.enemy().getRace();
 		ArrayList<Base> Expands = new ArrayList<Base>();
 		DoTheThing();
@@ -102,11 +107,57 @@ public class Data {
 	
 	void onFrame(){
 		
-		if(this.nextAttackPosition == null && this.enemyBuildings != null){
-			if(!this.enemyBuildings.isEmpty()){
-			this.nextAttackPosition = this.enemyBuildings.get(0).getPosition();
+		for (Position p : new ArrayList<>(this.attackPositions)) {
+			// compute the TilePosition corresponding to our remembered Position p
+			TilePosition tileCorrespondingToP = new TilePosition(p.getX()/32 , p.getY()/32);
+
+			//if that tile is currently visible to us...
+			if (game.isVisible(tileCorrespondingToP)) {
+
+				//loop over all the visible enemy buildings and find out if at least
+				//one of them is still at that remembered position
+				boolean buildingStillThere = false;
+				for (Unit u : new ArrayList<Unit>(this.enemyBuildings)) {
+					if ((u.getType().isBuilding()) && (u.getPosition().equals(p))) {
+						buildingStillThere = true;
+						break;
+					}
+				}
+				//if there is no more any building, remove that position from our memory
+				if (buildingStillThere == false) {
+					this.attackPositions.remove(p);
+					this.nextAttackPosition = this.attackPositions.get(0);
+					break;
+				}
 			}
 		}
+		
+		
+		if(this.attackPositions.isEmpty()){
+			scouts.clear();
+			
+			if(scouts.isEmpty()){
+				for(Base starts : bewb.getMap().getBases()){
+					if(!game.isVisible(starts.getCenter().toTilePosition()) && !scouts.contains(starts)){
+						scouts.add(starts);
+					}
+				}
+			}
+			
+			if(!scouts.isEmpty()){	
+				this.attackPositions.add(this.scouts.get(0).getCenter());
+				this.nextAttackPosition = this.attackPositions.get(0);
+			}
+			
+			for(Base bass : new ArrayList<Base>(this.scouts)){
+				if(game.isVisible(bass.getCenter().toTilePosition())){
+					this.scouts.remove(bass);
+				}
+			}
+			
+		}
+		
+
 				
 
 	}
@@ -140,6 +191,9 @@ public class Data {
 			this.enemyBuildings.add(unit);
 			if(!this.enemyRace.equals(unit.getPlayer().getRace() ) ){
 				this.enemyRace = unit.getPlayer().getRace();
+			}
+			if(!this.attackPositions.contains(unit.getPosition())){
+				this.attackPositions.add(unit.getPosition());
 			}
 			//System.out.println("Enemy Building Discovered: " + unit.getType().toString());
 		}
@@ -194,6 +248,9 @@ public class Data {
 			
 			if(this.enemyBuildings.contains(unit)){
 				this.enemyBuildings.remove(unit);
+				if(this.attackPositions.contains(unit.getPosition())){
+					this.attackPositions.remove(unit.getPosition());
+				}
 			}
 		}
 	}
@@ -320,7 +377,7 @@ public class Data {
 				}
 			}
 		}
-		//System.out.println("Morphed: " + i);
+		System.out.println("Morphed: " + i);
 		return i;
 	}
 	
