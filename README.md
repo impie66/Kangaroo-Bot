@@ -35,12 +35,9 @@ Designed purely while sober(subject to change)
 <h1>Media</h1>
 
 [!asd](https://media.giphy.com/media/443tu8Bvotpx8ltQOD/giphy.gif)
-<br />
 Zergling Surrounds
-<br />
 
 [!asdd](https://media.giphy.com/media/wab1NqEYJhYLXQv8oO/giphy.gif)
-<br />
 
 
 
