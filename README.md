@@ -34,12 +34,12 @@ Designed purely while sober(subject to change)
 
 <h1>Media</h1>
 
-[!1](https://media.giphy.com/media/443tu8Bvotpx8ltQOD/giphy.gif)
+[!asd](https://media.giphy.com/media/443tu8Bvotpx8ltQOD/giphy.gif)
 <br />
 Zergling Surrounds
 <br />
 
-[!2](https://media.giphy.com/media/wab1NqEYJhYLXQv8oO/giphy.gif)
+[!asdd](https://media.giphy.com/media/wab1NqEYJhYLXQv8oO/giphy.gif)
 <br />
 
 
