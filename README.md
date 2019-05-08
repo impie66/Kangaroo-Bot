@@ -5,6 +5,9 @@ A fork from McRaveZ using [jBWAPI](https://github.com/JavaBWAPI/JBWAPI)
 
 Designed purely while sober(subject to change)
 
+Edit: 3:37 AM 9/05/2019
+
+I did a drunk.
 
 <h1>Current Features</h1>
 
