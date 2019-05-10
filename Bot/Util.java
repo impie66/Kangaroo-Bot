@@ -14,6 +14,8 @@ public class Util {
 		this.myData = darta;
 	}
 	
+	//NOT EVEN USED LUL
+	
 	
 	public Position GetKitePos(Unit unit, Unit target) {
 		Position Kite1 = new Position(target.getX() - unit.getX(), target.getY() - unit.getY());

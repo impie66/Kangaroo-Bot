@@ -29,6 +29,7 @@ Unit detector;
 HashMap<Unit, Integer> flee;
 // 1 == attacker, 2 == defender, 3 == harasser
 
+//BRINGING BACK THE INTEGERS
 
 public Squad(ArrayList<Unit> unitss, int idd, Data Data, Game gam, DecisionManager man){
 	this.units = unitss;
@@ -105,9 +106,8 @@ void onFrame(){
 		Unit det = this.detector;
 		game.drawCircleMap(this.detector.getPosition(), this.detector.getType().width(), Color.Green);
 		Position pos = null;
-		if(det.isIdle()){
 			for(Unit unit : new ArrayList<Unit>(this.units)){
-				if(unit.isAttacking() && det.getPosition().getApproxDistance(unit.getPosition()) >= 100){
+				if(isInCombat(unit) && det.getPosition().getApproxDistance(unit.getPosition()) >= 100){
 					pos = unit.getPosition();
 					break;
 				}
@@ -123,7 +123,6 @@ void onFrame(){
 			if(pos != null){
 				det.move(pos);
 			}
-		}
 	}
 	
 	if(!this.units.isEmpty()){
@@ -142,9 +141,22 @@ void onFrame(){
 						unit.burrow();
 					}
 				}
-								
+				
+				if(unit.isUnderStorm()){
+					if(!unit.isMoving()){
+						unit.move(game.self().getStartLocation().toPosition());
+					}
+					else {
+						if(unit.getOrderTargetPosition().getApproxDistance(game.self().getStartLocation().toPosition()) > 100){
+							unit.move(game.self().getStartLocation().toPosition());
+						}
+					}
+				}
+				
+												
 		}
 	}
+	
 	
 	
 }
@@ -268,7 +280,7 @@ void Regroup(Position pos){
 
 boolean shouldRegroup(){	
 	Position pos = this.target;
-	if(SquadsAverageDistTo(this.getUnits().get(0).getPosition())>=75 + (this.getUnitSize() * 2)){
+	if(SquadsAverageDistTo(this.getUnits().get(0).getPosition())>= 35 + (this.getUnitSize() * 2)){
 		return true;
 	}
 	else {
@@ -413,18 +425,7 @@ void operate(){
 			}
 		}
 		
-		if(this.detector!=null){
-			if(!this.units.isEmpty() && !this.detector.isMoving()){
-			this.detector.move(this.units.get(0).getPosition());
-			}
-			else {
-				if(!this.detector.isMoving()){
-				this.detector.move(this.target);
-				}
-			}
-			
-		}
-		
+
 		
 	}
 	

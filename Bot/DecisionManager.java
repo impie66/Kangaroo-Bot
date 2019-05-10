@@ -145,7 +145,7 @@ public class DecisionManager {
 		 }
 		 
 		System.out.println("My Size Before: " + simulator.getAgentsA().size());
-		//System.out.println("Enemy Size Before: " + simulator.getAgentsB().size());
+		System.out.println("Enemy Size Before: " + simulator.getAgentsB().size());
 		//ArrayList<Agent> p1Before = new ArrayList<>(simulator.getAgentsA());
 		//ArrayList<Agent> p2Before = new ArrayList<>(simulator.getAgentsB());
 		
@@ -169,10 +169,17 @@ public class DecisionManager {
 		System.out.println("P2 Health Before: " + enemyScoreBefore);
 		System.out.println("P1 Health After: " + myScoreAfter);
 		System.out.println("P2 Health after: " + enemyScoreAfter);
-		int P1 = myScoreBefore - myScoreAfter;
-		int P2 = enemyScoreBefore - enemyScoreAfter;
+		int P1 = Math.abs(myScoreBefore - myScoreAfter);
+		int P2 = Math.abs(enemyScoreBefore - enemyScoreAfter);
 		System.out.println("P1 " + P1);
 		System.out.println("P2 " + P2);
+		
+		if(myScoreAfter >= myScoreBefore){
+			if(myScoreAfter >= enemyScoreAfter){
+				this.canWin = true;
+				return true;
+			}
+		}
 		
 		if(myScoreAfter >= enemyScoreAfter){
 			this.canWin = true;	
@@ -288,8 +295,6 @@ public class DecisionManager {
 		 }
 
 		 Race race = myData.enemyRace;
-		 
-		 
 		 
 		 
 		 if(race.equals(Race.Zerg)){

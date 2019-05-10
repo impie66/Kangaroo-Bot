@@ -39,7 +39,7 @@ Game game;
 		this.Gases = new ArrayList<Unit>();
 		this.Mins = new ArrayList<Mineral>(bass.getMinerals());
 		this.Geysers = new ArrayList<Geyser>(bass.getGeysers());
-		this.maxWorkers = 6 + (Mins.size() / 2) + (Geysers.size() * 3);
+		this.maxWorkers =  6 + (Mins.size() / 2) + (Geysers.size() * 3);
 		this.voidedWorkers = new ArrayList<Unit>();
 	}
 	
@@ -291,7 +291,7 @@ Game game;
 	void MineralDeplete(Unit min){
 		if(this.Mins.contains(min)){
 			this.Mins.remove(min);
-			this.maxWorkers = this.maxWorkers - 2;
+			this.maxWorkers = (Mins.size() / 2) + (Geysers.size() * 3);
 		}
 	}
 	

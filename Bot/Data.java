@@ -1,7 +1,9 @@
 package Bot;
 import bwem.*;
 import java.util.ArrayList;
+import java.util.HashMap;
 
+import bwapi.Color;
 import bwapi.Game;
 import bwapi.Player;
 import bwapi.Position;
@@ -31,9 +33,11 @@ public class Data {
 	ArrayList<UnitType> enemyTypes;
 	ArrayList<UnitType> enemyDTypes;
 	ArrayList<Base> scouts;
+	HashMap<Unit, Integer> ACDS;
 	int enemyScore;
 	int myScore;
 	Race enemyRace;
+	TilePosition nextExpand;
 	
 	public Data(Game gaem, BWEM b, Base myBasee){
 		this.game = gaem;
@@ -57,6 +61,7 @@ public class Data {
 		this.myScore = 0;
 		this.attackPositions = new ArrayList<>();
 		this.enemyRace = game.enemy().getRace();
+		this.nextExpand = null;
 		ArrayList<Base> Expands = new ArrayList<Base>();
 		DoTheThing();
 	}
@@ -108,6 +113,7 @@ public class Data {
 	void onFrame(){
 		
 		for (Position p : new ArrayList<>(this.attackPositions)) {
+			game.drawCircleMap(p, 20, Color.Orange);
 			// compute the TilePosition corresponding to our remembered Position p
 			TilePosition tileCorrespondingToP = new TilePosition(p.getX()/32 , p.getY()/32);
 
@@ -120,13 +126,21 @@ public class Data {
 				for (Unit u : new ArrayList<Unit>(this.enemyBuildings)) {
 					if ((u.getType().isBuilding()) && (u.getPosition().equals(p))) {
 						buildingStillThere = true;
+						if(u.getType().equals(UnitType.Resource_Vespene_Geyser)){
+							this.attackPositions.remove(p);
+							//Just incase it's trying to attack an geyser.
+							if(this.nextAttackPosition != null){
+								if(this.nextAttackPosition.equals(p)){
+									this.nextAttackPosition = null;
+								}
+							}
+						}
 						break;
 					}
 				}
 				//if there is no more any building, remove that position from our memory
 				if (buildingStillThere == false) {
 					this.attackPositions.remove(p);
-					this.nextAttackPosition = this.attackPositions.get(0);
 					break;
 				}
 			}
@@ -134,13 +148,19 @@ public class Data {
 		
 		
 		if(this.attackPositions.isEmpty()){
-			scouts.clear();
-			
+		
 			if(scouts.isEmpty()){
+				
 				for(Base starts : bewb.getMap().getBases()){
+					
+					if(!game.isExplored(starts.getLocation()) && starts.isStartingLocation()){
+						scouts.add(starts);
+					}
+					
 					if(!game.isVisible(starts.getCenter().toTilePosition()) && !scouts.contains(starts)){
 						scouts.add(starts);
 					}
+					
 				}
 			}
 			
@@ -157,8 +177,32 @@ public class Data {
 			
 		}
 		
-
-				
+		if(!this.attackPositions.isEmpty() && this.nextAttackPosition == null){
+			this.nextAttackPosition = this.attackPositions.get(0);
+		}
+		
+		if(!this.attackPositions.isEmpty()){
+			if(this.nextAttackPosition != null){
+				if(!this.attackPositions.contains(this.nextAttackPosition)){
+					this.nextAttackPosition = null;
+				}
+			}
+		}
+		
+		
+		if(this.nextExpand != null){
+			game.drawCircleMap(this.nextExpand.toPosition(), 30, Color.Green);
+		}
+		
+	
+		for(Unit unit : new ArrayList<Unit>(this.myMilUnits)){
+			
+			if(!unit.exists()){
+				this.myMilUnits.remove(unit);
+			}
+		
+		}
+		
 
 	}
 	
@@ -195,6 +239,11 @@ public class Data {
 			if(!this.attackPositions.contains(unit.getPosition())){
 				this.attackPositions.add(unit.getPosition());
 			}
+			if(this.nextAttackPosition != null){
+				if(this.nextAttackPosition.equals(unit.getPosition())){
+					this.nextAttackPosition = null;
+				}
+			}
 			//System.out.println("Enemy Building Discovered: " + unit.getType().toString());
 		}
 	}
@@ -211,6 +260,7 @@ public class Data {
 	
 	void newMilUnit(Unit unit){
 		if(unit.getPlayer().equals(self)){
+			// if it's one of my units
 			if(!this.myMilUnits.contains(unit)){
 				this.myMilUnits.add(unit);
 				this.myScore = this.myScore + getScoreOf(unit);
@@ -219,12 +269,15 @@ public class Data {
 		}
 		
 		if(game.enemies().contains(unit.getPlayer())){
-			if(!this.enemyMilUnits.contains(unit)){
+			UnitType type = unit.getType();
+			if(!this.enemyMilUnits.contains(unit) && IsMilitrayUnit(unit)){
 				this.enemyMilUnits.add(unit);
-				this.enemyTypes.add(unit.getType());
+				this.enemyTypes.add(type);
 				this.enemyScore = this.enemyScore + getScoreOf(unit);
 				//System.out.println("Enemy Unit: " + unit.getType().toString());
 			}
+			
+			
 		}
 	}
 	
@@ -418,12 +471,20 @@ public class Data {
 		return claimed.contains(bass);
 	}
 	
+	
+	
 	int getScoreOf(Unit unit){
 		UnitType auxType = unit.getType();
 		return ((auxType.destroyScore() * auxType.maxHitPoints()) / (auxType.maxHitPoints() * 2));
 	}
 	
 	
-	
+	void updateNextExpansion(Position pos){
+		Base bass = nearestUnclaimedBase(pos);
+		if(bass != null){
+			this.nextExpand = bass.getLocation();
+		}
+		
+	}
 	
 }
