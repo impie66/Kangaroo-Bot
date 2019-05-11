@@ -43,12 +43,9 @@ I did a drunk.
 Zergling Surrounds
 
 ![asdd](https://media.giphy.com/media/wab1NqEYJhYLXQv8oO/giphy.gif)
-
 <br />
 ![asddd](https://media.giphy.com/media/kyKMOdXzi0VqhfJe2U/giphy.gif)
-
 <br />
-
 ![asdddd](https://media.giphy.com/media/VI9DC21TVt7Dj3tWtN/giphy.gif)
 
 
