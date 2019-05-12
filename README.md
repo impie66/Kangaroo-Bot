@@ -52,5 +52,3 @@ https://www.youtube.com/watch?v=ufDTDUPZrag
 
 
 
-Was wollen wir trinken, sieben Tage lang
-Was wollen wir trinken, so ein Durst
