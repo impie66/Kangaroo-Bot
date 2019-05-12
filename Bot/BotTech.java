@@ -104,11 +104,15 @@ public class BotTech {
 		}
 		
 		if(a == 4){
-
+			if(self.getUpgradeLevel(UpgradeType.Grooved_Spines) > 0 && self.getUpgradeLevel(UpgradeType.Muscular_Augments) > 0){
+				return true;
+			}
 		}
 		
 		if(a == 5){
-			
+			if(self.allUnitCount(UnitType.Zerg_Sunken_Colony) > 2){
+				return true;
+			}
 		}
 		
 		

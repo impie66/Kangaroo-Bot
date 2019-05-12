@@ -27,11 +27,12 @@ DecisionManager manager;
 Game game;
 Unit detector;
 HashMap<Unit, Integer> flee;
+Util til;
 // 1 == attacker, 2 == defender, 3 == harasser
 
 //BRINGING BACK THE INTEGERS
 
-public Squad(ArrayList<Unit> unitss, int idd, Data Data, Game gam, DecisionManager man){
+public Squad(ArrayList<Unit> unitss, int idd, Data Data, Game gam, DecisionManager man, Util till){
 	this.units = unitss;
 	this.score = getSquadScore();
 	this.target = null;
@@ -48,9 +49,10 @@ public Squad(ArrayList<Unit> unitss, int idd, Data Data, Game gam, DecisionManag
 	this.myData = Data;
 	this.manager = man;
 	this.flee = new HashMap<>();
+	this.til = till;
 }
 
-public Squad(ArrayList<Unit> unitss, int idd, Data Data, Game gam, DecisionManager man, Position ret){
+public Squad(ArrayList<Unit> unitss, int idd, Data Data, Game gam, DecisionManager man, Position ret, Util till){
 	this.units = unitss;
 	this.score = getSquadScore();
 	this.target = null;
@@ -67,9 +69,10 @@ public Squad(ArrayList<Unit> unitss, int idd, Data Data, Game gam, DecisionManag
 	this.myData = Data;
 	this.manager = man;
 	this.flee = new HashMap<>();
+	this.til = till;
 }
 
-public Squad(ArrayList<Unit> unitss, int idd, int targets, Data Data, Game gam, DecisionManager man){
+public Squad(ArrayList<Unit> unitss, int idd, int targets, Data Data, Game gam, DecisionManager man, Util till){
 	this.units = unitss;
 	this.score = getSquadScore();
 	this.target = null;
@@ -86,6 +89,7 @@ public Squad(ArrayList<Unit> unitss, int idd, int targets, Data Data, Game gam, 
 	this.manager = man;
 	this.game = gam;
 	this.flee = new HashMap<>();
+	this.til = till;
 }
 
 void onFrame(){
@@ -153,7 +157,47 @@ void onFrame(){
 					}
 				}
 				
-												
+				if(unit.isAttacking() && !isMelee(unit.getType()) == true){
+					//System.out.println("Trigger");
+					if(unit.getOrderTarget() != null){
+						int c = game.getFrameCount() + unit.getType().groundWeapon().damageCooldown();
+						Unit target = unit.getOrderTarget();
+						int weaponRange = unit.getType().groundWeapon().maxRange();
+						//System.out.println("Unit Target: " + target.getType().toString());
+						
+						if(weaponRange >= target.getType().groundWeapon().maxRange() && myData.weaponCoolingDown(unit) && !target.getType().isBuilding()){
+							// if we outrange
+							Position pos = til.GetKitePos2(unit, target);
+							if(pos != null){
+							int cc = (int) unit.getPosition().getDistance(pos);
+							if(cc >= unit.getType().groundWeapon().damageCooldown()){
+								cc = unit.getType().groundWeapon().damageCooldown();
+							}
+							myData.DND(unit, cc);
+							unit.move(pos);
+							unit.attack(unit.getPosition(), true);
+							//System.out.println("Retreat: " + pos);
+							}
+							else {
+								unit.move(game.self().getStartLocation().toPosition());
+								myData.DND(unit, c);
+								//System.out.println("Pos null reteating to self start");
+							}
+						}
+						
+						if(weaponRange <= target.getType().groundWeapon().maxRange() && myData.weaponCoolingDown(unit) && unit.getDistance(target) > (weaponRange / 2) && !target.getType().isBuilding()){
+							// if it out ranges us
+							myData.DND(unit, c);
+							unit.move(target.getPosition());
+							unit.attack(target.getPosition(), true);
+						}
+					}
+					
+					// fin
+				}
+				
+				
+			// end of units loop									
 		}
 	}
 	
@@ -279,8 +323,7 @@ void Regroup(Position pos){
 }
 
 boolean shouldRegroup(){	
-	Position pos = this.target;
-	if(SquadsAverageDistTo(this.getUnits().get(0).getPosition())>= 35 + (this.getUnitSize() * 2)){
+	if(SquadsAverageDistTo(this.getUnits().get(0).getPosition()) >= 15 + (this.units.size()) && !myData.enemyMilUnits.isEmpty()){
 		return true;
 	}
 	else {
@@ -290,19 +333,18 @@ boolean shouldRegroup(){
 
 void squadMicro(){
 	
-	if(shouldRegroup() && SquadsAverageDistTo(this.retreatPos) > 2000 && this.State == 1 && !myData.enemyMilUnits.isEmpty()){
+	if(shouldRegroup() && SquadsAverageDistTo(this.target) > 2000 && this.State == 1 && !myData.enemyMilUnits.isEmpty()){
 		Regroup(this.getUnits().get(0).getPosition());
 	}
 	
 	targetChecking();
 	
 	
-	if(this.State == 2 && !EnemysNearby(this.target, 500)){
+	if(this.State == 2 && SquadsAverageDistTo(this.target) > 600){
 		this.State = 0;
 		this.retreat();
+		System.out.println("Squad: " + this.id + "To far from defence location");
 	}
-	
-	
 	
 	
 	if(this.target == null && this.State == 1){
@@ -318,7 +360,7 @@ void squadMicro(){
 	if(this.State == 1 && this.target!=null){
 		// attacking
 		for(Unit unit : new ArrayList<>(this.units)){
-			if(unit.getOrder() != Order.AttackMove && !isInCombat(unit) && !this.flee.containsKey(unit)){
+			if(unit.getOrder() != Order.AttackMove && !isInCombat(unit) && !this.flee.containsKey(unit) && myData.canBeDistrubed(unit)){
 				unit.attack(this.target);
 			}
 			
@@ -389,7 +431,7 @@ boolean isAtTarget(boolean idle){
 				}
 			}
 		}
-		System.out.println("Is at Target i: " + i + " / " + max);
+		//System.out.println("Is at Target i: " + i + " / " + max);
 		if(i>=max){
 			return true;
 		}
@@ -413,7 +455,7 @@ void operate(){
 				}
 				
 				if(this.target != null){
-					if(unit.getOrderTargetPosition().getApproxDistance(this.target) > 300 && !isInCombat(unit) && !IsAttackMoving(unit)){
+					if(unit.getOrderTargetPosition().getApproxDistance(this.target) > 300 && !isInCombat(unit) && !IsAttackMoving(unit) && myData.canBeDistrubed(unit)){
 					unit.attack(this.target);
 					}
 				}
@@ -433,7 +475,7 @@ void operate(){
 
 void retreat(){
 	for(Unit unit : new ArrayList<>(this.units)){
-		if(unit.getPosition().getApproxDistance(this.retreatPos) > 200){
+		if(unit.getPosition().getApproxDistance(this.retreatPos) > 100){
 		unit.move(this.retreatPos);
 			if(unit.isBurrowed()){
 				unit.unburrow();
@@ -516,14 +558,14 @@ void removeFlee(Unit unit){
 }
 
 void targetChecking(){
-	ArrayList<Unit> checked = new ArrayList<>();
 	for(Unit unit : new ArrayList<>(this.units)){
 	 ArrayList<Unit> enemy = myData.GetEnemyUnitsNearby(unit.getPosition(), 300, true);
+	 enemy:
 		for(Unit enemies : enemy){
 			if(game.enemies().contains(unit.getPlayer()) && ShouldBeFocused(enemies)){
 				if(unit.isInWeaponRange(enemies)){
 					unit.attack(enemies);
-					break;
+					break enemy;
 				}
 			}	
 		}
@@ -559,6 +601,15 @@ public boolean ShouldBeFocused(Unit weeheads){
 
 	return false;
 	
+}
+
+boolean isMelee(UnitType type){
+	
+	if(type.equals(UnitType.Zerg_Zergling) || type.equals(UnitType.Zerg_Ultralisk)){
+		return true;
+	}
+	
+	return false;
 }
 
 

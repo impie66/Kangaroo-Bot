@@ -3,6 +3,7 @@ import bwem.*;
 import java.util.ArrayList;
 import java.util.HashMap;
 
+import bwapi.Bullet;
 import bwapi.Color;
 import bwapi.Game;
 import bwapi.Player;
@@ -27,13 +28,13 @@ public class Data {
 	ArrayList<Unit> enemyMilUnits;
 	ArrayList<Unit> myMilUnits;
 	ArrayList<Unit> enemyDBuildings;
+	HashMap<Unit, Integer> DND;
 	Position nextAttackPosition;
 	ArrayList<Position> attackPositions;
 	ArrayList<UnitType> eggs;
 	ArrayList<UnitType> enemyTypes;
 	ArrayList<UnitType> enemyDTypes;
 	ArrayList<Base> scouts;
-	HashMap<Unit, Integer> ACDS;
 	int enemyScore;
 	int myScore;
 	Race enemyRace;
@@ -50,6 +51,7 @@ public class Data {
 		this.scouts = new ArrayList<Base>();
 		this.enemyMilUnits = new ArrayList<>();
 		this.enemyBuildings = new ArrayList<Unit>();
+		this.DND = new HashMap<Unit, Integer>();
 		this.enemyBases = new ArrayList<Base>();
 		this.myMilUnits = new ArrayList<>();
 		this.nextAttackPosition = null;
@@ -64,6 +66,7 @@ public class Data {
 		this.nextExpand = null;
 		ArrayList<Base> Expands = new ArrayList<Base>();
 		DoTheThing();
+
 	}
 	
 	// SMILE
@@ -88,7 +91,7 @@ public class Data {
 		int dist = 200;
 		Position start = self.getStartLocation().toPosition();
 		while(temp.size()!=max-1){
-			dist = dist + 500;
+			dist = dist + 200;
 			for (Base Expand : bewb.getMap().getBases()) {
 				if(start.getApproxDistance(Expand.getCenter())<= dist && !temp.contains(Expand) && !Expand.equals(myBase)){
 					temp.add(Expand);
@@ -191,10 +194,10 @@ public class Data {
 		
 		
 		if(this.nextExpand != null){
-			game.drawCircleMap(this.nextExpand.toPosition(), 30, Color.Green);
+			game.drawCircleMap(this.nextExpand.toPosition(), 30, Color.Yellow);
+			game.drawTextMap(this.nextExpand.toPosition(), "HMMM MAYBE I PUT BASE HERE? HMMMMMMMMM");
 		}
 		
-	
 		for(Unit unit : new ArrayList<Unit>(this.myMilUnits)){
 			
 			if(!unit.exists()){
@@ -202,6 +205,18 @@ public class Data {
 			}
 		
 		}
+		
+//		for(Bullet b : game.getBullets()){
+//			Unit sauce = b.getSource();
+//			if(sauce != null){
+//				if(sauce.getPlayer().equals(self)){
+//					ACDS.put(sauce, game.getFrameCount() + sauce.getGroundWeaponCooldown());
+//					System.out.println("Boulets: " + sauce.getID() + " ");
+//				}
+//			}
+//			
+//			
+//		}
 		
 
 	}
@@ -385,7 +400,7 @@ public class Data {
 		 ArrayList<Unit> Mine = new ArrayList<Unit>();
 		for (Unit targets : game.getUnitsInRadius(pos, radius)) {
 			int damage = targets.getType().groundWeapon().damageAmount() + targets.getType().airWeapon().damageAmount();
-			if (targets.getPlayer().isEnemy(self) == true && IsMilitrayUnit(targets) == true && Mine.contains(targets) == false) {
+			if (targets.getPlayer().isEnemy(self) == true && IsMilitrayUnit(targets) == true && !Mine.contains(targets)) {
 				Mine.add(targets);
 
 			}
@@ -430,30 +445,57 @@ public class Data {
 				}
 			}
 		}
-		System.out.println("Morphed: " + i);
+		//System.out.println("Morphed: " + i);
 		return i;
 	}
 	
+//	Base nearestUnclaimedBase(Position pos){
+//		int i = 0;
+//		int lowest = 0;
+//		boolean found = false;
+//		Base chosen = null;
+//		while (found == false) {
+//			for(Base bass : Expands){
+//				int dist = bass.getCenter().getApproxDistance(pos);
+//				if(dist <= lowest && !alreadyClaimed(bass)){
+//					chosen = bass;
+//					lowest = dist;
+//				}
+//			}
+//			
+//			
+//		}
+//		
+//		return chosen;
+//	}
+//	
+	
 	Base nearestUnclaimedBase(Position pos){
-		int i = 0;
-		int lowest = 0;
-		boolean found = false;
-		Base chosen = null;
-			for(Base bass : Expands){
-				int dist = bass.getCenter().getApproxDistance(pos);
-				if(dist <= lowest && !alreadyClaimed(bass)){
-					chosen = bass;
-					lowest = dist;
-				}
+		//copyright 2019
+			boolean hasLocation = false;
+			int stopdist = 5000;
+			int dist = 0;
+			int i = 0;
+			int max = Expands.size();
+			while (hasLocation == false && dist < stopdist) {
+				dist = dist + 200;
+					for (Base Expand : Expands) {
+						int tree = (int) pos.getApproxDistance(Expand.getCenter());
+						if (tree < dist && !alreadyClaimed(Expand) ) {
+							hasLocation = true;
+							return Expand;
+						}
+		
+					}
+
 			}
-			
-			return chosen;
+			return null;
 		
 	}
 	
 	boolean alreadyClaimed(Base bass){
 		ArrayList<Base> claimed = new ArrayList<Base>();
-		for(Unit unit : self.getUnits()){
+		for(Unit unit : self.getUnits()){	
 			Base looped = getClosestBaseLocation(unit.getPosition());
 			if(unit.getType().isResourceDepot()){
 				if(!claimed.contains(looped)){
@@ -483,8 +525,38 @@ public class Data {
 		Base bass = nearestUnclaimedBase(pos);
 		if(bass != null){
 			this.nextExpand = bass.getLocation();
+			System.out.println("Next base at " + bass.getLocation());
 		}
 		
 	}
+	
+	boolean weaponCoolingDown(Unit unit){
+		if(unit.getGroundWeaponCooldown() == 0){
+			return false;
+		}
+		
+		return true;
+	}
+	
+	boolean canBeDistrubed(Unit unit){
+		
+		if(DND.containsKey(unit) == false){
+			DND.put(unit, 0);
+			return true;
+		}
+		
+		if(game.getFrameCount() >= DND.get(unit)){
+			return true;
+		}
+		else {
+			return false;
+		}
+	}
+		
+	void DND(Unit unit, int amount){
+		DND.put(unit, amount);
+	}
+	
+	
 	
 }

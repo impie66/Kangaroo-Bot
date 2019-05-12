@@ -34,6 +34,13 @@ public class pBuilding {
 		this.isExpand = false;
 	}
 	
+	
+	public pBuilding(UnitType ype, TilePosition where, boolean expand){
+		this.type = ype;
+		this.pos = where;
+		this.isExpand = expand;
+	}
+	
 	UnitType getType(){
 		return this.type;
 	}
