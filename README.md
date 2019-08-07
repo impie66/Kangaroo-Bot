@@ -55,7 +55,7 @@ Zergling Surrounds
 
 ![!asdddddd](https://media.giphy.com/media/f3vOya4lFfDTqdQcRs/giphy.gif)
 
-[!asddddddd](https://media.giphy.com/media/MFrdxIEupizZO9D4Dc/giphy.gif)
+![asddddddd](https://media.giphy.com/media/MFrdxIEupizZO9D4Dc/giphy.gif)
 
 https://www.youtube.com/watch?v=ufDTDUPZrag
 
