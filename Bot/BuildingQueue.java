@@ -1,7 +1,6 @@
 package Bot;
 
 import bwapi.*;
-import Bot.*;
 
 
 

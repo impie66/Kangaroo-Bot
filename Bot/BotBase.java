@@ -2,17 +2,13 @@ package Bot;
 
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
+
 
 import bwapi.Game;
 import bwapi.Order;
 import bwapi.Unit;
 import bwapi.UnitType;
-import bwem.unit.Geyser;
-import bwem.unit.Mineral;
 import bwem.*;
-import Bot.*;
 
 
 public class BotBase {

@@ -1,8 +1,9 @@
 package Bot;
 import bwapi.*;
-import bwem.*;
 
 import java.util.ArrayList;
+
+import javax.management.monitor.GaugeMonitor;
 
 import org.bk.ass.*;
 
@@ -15,6 +16,8 @@ public class DecisionManager {
 	BWMirrorAgentFactory factory;
 	int myScore;
 	int enemyScore;
+	int myIncome;
+	int myOutcome;
 	
 	DecisionManager(Game game, Data data){
 		this.game = game;
@@ -25,8 +28,8 @@ public class DecisionManager {
 		this.factory =  new BWMirrorAgentFactory();
 		this.myScore = 0;
 		this.enemyScore = 0;
+
 	}
-	
 	
 	boolean shouldAttack(boolean include){
 		//ArrayList<Unit> myUnits = new ArrayList<>();
@@ -103,29 +106,19 @@ public class DecisionManager {
 	
 	boolean simBattle(ArrayList<Unit> myUnits, ArrayList<UnitType> enemyUnits){
 		//Special thanks to Jabbo for telling me how to wipe my ass.
-		// Heheh, get it? ASS?? hahahah XDDDDDDDDDDDDDDDDDDDDDDDDD
-		// God i need to stop drinking
 		this.simulator = new Simulator();
 		this.factory = new BWMirrorAgentFactory();
 		int myScoreBefore = 0;
 		int myScoreAfter = 0;
 		int enemyScoreBefore = 0;
 		int enemyScoreAfter = 0;
-		int myScore;
-		int enemyScore;
 		simulator.reset();
 		
 		if(myUnits.isEmpty()){
 			this.canWin = false;
 			return false;
 		}
-		
-		if(myData.myScore >= myData.enemyScore * 2.5 + 1){
-			//System.out.println("Global Attack via score");
-			this.canWin = true;
-			return true;
-		}
-		
+				
 		if(enemyUnits.isEmpty()){
 			this.canWin = true;
 			return true;
@@ -193,7 +186,7 @@ public class DecisionManager {
 		
 	}
 	
-	boolean evaluateBattle(ArrayList<Unit> myUnits, ArrayList<Unit> enemyUnits){
+	boolean evaluateBattle(ArrayList<Unit> myUnits, ArrayList<Unit> enemyUnits, double min){
 		this.evaluator = new Evaluator();
 		
 		ArrayList<Agent>myA = new ArrayList<>();
@@ -207,20 +200,30 @@ public class DecisionManager {
 		 for(Unit unit : enemyUnits){
 			 Agent asd = factory.of(unit);
 			 enemyA.add(asd);
-		 }
+		 }	
 		 
 		 
 		double score = evaluator.evaluate(myA, enemyA);
+		
+		for(Unit unit : myUnits){
+			if(game.self().getUnits().contains(unit)){
+			// ^^ apparently better then unit.exists();
+			myData.newUnitScore(unit, score);
+			}
+		}
+		
 		//System.out.println("Local Score: " + score);
-		if(score >= 0.50){
+		if(score >= min){
 			this.canWin = true;
 			return true;
 		}
 		else {
-		this.canWin = false;
-		return false;
+			this.canWin = false;
+			return false;
 		}
 		
+		
+		// fin
 		}
 	
 	
@@ -231,6 +234,12 @@ public class DecisionManager {
 		
 		if(myUnits.isEmpty()){
 			return false;
+		}
+		
+		
+		if(type.isEmpty()){
+			this.canWin = true;
+			return true;
 		}
 		
 		//System.out.println("My Score: " + myData.myScore);
@@ -338,5 +347,9 @@ public class DecisionManager {
 		 
 		 return asd;
 	}
+	
+	
+
+	
 		
 }
