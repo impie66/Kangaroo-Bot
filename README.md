@@ -42,8 +42,8 @@ Currently is not submitted
 <h1>Updates</h1>
 
 <h2>9/08/2019</h2>
-* Now supports **RANDOM**
-* **FFA** support. Still has issues that If bot had. Can't see unit's killed by the other players. Bot will attack the weakest player.
+* Now supports RANDOM
+* FFA support. Still has issues that If bot had. Can't see unit's killed by the other players. Bot will attack the weakest player.
 * Terran: Same 'ol Bio mech with nukes (Currently disabled because Yegers can't count up to 35)
 * Protoss is braindead dead because bot can't micro goons. (but still works)
 * Zerg should be fine... But i haven't tested it since i added random support. I don't want to test it just incase it broke
