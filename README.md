@@ -36,7 +36,29 @@ Currently is not submitted
 * Google Home integration
 * Drawing lines to 0,0
 * Hydralisks Playing Tennis
+* Random Support
+* A ***FUCK TON*** of arraylists.
 
+<h1>Updates</h1>
+
+<h2>9/08/2019</h2>
+* Now supports ***RANDOM***
+* ***FFA*** support. Still has issues that If bot had. Can't see unit's killed by the other players. Bot will attack the weakest player.
+* Terran: Same 'ol Bio mech with nukes (Currently disabled because Yegers can't count up to 35)
+* Protoss is braindead dead because bot can't micro goons. (but still works)
+* Zerg should be fine... But i haven't tested it since i added random support. I don't want to test it just incase it broke
+* Spellcasters, Medics, Queens, ~~Defilers?~~, Ghosts, Siege Tanks (Yes they cast siege. ), BCS, Vultures.
+
+
+<h1>Q & A</h1>
+**Q: When is the bot being uploaded to any of the ladders**
+A: Yes.
+<hr />
+**Q: Why FFA and memes**
+<hr />
+A: Why the fuck not
+
+<br />
 
 <h1>Media</h1>
 
@@ -58,6 +80,5 @@ Zergling Surrounds
 ![asddddddd](https://media.giphy.com/media/MFrdxIEupizZO9D4Dc/giphy.gif)
 
 https://www.youtube.com/watch?v=ufDTDUPZrag
-
 
 
