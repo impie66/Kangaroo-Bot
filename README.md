@@ -55,8 +55,6 @@ Currently is not submitted
 Q: When is the bot being uploaded to any of the ladders
 <br />
 A: Yes.
-
-<br />
 <br />
 
 Q: Why FFA and memes
@@ -64,11 +62,9 @@ Q: Why FFA and memes
 A: Why the fuck not
 <br />
 
-<br />
 Q: Is the bot any good?
 <br />
 A: have you seen my [other](https://github.com/impie66/If-Bot) bot?
-<br />
 <br />
 
 
