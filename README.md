@@ -51,22 +51,29 @@ Currently is not submitted
 * Spellcasters, Medics, Queens, ~~Defilers?~~, Ghosts, Siege Tanks (Yes they cast siege. ), BCS, Vultures.
 
 
-<h1>Q & A</h1>
-Q: When is the bot being uploaded to any of the ladders
-<br />
+<h1>Q/A</h1>
+
+
+<b>Q: When is the bot being uploaded to any of the ladders</b>
+<br>
 A: Yes
-<br />
-
-Q: Why FFA and memes
-<br />
+<br>
+<br>
+<b>Q: Why FFA and memes</b>
+<br>
 A: Why the fuck not
-<br />
-
-Q: Is the bot any good
-<br />
+<br>
+<br>
+<b>Q: Is the bot any good?</b>
+<br>
 A: have you seen my [other](https://github.com/impie66/If-Bot) bot
-<br />
-
+<br>
+<br>
+<b>You're Australian right? hahaha shrimp on the barbie.</b>
+<br>
+A: immediate restraing order
+<br>
+<br>
 
 <h1>Media</h1>
 
