@@ -2,14 +2,6 @@
 
 The big brother of [IfBot](https://github.com/impie66/If-Bot)
 and a fork from McRaveZ using [jBWAPI](https://github.com/JavaBWAPI/JBWAPI) and ASS [ass](https://github.com/JavaBWAPI/ass)
-<br />
-Designed purely while sober(subject to change)
-
-Edit: 3:37 AM 9/05/2019
-
-I did a drunk.
-
-Currently is not submitted
 
 <h1>Current Features</h1>
 
@@ -19,17 +11,12 @@ Currently is not submitted
 * getBuildLocation spam
 * Horrible and mostly incorrect retreat manager
 * `if(canWin()){Retreat()}`
-* A pure diet of ConcurrentModificationExceptions
+* ~~A pure diet of ConcurrentModificationExceptions~~
 * Invalid buildLocations
-* Hatred for the protoss race
-* Violent Seizures
-* Spending all the minerals on overlords
 * Advanced Gas floating 
 * Perfect simCity
 * Highly advanced If Statements
 * Hyper passive zerg
-* Alcoholism
-* Buggy as hell building system
 * Not making workers when dieing
 * Spamming attack orders
 * good very manny ouf speeling und gramamah
@@ -39,6 +26,9 @@ Currently is not submitted
 * Random Support
 * Alot of arraylists.
 * Even more arraylists.
+* A half functional placement for bunkers
+* 4th degree warp mind fuckery
+* ***Memes***
 
 <h1>Updates</h1>
 
@@ -48,8 +38,8 @@ Currently is not submitted
 * Terran: Same 'ol Bio mech with nukes (Currently disabled because Yegers can't count up to 35)
 * Protoss is braindead dead because bot can't micro goons. (but still works)
 * Zerg should be fine... But i haven't tested it since i added random support. I don't want to test it just incase it broke
-* Spellcasters, Medics, Queens, ~~Defilers?~~, Ghosts, Siege Tanks (Yes they cast siege. ), BCS, Vultures.
-
+* Spellcasters, Medics, Queens, ~~Defilers?~~, Ghosts, Siege Tanks (Yes they cast siege.), BCS and Vultures
+* 
 
 <h1>Q/A</h1>
 
@@ -69,9 +59,9 @@ A: Why the fuck not
 A: have you seen my [other](https://github.com/impie66/If-Bot) bot
 <br>
 <br>
-<b>You're Australian right? hahaha shrimp on the barbie.</b>
+<b>Q: You're Australian right? hahaha shrimp on the barbie.</b>
 <br>
-A: immediate restraing order
+A: Immediate restraing order
 <br>
 <br>
 
