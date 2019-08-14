@@ -39,7 +39,7 @@ and a fork from McRaveZ using [jBWAPI](https://github.com/JavaBWAPI/JBWAPI) and 
 * Protoss is braindead dead because bot can't micro goons. (but still works)
 * Zerg should be fine... But i haven't tested it since i added random support. I don't want to test it just incase it broke
 * Spellcasters, Medics, Queens, ~~Defilers?~~, Ghosts, Siege Tanks (Yes they cast siege.), BCS and Vultures
-* 
+* Bot is now equiped with furniture and milkcrates to defend against terrorism.
 
 <h1>Q/A</h1>
 
