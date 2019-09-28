@@ -15,7 +15,7 @@ and a fork from McRaveZ using [jBWAPI](https://github.com/JavaBWAPI/JBWAPI) and 
 * Invalid buildLocations
 * Advanced Gas floating 
 * Perfect simCity
-* Highly advanced ~~~If Statements~~~ conditional arithmetics
+* Highly advanced ~~If Statements~~ conditional arithmetics
 * Hyper passive zerg
 * Not making workers when dieing
 * Spamming attack orders
