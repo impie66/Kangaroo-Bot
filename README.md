@@ -59,10 +59,6 @@ A: Why the fuck not
 A: have you seen my [other](https://github.com/impie66/If-Bot) bot
 <br>
 <br>
-<b>Q: You're Australian right? hahaha shrimp on the barbie.</b>
-<br>
-A: Immediate restraing order
-<br>
 <br>
 
 <h1>Media</h1>
