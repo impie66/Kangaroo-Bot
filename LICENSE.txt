@@ -1,0 +1,16 @@
+/*
+ * ----------------------------------------------------------------------------
+ * "THE MALWARE LICENSE" (Revision yes):
+ * Impie66 wrote all of this piece of shit.  As long as you don't fuck it up and retain this license
+ * you can do whatever you want with this
+ * (Except selling it or claiming the original as your own). If we unfortunately meet some day, and you think
+ * this stuff is still shit, delete it and fork locutus you pussy.   
+ * ----------------------------------------------------------------------------
+ */
+
+
+This is not a valid license. 
+Everything listed is a joke.
+
+
+
