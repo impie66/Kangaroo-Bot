@@ -1,0 +1,22 @@
+Changelog
+My internet was down for a couple days so i decided to get some shit done
+
+Bot now nukes (Thanks to Yegers) `Yegers.canCount = true;`
+Some general changes builds to suit my mood. 
+Bot now builds defences at bases.
+Score sensetive orders. Basically if a unit is retreating but can win a local engagement will finsh the engagement before retreating. 
+A ton of code cleanup and some basic re-writes
+Bot now sims all units nearby a chokepoint instead of each side's 'combat ready troops' (Basically units within a certain range to fight)
+Bot now scans to find enemy if their location is unknown
+Added Golaiths and Valkyris, queens, wraiths.
+Adjusted the "Unknown" build to be more techy (for bots that random)
+Updated to ASS 1.1
+Updated to jBwapi 1.0
+Bot now attempts to run away from it's own spidermines to avoid friendly fire. 
+Bot now adds workers to the unit queue when expanding
+
+Bot now does well against the Stock AI (Inbuilt AI) I'll be ready to upload soon. 
+
+Current Issues:
+
+The bot still sucks.
