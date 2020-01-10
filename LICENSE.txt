@@ -3,14 +3,16 @@
  * "THE MALWARE LICENSE" (Revision yes):
  * Impie66 wrote all of this piece of shit.  As long as you don't fuck it up and retain this license
  * you can do whatever you want with this
- * (Except selling it or claiming the original as your own). If we unfortunately meet some day, and you think
- * this stuff is still shit, delete it and fork locutus you pussy.   
+ * (Except selling it or claiming the original as your own).
+ * If the code is not up to your standards delete your OS and fork another bot from a author who cares.
  * ----------------------------------------------------------------------------
  */
 
 
 This is not a valid license. 
 Everything listed is a joke.
+
+Copyright 2020 LOLOLOLO
 
 
 
