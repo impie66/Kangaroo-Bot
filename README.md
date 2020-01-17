@@ -51,9 +51,9 @@ and a fork from [McRave](https://github.com/Cmccrave/McRave) using [jBWAPI](http
 A: Yes.
 <br>
 <br>
-<b>Q: Why FFA and memes</b>
+<b>Q: Is your bot competitive?</b>
 <br>
-A: Why the fuck not
+A: No, the bot's a meme. This is what i wanted my other bot to be. People tend to get very serious about their bots and frustate themselves. This bot is to show you can develop a casual bot and still enjoy it.  The aim is still to win but also to have fun while doing so. 
 <br>
 <br>
 <b>Q: Is the bot any good?</b>
@@ -69,6 +69,11 @@ A: I didn't. The whole "Forked from McRave" was a troll and a joke.
 <b>Q: Which is your bots best race</b>
 <br>
 A: Honestly i have no idea. Zerg is the most defined (As in what units to make and what opener to chooses.) If i had to choose it would be P because of how strong gateway units are.
+<br>
+<br>
+<b>Q: Can i fork Kangaroobot?</b>
+<br>
+A: <b>No!!!!!.</b> The license file provided is a joke and is <b>NOT VALID.</b>
 <br>
 
 <h1>Media</h1>
