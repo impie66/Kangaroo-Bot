@@ -1,7 +1,7 @@
 # Kangaroo-Bot
 
 The big brother of [IfBot](https://github.com/impie66/If-Bot)
-and a fork from McRaveZ using [jBWAPI](https://github.com/JavaBWAPI/JBWAPI) and [ass](https://github.com/JavaBWAPI/ass)
+and a fork from [McRave](https://github.com/Cmccrave/McRave) using [jBWAPI](https://github.com/JavaBWAPI/JBWAPI) and [ASS](https://github.com/JavaBWAPI/ass)
 <br/>
 ![yes](https://i.imgur.com/RVOblFp.png)
 
@@ -48,7 +48,7 @@ and a fork from McRaveZ using [jBWAPI](https://github.com/JavaBWAPI/JBWAPI) and 
 
 <b>Q: When is the bot being uploaded to any of the ladders</b>
 <br>
-A: Yes
+A: Yes.
 <br>
 <br>
 <b>Q: Why FFA and memes</b>
@@ -61,6 +61,14 @@ A: Why the fuck not
 A: have you seen my [other](https://github.com/impie66/If-Bot) bot
 <br>
 <br>
+<b>Q: How did you manage to convert McRave to java??</b>
+<br>
+A: I didn't. The whole "Forked from McRave" was a troll and a joke.
+<br>
+<br>
+<b>Q: Which is your bots best race</b>
+<br>
+A: Honestly i have no idea. Zerg is the most defined (As in what units to make and what opener to chooses.) If i had to choose it would be P because of how strong gateway units are.
 <br>
 
 <h1>Media</h1>
