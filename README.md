@@ -68,7 +68,7 @@ A: I didn't. The whole "Forked from McRave" was a troll and a joke.
 <br>
 <b>Q: Which is your bots best race</b>
 <br>
-A: Honestly i have no idea. Zerg is the most defined (As in what units to make and what opener to chooses.) If i had to choose it would be P because of how strong gateway units are.
+A: Honestly i have no idea. Zerg is the most defined (As in what units to make and what opener it chooses.) If i had to choose it would be P because of how strong gateway units are.
 <br>
 <br>
 <b>Q: Can i fork Kangaroobot?</b>
