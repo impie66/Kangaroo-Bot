@@ -10,7 +10,7 @@ ArrayList<Unit> units;
 int score;
 Position target;
 int State;
-// 0 is not operating, 1 is operating
+// 0 is not operating, 1 is operating 2 is defending.
 boolean AWR;
 // ^^ attack when ready
 int targetScore;
@@ -28,6 +28,7 @@ Unit detector;
 HashMap<Unit, Integer> flee;
 Util til;
 UnitType filter;
+int averageUnitScore;
 // 1 == attacker, 2 == defender, 3 == harasser
 
 //BRINGING BACK THE INTEGERS
@@ -143,7 +144,7 @@ void onFrame(){
 		game.drawCircleMap(this.detector.getPosition(), this.detector.getType().width(), Color.Green);
 		Position pos = null;
 			for(Unit unit : new ArrayList<Unit>(this.units)){
-				if(isInCombat(unit) && det.getPosition().getApproxDistance(unit.getPosition()) >= 100){
+				if(myData.isNearEnemyOrBetter(unit) && det.getPosition().getApproxDistance(unit.getPosition()) >= 100){
 					pos = unit.getPosition();
 					break;
 				}
@@ -162,76 +163,85 @@ void onFrame(){
 	}
 	
 	if(!this.units.isEmpty()){
+		int i = 0;
+		int ii = this.units.size();
 		
 		for(Unit unit : new ArrayList<>(this.units)){	
 			
+			i = i + myData.getScoreOf(unit);
+			
+			if(!unit.exists()){
+				this.units.remove(unit);
+			}
+			
 			if(unit.getType().equals(UnitType.Zerg_Lurker) && unit.isBurrowed()){
-				if(!EnemysNearby(unit.getPosition(), 200)){
+				if(!EnemysNearby(unit.getPosition(), 250)){
 					unit.unburrow();
 				}
 			}
 			
 				if(unit.getType().equals(UnitType.Zerg_Lurker) && !unit.isBurrowed()){
-					if(EnemysNearby(unit.getPosition(), 200) && unit.canBurrow()){
+					if(EnemysNearby(unit.getPosition(), 250) && unit.canBurrow()){
 						unit.burrow();
 					}
 				}
 				
-				if(unit.isUnderStorm()){
-					if(!unit.isMoving()){
-						unit.move(game.self().getStartLocation().toPosition());
-					}
-					else {
-						if(unit.getOrderTargetPosition().getApproxDistance(game.self().getStartLocation().toPosition()) > 100){
-							unit.move(game.self().getStartLocation().toPosition());
-						}
+				
+				if(unit.getType().equals(UnitType.Terran_Siege_Tank_Siege_Mode)){
+					if(!EnemysNearby(unit.getPosition(), 350)){
+						unit.unsiege();
 					}
 				}
-				if(unit.isAttacking() && !isMelee(unit.getType()) == true && !unit.getType().equals(UnitType.Protoss_Dragoon)){
+				
+				// micro
+				//push
+				// pull
+				// isMelee
+				// && !unit.getType().equals(UnitType.Protoss_Dragoon)s
+				
+				if(unit.isAttacking() && !isMelee(unit.getType()) == true && myData.canBeDistrubed(unit) && !unit.getType().equals(UnitType.Protoss_Dragoon)){
 					double score = myData.getSimScore(unit);
 					//System.out.println("Trigger");
-					if(unit.getType().equals(UnitType.Protoss_Dragoon)){
-						System.out.println("Cooldown: " + myData.weaponCoolingDown(unit));
-						System.out.println("WPC: " + unit.getGroundWeaponCooldown());
-					}
 					if(unit.getOrderTarget() != null){
 						int c = game.getFrameCount() + unit.getType().groundWeapon().damageCooldown();
 						Unit target = unit.getOrderTarget();
 						int weaponRange = til.realWeaponRange(unit.getType(), game.self());
 						//System.out.println("Unit Target: " + target.getType().toString());
 						
-						if(til.shouldKiteAgainst(unit, target) && myData.weaponCoolingDown(unit) && !target.getType().isBuilding() && score < 0.85 && target.isAttacking()){
+						if(til.shouldKiteAgainst(unit, target) && myData.weaponCoolingDown(unit) && score <= 0.75 && !isMelee(unit.getType())){
 							// if we outrange
 							Position pos = til.GetKitePos2(unit, target);
 							if(pos != null){
-							int cc = (int) unit.getPosition().getDistance(pos);
-							if(cc >= unit.getType().groundWeapon().damageCooldown()){
-								cc = unit.getType().groundWeapon().damageCooldown();
-							}
-							myData.DND(unit, cc);
+							myData.DND(unit, c);
 							unit.move(pos);
-							unit.attack(unit.getPosition(), true);
-							}
+							//unit.attack(unit.getPosition(), true);
+							}	
 							
 						}
 						
-						if(!til.shouldKiteAgainst(unit, target) && myData.weaponCoolingDown(unit) && unit.getDistance(target) > (weaponRange / 2) && score >= 0.85){
+						if(til.shouldPushAgainst(unit, target) && myData.weaponCoolingDown(unit) && unit.getDistance(target) > (weaponRange / 2) && !isMelee(target.getType())){
 							// if the target outranges us
+							Position pos = til.GetPushPos(unit, target);
+							if(pos != null){
 							myData.DND(unit, c);
-							unit.move(target.getPosition());
-							unit.attack(target.getPosition(), true);
+							unit.move(pos);
+							//unit.attack(target.getPosition(), true);
+							}
 						}
 					}
-					
+				
 					// fin
 				}
 				
-				if(unit.getType().equals(UnitType.Zerg_Mutalisk) && unit.isAttacking()){
+				// TODO FIX GOON MICRO
+				// really need to do
+				
+				if(unit.getType().equals(UnitType.Zerg_Mutalisk) && unit.isAttacking() && myData.canBeDistrubed(unit)){
 					if(myData.weaponCoolingDown(unit)){
 						Unit target = unit.getOrderTarget();
 						Position pos = til.GetKitePos2(unit, target);
 						if(pos != null){
-						int cc = unit.getType().groundWeapon().damageCooldown();
+						int cc = game.getFrameCount() + unit.getType().groundWeapon().damageCooldown();
 						myData.DND(unit, cc);
 						unit.move(pos);
 						unit.attack(unit.getPosition(), true);
@@ -241,18 +251,18 @@ void onFrame(){
 				}
 				
 				//Onion rings..... yummy.... I'm hungry now
-				if(unit.getKillCount() > 0){
-					for(int i = 0; i<=unit.getKillCount(); i++){
-						int bonus = unit.getType().width() + (unit.getKillCount() * 2) + (i * 3);
-						if(i%2==0){
-							game.drawCircleMap(unit.getPosition(), bonus, Color.Teal);
-						}
-						else {
-							game.drawCircleMap(unit.getPosition(), bonus, Color.Red);
-						}
-
-					}
-				}
+//				if(unit.getKillCount() > 0){
+//					for(int i = 0; i<=unit.getKillCount(); i++){
+//						int bonus = unit.getType().width() + (unit.getKillCount() * 2) + (i * 3);
+//						if(i%2==0){
+//							game.drawCircleMap(unit.getPosition(), bonus, Color.Teal);
+//						}
+//						else {
+//							game.drawCircleMap(unit.getPosition(), bonus, Color.Red);
+//						}
+//
+//					}
+//				}
 				
 //				if (unit.getHitPoints() != unit.getType().maxHitPoints() && til.canBeHealed(unit.getType())) {
 //					ArrayList<Unit> myMedics = til.getAllOf(UnitType.Terran_Medic);
@@ -275,9 +285,9 @@ void onFrame(){
 			// end of units loop									
 		}
 		
+		this.averageUnitScore = ii / i;
 		
 		
-
 		
 	}
 	
@@ -339,6 +349,7 @@ int getSquadScore(){
 	if(this.units.isEmpty()){
 		return i;
 	}
+	
 	for(Unit unit : new ArrayList<Unit>(this.units)){
 		i = i + getScoreOf(unit);
 	}
@@ -382,35 +393,61 @@ void Regroup(Position pos){
 		if(this.units.isEmpty() == false){
 			
 			for(Unit unit : new ArrayList<>(this.units)){
-				
+							
 				int dist = unit.getPosition().getApproxDistance(pos);
-				
-				if(!this.flee.containsKey(unit)){
+				// !this.flee.containsKey(unit) &&
+				if(myData.canBeDistrubed(unit)){
+					if(unit.isSieged() && !myData.isNearEnemyOrBetter(unit)){
+						unit.unsiege();
+					}
 					
-					if(myData.getScoreOf(unit) < 0.70 && isInCombat(unit)){
+					if(myData.getSimScore(unit) > 0.70 && myData.isNearEnemyOrBetter(unit)){
+						if(unit.isIdle()){
+							Position attack = til.getPositionToFight(unit);
+							if(attack != null){
+								unit.attack(attack);
+							}
+						}
+						else {
+							continue;
+						}
+						// win the local fight before retreating.
+					}
+					else {
+						// if they can't win their fight.
+						if(unit.getOrderTargetPosition().getApproxDistance(pos) > 500){
+						unit.move(pos);
+						}
+					}
+				
+					if(unit.getType().groundWeapon().equals(WeaponType.None)){
 						unit.move(pos);
 					}
-					else{
-						if(!unit.isAttackFrame() && unit.getOrderTargetPosition().getApproxDistance(pos) > 100){
-						// don't cancel attacks you fucking retard.
+					
+					if(unit.isIdle()){
+						if(myData.getScoreOf(unit) > 0.75 && unit.getDistance(pos) > 300){
 						unit.attack(pos);
 						}
-						
-						if(unit.getType().groundWeapon().equals(WeaponType.None)){
-							unit.move(pos);
+						else {
+							if(unit.getDistance(pos) > 300){
+								unit.move(pos);
+							}
 						}
 					}
-					
-					if(unit.isIdle() && dist >= 100){
-						unit.move(pos);
-					}
-					
-					if(unit.getOrderTargetPosition().getApproxDistance(pos) > 100){
-					unit.move(pos);
-					}
-					
+							
 					if(unit.isBurrowed() && unit.canUnburrow() && !isInCombat(unit)){
 						unit.unburrow();
+					}
+					
+					if(this.myData.isSpellCaster(unit) && unit.getDistance(pos) > 250){
+						if(unit.isIdle() && unit.getDistance(pos) >= 400){
+							unit.move(pos);
+						}
+						if(unit.getOrderTarget() != null){
+							if(unit.getOrderTarget().getDistance(pos) > 600){
+								unit.move(pos);
+							}
+						}
 					}
 				}
 			}
@@ -419,7 +456,30 @@ void Regroup(Position pos){
 }
 
 boolean shouldRegroup(){	
-	if(!this.units.isEmpty() && SquadsAverageDistTo(this.getUnits().get(0).getPosition()) >= 150 + (this.units.size() * 2) && !myData.enemyMilUnits.isEmpty()  && this.SquadsAverageDistTo(this.target) < 2000){
+	int bonus = game.getFrameCount() / 100;
+	
+	
+	if(this.averageUnitScore >= 0.85){
+		return false;
+	}
+	
+	
+	if(myData.currentTarget == null){
+		return false;
+	}
+	
+	if(game.getFrameCount() >= 20000){
+		// protecting against late game regroup spam (too many units to regroup)
+		// just swarm em'
+		if(myData.myScore >= myData.currentTarget.enemyScore * 2){
+			return false;
+		}
+	}
+	
+	if(!this.units.isEmpty() && SquadsAverageDistTo(this.getUnits().get(0).getPosition()) >= 400 + bonus && 
+	!myData.currentTarget.MilUnits.isEmpty() && 
+	this.SquadsAverageDistTo(this.target) < 2000 &&
+	!EnemysNearby(this.getUnits().get(0).getPosition(), 500)){
 		return true;
 	}
 	else {
@@ -434,10 +494,10 @@ void squadMicro(){
 		Regroup(this.getUnits().get(0).getPosition());
 	}
 
-	if(this.State == 2 && !EnemysNearby(this.target)){
+	if(this.State == 2 && !EnemysNearby(this.target, 600)){
 		this.State = 0;
 		this.retreat();
-		System.out.println("Squad: " + this.id + "To far from defence location");
+		//System.out.println("Squad: " + this.id + "No enemy units near defence location");
 	}
 	
 	
@@ -451,47 +511,87 @@ void squadMicro(){
 		this.target = this.myData.nextAttackPosition;
 	}
 	
-	if(this.State == 1 && this.target!=null){
+	if(this.State == 1 && this.target!=null && !shouldRegroup()){
 		// attacking
 		for(Unit unit : new ArrayList<>(this.units)){
-			if(unit.getOrder() != Order.AttackMove && !isInCombat(unit) && !this.flee.containsKey(unit) && myData.canBeDistrubed(unit)){
+//			if(!isInCombat(unit)){
+//				if(myData.canBeDistrubed(unit) && !unit.getOrder().equals(Order.AttackUnit)){
+//					if(unit.getOrderTargetPosition().getApproxDistance(this.target) > 1200){
+//						unit.attack(this.target);
+//					}
+//				}
+//			}
+			
+			if(unit.isIdle() && til.IsMilitrayUnit(unit) && myData.canBeDistrubed(unit)){
+				// https://www.youtube.com/watch?v=SBmz2DdSCPQ
+				// WAH EWAH WAH WAH WAH WAH WAH WAH WAH WAH
+				Position WAH = til.getPositionToFight(unit);
+				if(WAH != null){
+					unit.attack(WAH);
+				}
+				else {
 				unit.attack(this.target);
+				}
 			}
 			
-			if(unit.getType().equals(UnitType.Zerg_Lurker) && !unit.isMoving() && !isInCombat(unit)){
+			if(unit.getType().equals(UnitType.Zerg_Lurker) && !unit.isMoving() && !myData.isNearEnemyOrBetter(unit) && myData.canBeDistrubed(unit)){
 				unit.move(this.target);
 			}
 			
+			if(unit.isIdle() && myData.isSpellCaster(unit) && myData.canBeDistrubed(unit)){
+				for(Unit yes : new ArrayList<>(this.units)){
+					if(myData.isNearEnemyOrBetter(unit) && myData.getScoreOf(yes) > 0.35){
+						unit.move(yes.getPosition());
+						break;
+					}
+				}
+				for(Unit yes : new ArrayList<>(this.units)){
+					if(yes.isMoving() || yes.getOrder().equals(Order.AttackMove)){
+						unit.move(yes.getPosition());
+						break;
+					}
+				}
+			}
+			
+			
+		// end of units loop.	
 		}
 	}
+	// 
+	
 	
 	if(this.State == 2 && target!=null){
 		// defending
 		for(Unit unit : new ArrayList<>(this.units)){
-			if(!IsAttackMoving(unit) && !isInCombat(unit)){
+			if(unit.isIdle() && unit.getDistance(this.target) > 400){
 				unit.attack(this.target);
 			}
-			
-			if(unit.getType().equals(UnitType.Zerg_Lurker) && !unit.isMoving() && !isInCombat(unit)){
-				unit.move(this.target);
+			else {
+				if(myData.canBeDistrubed(unit) && !myData.isNearEnemyOrBetter(unit) && !unit.getOrder().equals(Order.AttackUnit)){
+					if(unit.getOrderTargetPosition().getApproxDistance(this.target) > 800){
+						unit.attack(this.target);
+					}
+				}
 			}
 		}
 	}
 	
 	for(Unit unit : new ArrayList<>(this.units)){
 		// https://www.youtube.com/watch?v=tgyJNXv8dGQ
-		// TO COME TAKE ME AWAY
 		// AND I
 		// CAN FEEL MY HEART SKIP
-		if(til.isSpellCaster(unit.getType())){
+		if(til.isSpellCaster(unit.getType()) && myData.canBeDistrubed(unit) && myData.isNearEnemyOrBetter(unit)){
 			Spellcaster cast = myData.getCaster(unit);
 			if(cast != null){
-				ArrayList<Unit> myUnits = til.getFriendlyUnitsNearMe(unit, 300, false);
-				ArrayList<Unit> enemyUnits = til.getEnemyUnitsNearMe(unit, 300, false);
+				ArrayList<Unit> myUnits = til.getFriendlyUnitsNearMe(unit, 200, false);
+				ArrayList<Unit> enemyUnits = til.getEnemyUnitsNearMe(unit, 200, false);
 				if(enemyUnits == null){
 					enemyUnits = new ArrayList<Unit>();
 				}
+				
+				if(enemyUnits != null && myUnits != null){
 				cast.combatLoop(myUnits, enemyUnits);
+				}
 			}
 		}
 		
@@ -513,7 +613,7 @@ public boolean IsAttackMoving(Unit unit){
 
 
 public boolean isInCombat(Unit unit){
-	if(unit.isUnderAttack() || unit.isStartingAttack()){
+	if(unit.isUnderAttack() || unit.isStartingAttack() || unit.getOrder().equals(Order.AttackUnit)){
 		return true;
 	}
 	
@@ -558,28 +658,61 @@ void operate(){
 		
 		if(this.target==null){
 			this.target = myData.nextAttackPosition;
-			System.out.println("Target is null, LUL");
+			til.Print("Target is null, LOL");
 		}
 		
 		for(Unit unit : new ArrayList<>(this.units)){
 			
-			
-			if(!this.flee.containsKey(unit)){
-				if(unit.isIdle() && this.target != null){
-					unit.attack(this.target);
-				}
-								
+//			if(unit.isLoaded() && !myData.isNearEnemyOrBetter(unit)){
+//				Unit mcravesucks = myData.getTransport(unit);
+//				if(mcravesucks != null){
+//					mcravesucks.unload(unit);
+//				}
+//			}
+
+			if(!this.flee.containsKey(unit) && myData.canBeDistrubed(unit) ){
+				// ^^ called inside the loop
+						
 				if(this.target != null){
-					if(unit.getOrderTargetPosition().getApproxDistance(this.target) > 300 && !isInCombat(unit) && myData.canBeDistrubed(unit)){
-					unit.attack(this.target);
+					
+					if(unit.isIdle() && this.target != null){
+						unit.attack(this.target);
 					}
 					
-					if(unit.isIdle() && unit.getType().equals(UnitType.Terran_Medic) || unit.getType().equals(UnitType.Zerg_Lurker)){
-						unit.move(target);
+					if(unit.equals(UnitType.Protoss_Carrier) && this.target != null){
+						if(unit.getOrderTargetPosition().getApproxDistance(this.target) > 1000){
+							if(!myData.isNearEnemyOrBetter(unit)){
+								unit.attack(this.target);
+							}
+						}
+					}
+					
+					if(unit.getOrderTargetPosition().getApproxDistance(this.target) > 1000){
+						if(!myData.isNearEnemyOrBetter(unit)){
+							unit.attack(this.target);
+						}
+					}
+								
+					if(unit.isIdle() && myData.isSpellCaster(unit)){
+						for(Unit yes : new ArrayList<>(this.units)){
+							if(myData.isNearEnemyOrBetter(unit) && myData.getScoreOf(unit) > 0.35){
+								unit.move(yes.getPosition());
+								break;
+							}
+						}
+						
+						for(Unit yes : new ArrayList<>(this.units)){
+							if(yes.isMoving() || yes.getOrder().equals(Order.AttackMove)){
+								unit.move(yes.getPosition());
+								break;
+							}
+						}
 					}
 				}
 						
 			}
+			
+			
 		}
 		
 		
@@ -589,17 +722,25 @@ void operate(){
 
 void retreat(){
 	for(Unit unit : new ArrayList<>(this.units)){
-		if(unit.getPosition().getApproxDistance(this.retreatPos) > 100 && unit.getOrder() != Order.EnterTransport){
-		unit.move(this.retreatPos);
-			if(unit.isBurrowed()){
-				unit.unburrow();
+		
+		if(myData.isNearEnemyOrBetter(unit) && myData.getScoreOf(unit) > 0.65 && unit.getOrder() != Order.EnterTransport){
+			unit.attack(this.retreatPos);
+		}
+		else{
+			if(unit.getPosition().getApproxDistance(this.retreatPos) > 400 && unit.getOrder() != Order.EnterTransport){
 				unit.move(this.retreatPos);
+				if(unit.isBurrowed()){
+					unit.unburrow();
+				}
+				
+				if(unit.isSieged()){
+					unit.unsiege();
+				}
+				
 			}
+			
 		}
 		
-		if(unit.isSieged()){
-			unit.unsiege();
-		}
 	}
 	
 	if(this.detector != null){
@@ -626,7 +767,7 @@ boolean isSquadFull(){
 }
 
 boolean EnemysNearby(Position pos){
-	ArrayList<Unit> units = new ArrayList<> (game.getUnitsInRadius(pos, 350));
+	ArrayList<Unit> units = new ArrayList<> (game.getUnitsInRadius(pos, 300));
 		for(Unit unit : units){
 			if(game.enemies().contains(unit.getPlayer())){
 				return true;
@@ -679,7 +820,7 @@ void removeFlee(Unit unit){
 
 void targetChecking(){
 	for(Unit unit : new ArrayList<>(this.units)){
-		if(!unit.getType().groundWeapon().equals(WeaponType.None)){
+		if(!unit.getType().groundWeapon().equals(WeaponType.None) && myData.canBeDistrubed(unit) && !this.flee.containsKey(unit) ){
 		int radius = Math.round(unit.getType().groundWeapon().maxRange() + unit.getType().groundWeapon().maxRange() / 4);
 		 //List<Unit> enemy = unit.getUnitsInRadius(radius);
 		 ArrayList<Unit> enemy2 = til.getEnemyUnitsNearMe(unit, radius, false);
@@ -687,11 +828,11 @@ void targetChecking(){
 			 for(Unit enemies : enemy2){
 				if(til.ShouldBeFocused(enemies)){
 					if(!unit.getOrder().equals(Order.AttackUnit)){
-						 if(unit.canAttack(enemies)){
+						 if(unit.canAttack(enemies) && myData.canBeDistrubed(unit)){
 							unit.attack(enemies);
 							game.drawCircleMap(enemies.getPosition(), 5, Color.Brown);
 							game.drawLineMap(unit.getPosition(), enemies.getPosition(), Color.Brown);
-							System.out.println("Unit: " + unit.getID() + " Targetting: " + enemies.getID());
+							//System.out.println("Unit: " + unit.getID() + " Targetting: " + enemies.getID());
 							break;
 							}
 					}
@@ -699,11 +840,11 @@ void targetChecking(){
 						Unit target = unit.getOrderTarget();
 						if(target != null){
 							if(!til.ShouldBeFocused(target)){
-								if(unit.canAttack(enemies)){
+								if(unit.canAttack(enemies) && myData.canBeDistrubed(unit)){
 									unit.attack(enemies);
 									game.drawCircleMap(enemies.getPosition(), 5, Color.Brown);
 									game.drawLineMap(unit.getPosition(), enemies.getPosition(), Color.Brown);
-									System.out.println("Unit: " + unit.getID() + " Targetting: " + enemies.getID());
+									//System.out.println("Unit: " + unit.getID() + " Targetting: " + enemies.getID());
 									break;
 								}
 							}
@@ -723,12 +864,24 @@ void targetChecking(){
 
 boolean isMelee(UnitType type){
 	
-	if(type.equals(UnitType.Zerg_Zergling) || type.equals(UnitType.Zerg_Ultralisk) || type.equals(UnitType.Protoss_Zealot) || type.equals(UnitType.Terran_Firebat)  ){
+	if(type.equals(UnitType.Zerg_Zergling) || 
+		type.equals(UnitType.Zerg_Ultralisk) || 
+		type.equals(UnitType.Protoss_Zealot) || 
+		type.equals(UnitType.Terran_Firebat) || 
+		type.equals(UnitType.Protoss_Dark_Templar) ||
+		type.equals(UnitType.Zerg_Broodling) ||
+		type.equals(UnitType.Terran_Vulture_Spider_Mine)){
 		return true;
 	}
 	
 	return false;
 }
+
+boolean isAttacking2(Unit unit){
+	 return unit.getOrder().equals(Order.AttackUnit) || unit.getOrder().equals(Order.AttackMove);
+	 
+}
+
 
 
 }

@@ -8,14 +8,32 @@ public class Builder {
 Unit worker;
 TilePosition where;
 UnitType type;
+int frameCheck = 0;
+// ^^ CHeck if the building is done by this frame count, if not retry the building
+boolean isExpander;
 
 
 public Builder(Unit workerr, UnitType typee, TilePosition pos){
 	this.worker = workerr;
 	this.where = pos;
 	this.type = typee;
+	isExpander = false;
 }
 
+public Builder(Unit workerr, UnitType typee, TilePosition pos, int f){
+	this.worker = workerr;
+	this.where = pos;
+	this.type = typee;
+	isExpander = false;
+}
+
+
+public Builder(Unit workerr, UnitType typee, TilePosition pos, int f, boolean exp){
+	this.worker = workerr;
+	this.where = pos;
+	this.type = typee;
+	isExpander = exp;
+}
 
 	
 }

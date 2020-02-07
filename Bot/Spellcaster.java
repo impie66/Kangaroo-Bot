@@ -9,13 +9,18 @@ public class Spellcaster {
 	Data data;
 	ArrayList<TechType> hurtful;
 	ArrayList<TechType> helpful;
+	Game game;
+	Util till;
 	
-	Spellcaster(Unit unitt, Data myData){
+	Spellcaster(Unit unitt, Data myData, Util til){
 		this.unit = unitt;
 		this.data = myData;
 		hurtful = new ArrayList<TechType>();
 		helpful = new ArrayList<TechType>();
 		setSpells(unit.getType());
+		game = this.data.game;
+		this.till = til;
+		
 	}
 	
 	
@@ -34,32 +39,91 @@ public class Spellcaster {
 		Unit myUnit = this.unit;
 		
 		
-		if(myUnit.getType().equals(UnitType.Terran_Siege_Tank_Tank_Mode) && unit.canSiege() && myUnit.getOrder().equals(Order.AttackUnit)){
-			unit.siege();
-		}
-
+		if(myUnit.getType().equals(UnitType.Terran_Siege_Tank_Tank_Mode) && myUnit.isAttacking()){
 			
+		}
+		
+		if(myUnit.getType().equals(UnitType.Terran_Siege_Tank_Tank_Mode) && unit.canSiege() && this.data.getSimScore(myUnit) > 0.20){
+			if(enemy.isEmpty()){
+				return;
+			}
+			else {
+				for(Unit unit : enemy){
+					if(myUnit.getPosition().getApproxDistance(unit.getPosition()) < 450){
+						myUnit.siege();
+						break;
+					}
+				}
+			}
+		}
+			
+		if(myUnit.getType().equals(UnitType.Terran_Wraith) && myUnit.canUseTech(TechType.Cloaking_Field) && this.data.isNearEnemyOrBetter(unit)){
+			myUnit.cloak();
+		}
+		
+		if(myUnit.getType().equals(UnitType.Terran_Ghost) && myUnit.canUseTech(TechType.Personnel_Cloaking) && this.data.isNearEnemyOrBetter(unit)){
+			myUnit.cloak();
+		}
+		
+		if(myUnit.isCloaked() && !this.data.isNearEnemyOrBetter(unit) && myUnit.canDecloak()){
+			myUnit.decloak();
+		}
+		
+					
 		if(!friendly.isEmpty()){
 			for(TechType help : helpful){
 				main:
 				if(help.targetsUnit()){
 					for(Unit unit : friendly){
-						if(unit.isUnderAttack() && myUnit.canUseTech(help, unit) && data.self.hasResearched(help) && !isBusy(myUnit)){
+						if(data.isInCombat(unit) && myUnit.canUseTech(help, unit) && data.self.hasResearched(help) && !isBusy(myUnit)){
 							myUnit.useTech(help, unit);
 							break main;
 						}
 					}
 				}
+			
 				if(help.targetsPosition()){
-					for(Unit unit : friendly){
-						if(unit.isUnderAttack() && myUnit.canUseTech(help, unit) && data.self.hasResearched(help) && !isBusy(myUnit)){
-							myUnit.useTech(help, unit.getPosition());
-							break;
+					if(help.equals(TechType.Spider_Mines)){
+						for(Unit unit : friendly){
+							
+							if(unit.getType().equals(UnitType.Terran_Vulture_Spider_Mine)){
+								continue;
+							}
+							
+							double score = data.getSimScore(myUnit);
+//							if(score >= 0.85){
+//								if(data.isNearEnemyOrBetter(unit) && myUnit.canUseTech(help, unit.getPosition()) && data.self.hasResearched(help) && !isBusy(myUnit) && !data.AlreadyMinesNearby(unit.getPosition(), 150)){
+//									myUnit.useTech(help, unit.getPosition());
+//									data.DND(myUnit, game.getFrameCount() + 30);
+//									break;
+//								}
+//							}
+//							else {
+								if(data.isNearEnemyOrBetter(unit) && myUnit.canUseTech(help, myUnit.getPosition()) && data.self.hasResearched(help) && !isBusy(myUnit) && !data.AlreadyMinesNearby(unit.getPosition(), 150)){
+									myUnit.useTech(help, myUnit.getPosition());
+									data.DND(myUnit, game.getFrameCount() + 30);
+									break;
+								}
+							//}
+
+						}
+					}
+					else {
+						// if not mines
+						for(Unit unit : friendly){
+							if(data.isInCombat(unit) &&	 myUnit.canUseTech(help, unit.getPosition()) && data.self.hasResearched(help) && !isBusy(myUnit)){
+								myUnit.useTech(help, unit.getPosition());
+								break;
+							}
 						}
 					}
 				}
+				
+
+		
 			}	
 		}
+		
 		// MJGA (Make Java Greater Again)
 		// https://www.youtube.com/watch?v=asDlYjJqzWE
 		// IT'S CLOSING ON YOU
@@ -69,9 +133,9 @@ public class Spellcaster {
 				main:
 				if(help.targetsUnit()){
 					for(Unit unit : enemy){
-						if(myUnit.canUseTech(help, unit.getPosition()) && data.self.hasResearched(help) && !isBusy(myUnit) && !targetAlreadyEffected(help, unit)){
+						if(myUnit.canUseTech(help, unit) && data.self.hasResearched(help) && !isBusy(myUnit) && !targetAlreadyEffected(help, unit)){
 							myUnit.useTech(help, unit);
-							System.out.println("Casting: " + help.toString() + " Targetting: " + unit.getType().toString());
+							//System.out.println("Casting: " + help.toString() + " Targetting: " + unit.getType().toString());
 							data.game.drawLineMap(myUnit.getPosition(), unit.getPosition(), Color.White);
 							break main;
 						}
@@ -80,6 +144,10 @@ public class Spellcaster {
 			
 				if(help.targetsPosition()){
 					for(Unit unit : enemy){
+						if(help.equals(TechType.Psionic_Storm) && unit.getType().isBuilding()){
+							continue;
+						}
+						
 						if(myUnit.canUseTech(help, unit.getPosition()) && data.self.hasResearched(help) && !isBusy(myUnit) && !targetAlreadyEffected(help, unit)){
 							myUnit.useTech(help, unit.getPosition());
 							break;
@@ -104,13 +172,11 @@ public class Spellcaster {
 			helpful.add(TechType.Healing);
 			hurtful.add(TechType.Optical_Flare);
 		}
-			
-		if(type.equals(UnitType.Zerg_Queen)){
-			hurtful.add(TechType.Spawn_Broodlings);
-		}
-		
+					
 		if(type.equals(UnitType.Zerg_Queen)){
 			hurtful.add(TechType.Ensnare);
+			hurtful.add(TechType.Spawn_Broodlings);
+			hurtful.add(TechType.Infestation);
 		}
 		
 		if(type.equals(UnitType.Zerg_Defiler)){
@@ -190,13 +256,18 @@ public class Spellcaster {
 		   unit.getOrder().equals(Order.CastDefensiveMatrix) ||
 		   unit.getOrder().equals(Order.CastEMPShockwave) ||
 		   unit.getOrder().equals(Order.CastLockdown) ||
-		   unit.getOrder().equals(Order.CastNuclearStrike) ||
+		   //unit.getOrder().equals(Order.CastNuclearStrike) ||
 		   unit.getOrder().equals(Order.CastOpticalFlare) ||
 		   unit.getOrder().equals(Order.CastPlague) ||
 		   unit.getOrder().equals(Order.CastPsionicStorm) ||
 		   unit.getOrder().equals(Order.CastSpawnBroodlings) ||
 		   unit.getOrder().equals(Order.FireYamatoGun) ||
-		   unit.getOrder().equals(Order.CastEnsnare) ) {
+		   unit.getOrder().equals(Order.CastEnsnare) ||
+		   unit.getOrder().equals(Order.PlaceMine) ||
+		   unit.getOrder().equals(Order.VultureMine) ||
+		   unit.getOrder().equals(Order.InfestingCommandCenter) ||
+		   unit.getOrder().equals(Order.MoveToInfest) ||
+		   unit.getOrder().equals(Order.CastInfestation)){
 			return true;
 		}
 		   
@@ -236,13 +307,15 @@ public class Spellcaster {
 		}
 		
 		if(what.equals(TechType.EMP_Shockwave)){
-			return target.getShields() >= target.getType().maxShields() / 2;
+			return target.getShields() != target.getType().maxShields();
 		}
 		
 		return false;
 		
 		
 	}
+	
+
 	
 	
 	

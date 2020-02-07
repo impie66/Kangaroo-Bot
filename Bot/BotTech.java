@@ -44,6 +44,7 @@ public class BotTech {
 	Player self;
 	Player enemy;
 	String name;
+	boolean save;
 	
 	public BotTech(int typee, int RIDD, TechType techh, UpgradeType up, UnitType morph, Data dataa){
 		this.type = typee;
@@ -51,6 +52,32 @@ public class BotTech {
 		this.data = dataa;
 		this.self = this.data.self;
 		this.enemy = this.data.game.enemy();
+		this.save = false;
+		if(type == 1){
+			this.tech = techh;
+			this.name = techh.toString();
+		}
+		
+		if(type == 2){
+			this.upgrade = up;
+			this.name = up.toString();
+		}
+		
+		if(type == 3){
+			this.morphType = morph;
+			this.name = morph.toString();
+		}
+		
+
+	}
+	
+	public BotTech(int typee, int RIDD, TechType techh, UpgradeType up, UnitType morph, Data dataa, boolean sav){
+		this.type = typee;
+		this.RID = RIDD;
+		this.data = dataa;
+		this.self = this.data.self;
+		this.enemy = this.data.game.enemy();
+		this.save = sav;
 		if(type == 1){
 			this.tech = techh;
 			this.name = techh.toString();
@@ -70,6 +97,7 @@ public class BotTech {
 	}
 	
 	
+	
 	boolean requirementsMet(int a){
 		
 		if(a == 0){
@@ -84,7 +112,7 @@ public class BotTech {
 		}
 		
 		if(a == 2){
-			if(self.allUnitCount(UnitType.Zerg_Hydralisk) > 6){
+			if(self.allUnitCount(UnitType.Zerg_Hydralisk) > 3){
 			// IF NUMBER IS BIGGER THEN OTHER NUMBER STUFF HAPPEBS.
 			// >HAPPEBS
 				return true;
@@ -115,6 +143,17 @@ public class BotTech {
 			}
 		}
 		
+		if(a == 6){
+			if(self.allUnitCount(UnitType.Terran_Machine_Shop) > 0){
+				return true;
+			}
+		}
+		
+		if(a == 7){
+			if(self.getUpgradeLevel(UpgradeType.U_238_Shells) > 0 || self.isUpgrading(UpgradeType.U_238_Shells)){
+				return true;
+			}
+		}
 		
 		
 		return false;

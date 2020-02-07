@@ -2,11 +2,13 @@ package Bot;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 
-
+import bwapi.Color;
 import bwapi.Game;
 import bwapi.Order;
 import bwapi.Unit;
+import bwapi.Position;
 import bwapi.UnitType;
 import bwem.*;
 
@@ -25,6 +27,7 @@ HashMap<Unit, ArrayList<Unit>> gasWorkers;
 ArrayList<Unit> voidedWorkers;
 Base Base;
 Game game;
+List<Mineral> blockingMinerals;
 
 	public BotBase(Game gamee, Unit unit, Base bass){
 		this.depot = unit;
@@ -35,8 +38,9 @@ Game game;
 		this.Gases = new ArrayList<Unit>();
 		this.Mins = new ArrayList<Mineral>(bass.getMinerals());
 		this.Geysers = new ArrayList<Geyser>(bass.getGeysers());
-		this.maxWorkers =  6 + (Mins.size() / 2) + (Geysers.size() * 3);
+		this.maxWorkers = 9 + (Mins.size() / 2) + (Geysers.size() * 3);
 		this.voidedWorkers = new ArrayList<Unit>();
+		this.blockingMinerals = bass.getBlockingMinerals();
 	}
 	
 	void assignWorker(Unit worker){
@@ -47,13 +51,19 @@ Game game;
 		
 	}
 	
+	void UpdateThings(){
+
+	}
+	
 	void doThings(){
 		
 		if(this.Pawns.isEmpty() == false){
-			for(Unit unit : new ArrayList<>(this.Pawns)){
+			for(Unit unit : new ArrayList<>(this.Pawns)){ 
 				
+				game.drawLineMap(unit.getPosition(), depot.getPosition(), Color.Black);
+						
 				if(unit.isIdle() == true && unit.isCompleted() == true && !voidedWorkers.contains(unit)){
-					if(unit.getDistance(this.Base.getCenter()) > 500){
+					if(unit.getDistance(this.Base.getCenter()) > 500 && !unit.isConstructing() && depot.isCompleted()){
 						unit.move(this.Base.getCenter());
 					}
 					else {
@@ -62,7 +72,7 @@ Game game;
 				}
 				
 				if(isGasWorker(unit) && !voidedWorkers.contains(unit)){
-					if(unit.getOrder()!= Order.HarvestGas || unit.getOrder()!=Order.ReturnGas){
+					if(!unit.getOrder().equals(Order.HarvestGas) || !unit.getOrder().equals(Order.ReturnGas)){
 						Unit refinery = getAssignedRefinery(unit);
 						if(refinery != null && unit.isGatheringGas() == false){
 							unit.gather(refinery);
@@ -70,22 +80,19 @@ Game game;
 					}
 				}
 				
-				game.drawTextMap(unit.getPosition(), "" + unit.getID());
-				
-				
 				if(unit == null || !unit.exists()){
-					this.Pawns.remove(unit);
+					this.pawnDeath(unit);
 				}
 				
 				if(unit.getType().isBuilding()){
-					this.Pawns.remove(unit);
-				}
-				
-				if(this.Pawns.size() > this.maxWorkers){
-					pawnDeath(unit);
+					this.pawnDeath(unit);
 				}
 				
 				// end of pawn loop
+				
+				if(unit.isGatheringGas() && !isGasWorker(unit)){
+					unit.stop();
+				}
 				
 				
 			}
@@ -95,49 +102,96 @@ Game game;
 				game.drawTextMap(unit.getPosition(), "Workers: " + workers.size() + " /3");
 			}
 			
+			
+			for(Unit unit : this.Gases){
+				if(this.gasWorkers.get(unit).size() < 3 && this.Pawns.size() >= 6){
+					Unit worker = getPawnGatheringMins();
+					if(worker != null){
+					ArrayList<Unit> list = this.gasWorkers.get(unit);
+					list.add(worker);
+					worker.gather(unit);
+					//System.out.println("Assigning a new gas worker to refinery");
+					this.gasWorkers.put(unit, list);
+					break;
+					}
+				}
+			}
+			
+			if(this.blockingMinerals.isEmpty()){
+				for(Mineral min : new ArrayList<>(this.blockingMinerals)){
+					Unit yes = min.getUnit();
+					game.drawCircleMap(yes.getPosition(), yes.getType().width(), Color.Cyan);
+				}
+			}
 
 		}
 		// update the list with the new shit
-				
+			
+		for(Mineral min : new ArrayList<>(this.Mins)){
+			Unit unit = min.getUnit();
+			if(game.isVisible(unit.getTilePosition())){
+				if(!unit.getType().isMineralField()){
+					this.MineralDeplete(unit);
+				}
+			}
+		}
+		
+		for(Unit unit : new ArrayList<>(this.gasWorkers.keySet())){
+			ArrayList<Unit> yes = new ArrayList<>(this.gasWorkers.get(unit));
+			for(Unit unitt : yes){
+				if(!unitt.exists()){
+					yes.remove(unitt);
+					this.gasWorkers.put(unit, yes);
+					//System.out.println("Caught dead gas worker");
+					// https://www.youtube.com/watch?v=NeQM1c-XCDc
+					// du hast du hast
+					// Hast viel geweint
+				}
+			}
+		}
 		
 	}
 	
 	void DoThingsYouLazyCunt(Unit worker){
-		
+		boolean kitkat = false;
 		if(!voidedWorkers.contains(worker)){
-
-		if(this.Gases.isEmpty() == false && this.Pawns.size() >= 6){
-			for(Unit unit : new ArrayList<Unit>(this.Gases)){
-				if(isGas(unit)){
-					if(this.gasWorkers.containsKey(unit) == true){
-						if(this.gasWorkers.get(unit).size() != 3){
-							if(isGasWorker(worker) == false){
-							ArrayList<Unit> list = this.gasWorkers.get(unit);
-							worker.gather(unit);
-							list.add(worker);
-							this.gasWorkers.put(unit, list);
-							//System.out.println("Assigning unit: " + worker.getID() + " To gather gas");
+			if(!this.Gases.isEmpty() && this.Pawns.size() >= 6){
+				for(Unit unit : new ArrayList<Unit>(this.Gases)){
+					if(isGas(unit)){
+						if(this.gasWorkers.containsKey(unit) == true){
+							if(this.gasWorkers.get(unit).size() != 3){
+								if(isGasWorker(worker) == false){
+								ArrayList<Unit> list = this.gasWorkers.get(unit);
+								worker.gather(unit);
+								list.add(worker);
+								kitkat = true;
+								this.gasWorkers.put(unit, list);
+								//System.out.println("Assigning unit: " + worker.getID() + " To gather gas");
+								}
+							}
+							else {
+								GatherMinerals(worker);
 							}
 						}
 					}
 				}
 			}
-		}
-		
-			Unit closestMineral = null;
-			for (Mineral things : new ArrayList<Mineral>(this.Mins)) {
-				Unit neutralUnit = things.getUnit();
-				if (neutralUnit.isBeingGathered() == false) {
-					if (closestMineral == null
-							|| worker.getDistance(neutralUnit) < worker.getDistance(closestMineral)) {
-						closestMineral = neutralUnit;
+			
+			if(kitkat == false){
+				if(blockingMinerals.isEmpty()){
+				GatherMinerals(worker);
+				}
+				else {
+					for(Mineral min : this.blockingMinerals){
+						Unit unit = min.getUnit();
+						if(worker.canGather(unit) && worker.hasPath(unit.getPosition())){
+							worker.gather(unit);
+						}
 					}
 				}
 			}
-
-			if (closestMineral != null) {
-				worker.gather(closestMineral, false);
-			}
+			
+			
 		}
 		
 	}
@@ -163,6 +217,7 @@ Game game;
 						if(unit.getTarget().equals(resource)){
 							i = i + 1;
 							// i++ is for c++ losers
+							// ^^^ THIS.
 						}
 					}
 				}
@@ -191,6 +246,7 @@ Game game;
 		if(this.gasWorkers == null){
 			this.gasWorkers = new HashMap<Unit, ArrayList<Unit>>();
 		}
+		
 		if(!this.gasWorkers.containsKey(refinery)){
 			this.gasWorkers.put(refinery, new ArrayList<Unit>());
 		}	
@@ -205,7 +261,8 @@ Game game;
 	}
 	
 	void pawnDeath(Unit pawn){
-		if(this.Pawns.contains(pawn) == true){
+		
+		if(this.Pawns.contains(pawn)){
 			this.Pawns.remove(pawn);
 		}
 		
@@ -261,15 +318,10 @@ Game game;
 		}
 	}
 	
-	void FuckConc(Unit pawn){	
-//		for(Iterator<Unit> aids = this.Pawns.iterator(); aids.hasNext();){
-//			Unit unit = aids.next();
-//			if(unit.equals(pawn)){
-//				aids.remove();
-//			}
-//		}
-		
-		
+	void unVoidWorker2(Unit pawn){
+		if(this.voidedWorkers.contains(pawn)){
+			voidedWorkers.remove(pawn);
+		}
 	}
 	
 	boolean isGatheringGas(Unit pawn){
@@ -282,14 +334,94 @@ Game game;
 	
 	void EmptyPawns(){
 		this.Pawns.clear();
+		this.gasWorkers.clear();	
 	}
 	
-	void MineralDeplete(Unit min){
-		if(this.Mins.contains(min)){
-			this.Mins.remove(min);
-			this.maxWorkers = (Mins.size() / 2) + (Geysers.size() * 3);
+	void MineralDeplete(Unit unit){
+		for(Mineral min : new ArrayList<>(this.Mins)){
+			if(min.getUnit().equals(unit)){
+				this.Mins.remove(min);
+				this.maxWorkers = (Mins.size() / 2) + (Geysers.size() * 3);
+				//System.out.println("asdf");
+			}
 		}
 	}
 	
+	void unAssignFromBase(Unit pawn){
+		this.Pawns.remove(pawn);	
+	}
+	
+	Unit getPawnGatheringMins(){
+		
+		if(this.Pawns.isEmpty()){
+			return null;
+		}
+		
+		for(Unit unit : new ArrayList<Unit>(this.Pawns)){
+			if(!isGasWorker(unit)){
+				return unit;
+			}
+		}
+		
+		return null;
+	}
+	
+	void GatherMinerals(Unit worker){
+		Unit closestMineral = null;
+		for (Mineral things : new ArrayList<Mineral>(this.Mins)) {
+			Unit neutralUnit = things.getUnit();
+			if (neutralUnit.isBeingGathered() == false) {
+				if (closestMineral == null
+						|| worker.getDistance(neutralUnit) < worker.getDistance(closestMineral)) {
+					closestMineral = neutralUnit;
+				}
+			}
+		}
+
+		if (closestMineral != null) {
+			worker.gather(closestMineral, false);
+		}
+	}
+	
+	
+	void DepotFinished(){
+		Position pos = this.depot.getPosition();
+		for(Unit unit : new ArrayList<Unit>(this.Pawns)){
+			if(unit.isIdle() && unit.getDistance(pos) > 500){
+				unit.move(pos);
+			}
+			
+			if(unit.getOrderTargetPosition().getApproxDistance(pos) >= 500){
+				unit.move(pos);
+			}
+			
+		}
+	}
+	
+	void blockingMineralDestroy(Unit unit){
+		for(Mineral min : new ArrayList<>(this.blockingMinerals)){
+			Unit yes = min.getUnit();
+			if(yes.equals(unit)){
+				this.blockingMinerals.remove(min);
+			}
+		}
+	}
+	
+	boolean hasBlockingMin(Unit unit){
+		
+		if(this.blockingMinerals.isEmpty()){
+			return false;
+		}
+		
+		
+		for(Mineral min : new ArrayList<>(this.blockingMinerals)){
+			Unit yes = min.getUnit();
+			if(yes.equals(unit)){
+				return true;
+			}
+		}
+		
+		return false;
+	}
 
 }

@@ -3,12 +3,6 @@ package Bot;
 import bwapi.*;
 
 
-
-
-// LOVE ME BABY BABY
-// GIVE ME VERY VERY
-
-
 public class BuildingQueue{
 UnitType type;
 TilePosition pos;
