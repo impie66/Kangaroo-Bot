@@ -2,10 +2,8 @@ package Bot;
 import bwapi.*;
 
 import java.util.ArrayList;
-
-import org.bk.ass.sim.BWMirrorAgentFactory;
-import org.bk.ass.sim.Evaluator;
 import org.bk.ass.sim.*;
+import org.bk.ass.sim.Evaluator;
 import org.bk.ass.sim.Simulator;
 
 public class DecisionManager {
@@ -27,7 +25,7 @@ public class DecisionManager {
 		this.canWin = false;
 		this.sim = new Simulator.Builder().build();
 		this.evaluator = new Evaluator();
-		this.factory =  new BWMirrorAgentFactory();
+		this.factory =  new BWMirrorAgentFactory(game);
 		this.myScore = 0;
 		this.enemyScore = 0;
 

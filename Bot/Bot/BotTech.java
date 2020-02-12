@@ -112,7 +112,7 @@ public class BotTech {
 		}
 		
 		if(a == 2){
-			if(self.allUnitCount(UnitType.Zerg_Hydralisk) > 6){
+			if(self.allUnitCount(UnitType.Zerg_Hydralisk) > 3){
 			// IF NUMBER IS BIGGER THEN OTHER NUMBER STUFF HAPPEBS.
 			// >HAPPEBS
 				return true;
@@ -149,8 +149,11 @@ public class BotTech {
 			}
 		}
 		
-		
-		
+		if(a == 7){
+			if(self.getUpgradeLevel(UpgradeType.U_238_Shells) > 0 || self.isUpgrading(UpgradeType.U_238_Shells)){
+				return true;
+			}
+		}
 		
 		
 		return false;

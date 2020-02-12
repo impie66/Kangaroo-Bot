@@ -136,6 +136,20 @@ List<Mineral> blockingMinerals;
 			}
 		}
 		
+		for(Unit unit : new ArrayList<>(this.gasWorkers.keySet())){
+			ArrayList<Unit> yes = new ArrayList<>(this.gasWorkers.get(unit));
+			for(Unit unitt : yes){
+				if(!unitt.exists()){
+					yes.remove(unitt);
+					this.gasWorkers.put(unit, yes);
+					//System.out.println("Caught dead gas worker");
+					// https://www.youtube.com/watch?v=NeQM1c-XCDc
+					// du hast du hast
+					// Hast viel geweint
+				}
+			}
+		}
+		
 	}
 	
 	void DoThingsYouLazyCunt(Unit worker){
@@ -248,7 +262,7 @@ List<Mineral> blockingMinerals;
 	
 	void pawnDeath(Unit pawn){
 		
-		if(this.Pawns.contains(pawn) == true){
+		if(this.Pawns.contains(pawn)){
 			this.Pawns.remove(pawn);
 		}
 		

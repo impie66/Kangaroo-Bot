@@ -60,6 +60,8 @@ public class Data {
 	boolean hasEarlyExpanded = false;
 	ArrayList<ChokePoint> ramps = new ArrayList<>();
 	HashMap<ChokePoint, ArrayList<Region>> asdfg = new HashMap<>();
+	int pStats = 0;
+	int lastExpandFrame = 5000;
 	
 	public Data(Game gaem, BWEM b, Base myBasee){
 		this.game = gaem;
@@ -94,7 +96,9 @@ public class Data {
 		this.Scans = new ArrayList<Position>();
 		this.myExpands = new ArrayList<BotBase>();
 		this.UIC = new ArrayList<>();
+		this.pStats = 0;
 		DoTheThing();
+		this.defencePos = TilePosition.None;
 
 	}
 	
@@ -106,11 +110,19 @@ public class Data {
 			}
 		}
 		
+		
+
 		int max = bewb.getMap().getBases().size();
 		ArrayList<Base> temp = new ArrayList<Base>();
 		int i = 0;
 		int dist = 200;
 		TilePosition start = self.getStartLocation();
+		
+//		if(game.mapHash().equals("3641669172a64bf587c4dd9c400b961f2cfba2d6")){
+//			Base fuckThirdWorld = getBaseFromHash(342802149);
+//			temp.add(fuckThirdWorld);
+//		}
+		// && !game.mapHash().equals("3641669172a64bf587c4dd9c400b961f2cfba2d6")
 		while(i!=max-1){
 			dist = dist + 100;
 			for (Base Expand : bewb.getMap().getBases()) {
@@ -211,22 +223,26 @@ public class Data {
 
 					for(Base starts : bewb.getMap().getBases()){
 
+						if(!game.isVisible(starts.getCenter().toTilePosition()) && !scouts.contains(starts)){
+							this.scouts.add(starts);
+						}
 						
 						if(!game.isExplored(starts.getLocation()) && starts.isStartingLocation()){
 							this.scouts.add(starts);
 						}
 						
-						if(!game.isVisible(starts.getCenter().toTilePosition()) && !scouts.contains(starts)){
-							this.scouts.add(starts);
-						}
 						
 					}
 				}
 			
 			
 			if(!scouts.isEmpty()){
-				if(!this.attackPositions.contains(this.scouts.get(0).getCenter())){
-				this.attackPositions.add(this.scouts.get(0).getCenter());
+				
+				for(Base pos : this.scouts){
+					Position yes = pos.getCenter();
+					if(!this.attackPositions.contains(yes)){
+						this.attackPositions.add(yes);
+					}
 				}
 				this.nextAttackPosition = this.attackPositions.get(0);
 			}
@@ -759,7 +775,7 @@ public class Data {
 		if(this.Expands.size() >= 5){
 			this.needsToExpand = false;
 		}
-		
+			
 		// if we aren't z
 			for(Unit unit : game.self().getUnits()){
 				if(yesyes.contains(unit.getType())){
@@ -805,6 +821,11 @@ public class Data {
 	}
 	
 	TilePosition getDefencePos() {
+		
+		if(!this.defencePos.equals(TilePosition.None)){
+			return this.defencePos;
+		}
+		
 		ChokePoint chosen = null;
 		if(this.Expands != null){
 			Base bass = Expands.get(0);
@@ -835,7 +856,7 @@ public class Data {
 			}
 			else {
 				//System.out.println("Chosen is null LULW");
-				//game.sendText("BWEM shit the bed, building bunker in default");
+				game.sendText("BWEM shit the bed, building bunker in default");
 				int f = 0;
 				ChokePoint cho = null;
 				main:
@@ -902,7 +923,15 @@ public class Data {
 	
 	boolean canEarlyExpand(BotPlayer ply){
 		
+		if(Expands.size() > 1){
+			return false;
+		}
+	
 		if(hasEarlyExpanded == true){
+			return false;
+		}
+		
+		if(game.getFrameCount() >= 12000){
 			return false;
 		}
 		
@@ -934,7 +963,14 @@ public class Data {
 	
 	
 	boolean isSpellCaster(Unit unit){
-		return this.spellCasters.contains(unit);
+
+		for(Spellcaster cast : new ArrayList<>(this.spellCasters)){
+			if(cast.unit.equals(unit)){
+				return true;
+			}
+		}
+		
+		return false;
 	}
 	
 	
@@ -1061,6 +1097,16 @@ public class Data {
 				if(unitt.getLoadedUnits().contains(unit)){
 					return unitt;
 				}
+			}
+		}
+		
+		return null;
+	}
+	
+	Base getBaseFromHash(int h){
+		for(Base bass : bewb.getMap().getBases()){
+			if(bass.hashCode() == h){
+				return bass;
 			}
 		}
 		

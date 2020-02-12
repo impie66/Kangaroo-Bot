@@ -88,7 +88,21 @@ public class BotPlayer {
 			UnitType type = unit.getType();
 			if(!this.MilUnits.contains(unit) && util.IsMilitrayUnit(unit)){
 				this.MilUnits.add(unit);
-				this.Types.add(unit.getType());
+				this.Types.add(type);
+				if(type.equals(UnitType.Zerg_Lurker)){
+					if(this.Types.contains(UnitType.Zerg_Hydralisk)){
+						this.Types.remove(UnitType.Zerg_Hydralisk);
+						this.enemyScore = this.enemyScore - util.getScoreOf(UnitType.Zerg_Hydralisk);
+						this.armyScore = this.armyScore - data.getScoreOf(unit);
+					}
+				}
+				if(type.equals(UnitType.Zerg_Guardian)){
+					if(this.Types.contains(UnitType.Zerg_Mutalisk)){
+						this.Types.remove(UnitType.Zerg_Mutalisk);
+						this.enemyScore = this.enemyScore - util.getScoreOf(UnitType.Zerg_Mutalisk);
+						this.armyScore = this.armyScore - data.getScoreOf(unit);
+					}
+				}
 				this.enemyScore = this.enemyScore + util.getScoreOf(unit);
 				if(!unit.getType().isBuilding()){
 				armyScore = armyScore + data.getScoreOf(unit);
@@ -100,6 +114,7 @@ public class BotPlayer {
 			
 		}
 	}
+	
 	
 	void unitDeath(Unit unit){
 
@@ -179,13 +194,14 @@ public class BotPlayer {
 			for(int i = 0; i < mIncome / 100; i++){
 				yes.add(UnitType.Terran_Medic);
 			}
-			
-			for(int i = 0; i < mIncome / 300; i++){
-				yes.add(UnitType.Terran_Siege_Tank_Tank_Mode);
-			}
-			
-			for(int i = 0; i < mIncome / 200; i++){
-				yes.add(UnitType.Terran_Vulture);
+			if(this.player.completedUnitCount(UnitType.Terran_Factory) > 0){
+				for(int i = 0; i < mIncome / 300; i++){
+					yes.add(UnitType.Terran_Siege_Tank_Tank_Mode);
+				}
+				
+				for(int i = 0; i < mIncome / 200; i++){
+					yes.add(UnitType.Terran_Vulture);
+				}
 			}
 		}
 		else if (this.race.equals(Race.Protoss)) {
@@ -259,6 +275,22 @@ public class BotPlayer {
 		if(this.CCP.contains(cp)){
 			this.CCP.remove(cp);
 		}
+	}
+	
+	int howManyHaveNoBullshit(UnitType yeah){
+		
+		if(this.Types.isEmpty()){
+			return 0;
+		}
+		
+		int eye = 0;
+		for(UnitType type : this.Types){
+			if(type.equals(yeah)){
+				eye++;
+			}
+		}
+		
+		return eye;
 	}
 	
 	

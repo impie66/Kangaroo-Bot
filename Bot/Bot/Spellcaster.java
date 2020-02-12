@@ -38,6 +38,11 @@ public class Spellcaster {
 	void combatLoop(ArrayList<Unit> friendly, ArrayList<Unit> enemy){
 		Unit myUnit = this.unit;
 		
+		
+		if(myUnit.getType().equals(UnitType.Terran_Siege_Tank_Tank_Mode) && myUnit.isAttacking()){
+			
+		}
+		
 		if(myUnit.getType().equals(UnitType.Terran_Siege_Tank_Tank_Mode) && unit.canSiege() && this.data.getSimScore(myUnit) > 0.20){
 			if(enemy.isEmpty()){
 				return;
@@ -51,7 +56,7 @@ public class Spellcaster {
 				}
 			}
 		}
-		
+			
 		if(myUnit.getType().equals(UnitType.Terran_Wraith) && myUnit.canUseTech(TechType.Cloaking_Field) && this.data.isNearEnemyOrBetter(unit)){
 			myUnit.cloak();
 		}
@@ -171,6 +176,7 @@ public class Spellcaster {
 		if(type.equals(UnitType.Zerg_Queen)){
 			hurtful.add(TechType.Ensnare);
 			hurtful.add(TechType.Spawn_Broodlings);
+			hurtful.add(TechType.Infestation);
 		}
 		
 		if(type.equals(UnitType.Zerg_Defiler)){
@@ -301,7 +307,7 @@ public class Spellcaster {
 		}
 		
 		if(what.equals(TechType.EMP_Shockwave)){
-			return target.getShields() >= target.getType().maxShields() / 2;
+			return target.getShields() != target.getType().maxShields();
 		}
 		
 		return false;

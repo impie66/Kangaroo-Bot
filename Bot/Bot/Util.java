@@ -1,7 +1,15 @@
 package Bot;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.InputStream;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
+
+import javax.sound.sampled.AudioInputStream;
+import javax.sound.sampled.AudioSystem;
+import javax.sound.sampled.Clip;
 
 import bwapi.Game;
 import bwapi.Order;
@@ -18,6 +26,7 @@ import bwem.BWEM;
 import bwem.Base;
 import bwem.CPPath;
 import bwem.ChokePoint;
+import sun.audio.*;
 
 public class Util {
 	Game game;
@@ -60,11 +69,11 @@ public class Util {
 		int Int3;
 		int Int4;
 		
-		if(unitt.getDistance(targett) <= 60){
+		if(unitt.getDistance(targett) <= 200){
 			int Int1  = targett.getX() - unitt.getX();
 			int Int2 = targett.getY() - unitt.getY(); 
-			Int3 = (int) (unitt.getX() - Int1 * 0.05);
-			Int4 =  (int) (unitt.getY() - Int2 * 0.05);
+			Int3 = (int) (unitt.getX() - Int1 * 0.10);
+			Int4 =  (int) (unitt.getY() - Int2 * 0.10);
 		}
 		else {
 			int Int1  = targett.getX() - unitt.getX();
@@ -416,6 +425,11 @@ public class Util {
 		return ((auxType.destroyScore() * auxType.maxHitPoints()) / (auxType.maxHitPoints() * 2));
 	}
 	
+	int getScoreOf(UnitType unit){
+		UnitType auxType = unit;
+		return ((auxType.destroyScore() * auxType.maxHitPoints()) / (auxType.maxHitPoints() * 2));
+	}
+	
 	
 
 	int numberOfScoutedPlayers(int max){
@@ -470,7 +484,7 @@ public class Util {
 		 type.equals(UnitType.Zerg_Queen) ||
 		 type.equals(UnitType.Zerg_Defiler) ||
 		 type.equals(UnitType.Terran_Vulture) ||
-		 type.equals(UnitType.Protoss_High_Templar) ){
+		 type.equals(UnitType.Protoss_High_Templar)){
 			return true;
 			
 		}
@@ -659,21 +673,21 @@ public class Util {
 	
 	boolean shouldPushAgainst(Unit me, Unit target){
 		
-		if(myData.getScoreOf(me) > 0.90){
-			return false;
+		if(target.getType().equals(UnitType.Terran_Siege_Tank_Siege_Mode) || target.getType().equals(UnitType.Terran_Siege_Tank_Tank_Mode) && myData.getSimScore(me) > 0.85){
+			return true;
 		}
 		
 		if(target.getType().isBuilding()){
+			return false;
+		}
+		
+		if(myData.getSimScore(me) > 0.90){
 			return false;
 		}
 			
 		int enemyWeaponRange = realWeaponRange(target.getType(), target.getPlayer());
 		int weaponRange = realWeaponRange(me.getType(), game.self());
 				
-		if(target.getType().equals(UnitType.Terran_Siege_Tank_Siege_Mode)){
-			return true;
-		}
-			
 		if(weaponRange <= enemyWeaponRange){
 			return true;
 		}
@@ -757,11 +771,50 @@ public class Util {
 	
 	
 	void Print(String str){
-		System.out.println(str);
+		boolean enablePrinting = true;
+		if(enablePrinting){
+			System.out.println(str);
+		}
 		// WAH WAH WAH WAH WAH EAH WAH WAH EWAHWS HWA HEWAH WAH WAH WAHWSA WAH WAHU WAH WAH WHA'
 		
 	}
+	
+	
+	void playSound(String yes){
+		try {
+			URL url = this.getClass().getClassLoader().getResource(yes);
+			AudioInputStream audioIn = AudioSystem.getAudioInputStream(url);
+			Clip clip = AudioSystem.getClip();
+			clip.open(audioIn);
+			clip.start();
+		}
+		catch (Exception E){
+			E.printStackTrace();
+		}
+		
+	}
+	
+	Position getPositionToFight(Unit unit){
+		for(Unit yes : game.getUnitsInRadius(unit.getPosition(), 300 + unit.getType().sightRange())){
+			if(game.enemies().contains(yes.getPlayer()) && unit.canAttack(unit)){
+				return yes.getPosition();
+			}
+		}
+		
+		return null;
+	}
 
+	boolean EnemysNearby(Position pos, int max){
+		ArrayList<Unit> units = new ArrayList<> (game.getUnitsInRadius(pos, max));
+			for(Unit unit : units){
+				if(game.enemies().contains(unit.getPlayer())){
+					return true;
+				}
+			}
+			
+		return false;
+		
+	}
 	
 	// return new TilePosition(i, j).toPosition();
 	

@@ -28,6 +28,7 @@ Unit detector;
 HashMap<Unit, Integer> flee;
 Util til;
 UnitType filter;
+int averageUnitScore;
 // 1 == attacker, 2 == defender, 3 == harasser
 
 //BRINGING BACK THE INTEGERS
@@ -143,7 +144,7 @@ void onFrame(){
 		game.drawCircleMap(this.detector.getPosition(), this.detector.getType().width(), Color.Green);
 		Position pos = null;
 			for(Unit unit : new ArrayList<Unit>(this.units)){
-				if(isInCombat(unit) && det.getPosition().getApproxDistance(unit.getPosition()) >= 100){
+				if(myData.isNearEnemyOrBetter(unit) && det.getPosition().getApproxDistance(unit.getPosition()) >= 100){
 					pos = unit.getPosition();
 					break;
 				}
@@ -162,21 +163,25 @@ void onFrame(){
 	}
 	
 	if(!this.units.isEmpty()){
+		int i = 0;
+		int ii = this.units.size();
 		
 		for(Unit unit : new ArrayList<>(this.units)){	
+			
+			i = i + myData.getScoreOf(unit);
 			
 			if(!unit.exists()){
 				this.units.remove(unit);
 			}
 			
 			if(unit.getType().equals(UnitType.Zerg_Lurker) && unit.isBurrowed()){
-				if(!EnemysNearby(unit.getPosition(), 200)){
+				if(!EnemysNearby(unit.getPosition(), 250)){
 					unit.unburrow();
 				}
 			}
 			
 				if(unit.getType().equals(UnitType.Zerg_Lurker) && !unit.isBurrowed()){
-					if(EnemysNearby(unit.getPosition(), 200) && unit.canBurrow()){
+					if(EnemysNearby(unit.getPosition(), 250) && unit.canBurrow()){
 						unit.burrow();
 					}
 				}
@@ -192,9 +197,9 @@ void onFrame(){
 				//push
 				// pull
 				// isMelee
-				// && !unit.getType().equals(UnitType.Protoss_Dragoon)
+				// && !unit.getType().equals(UnitType.Protoss_Dragoon)s
 				
-				if(unit.isAttacking() && !isMelee(unit.getType()) == true && myData.canBeDistrubed(unit)){
+				if(unit.isAttacking() && !isMelee(unit.getType()) == true && myData.canBeDistrubed(unit) && !unit.getType().equals(UnitType.Protoss_Dragoon)){
 					double score = myData.getSimScore(unit);
 					//System.out.println("Trigger");
 					if(unit.getOrderTarget() != null){
@@ -203,13 +208,13 @@ void onFrame(){
 						int weaponRange = til.realWeaponRange(unit.getType(), game.self());
 						//System.out.println("Unit Target: " + target.getType().toString());
 						
-						if(til.shouldKiteAgainst(unit, target) && myData.weaponCoolingDown(unit) && score >= 0.50 && score <= 0.75 && !isMelee(unit.getType())){
+						if(til.shouldKiteAgainst(unit, target) && myData.weaponCoolingDown(unit) && score <= 0.75 && !isMelee(unit.getType())){
 							// if we outrange
 							Position pos = til.GetKitePos2(unit, target);
 							if(pos != null){
 							myData.DND(unit, c);
 							unit.move(pos);
-							unit.attack(unit.getPosition(), true);
+							//unit.attack(unit.getPosition(), true);
 							}	
 							
 						}
@@ -220,7 +225,7 @@ void onFrame(){
 							if(pos != null){
 							myData.DND(unit, c);
 							unit.move(pos);
-							unit.attack(target.getPosition(), true);
+							//unit.attack(target.getPosition(), true);
 							}
 						}
 					}
@@ -231,7 +236,7 @@ void onFrame(){
 				// TODO FIX GOON MICRO
 				// really need to do
 				
-				if(unit.getType().equals(UnitType.Zerg_Mutalisk) && unit.isAttacking()){
+				if(unit.getType().equals(UnitType.Zerg_Mutalisk) && unit.isAttacking() && myData.canBeDistrubed(unit)){
 					if(myData.weaponCoolingDown(unit)){
 						Unit target = unit.getOrderTarget();
 						Position pos = til.GetKitePos2(unit, target);
@@ -280,9 +285,9 @@ void onFrame(){
 			// end of units loop									
 		}
 		
+		this.averageUnitScore = ii / i;
 		
 		
-
 		
 	}
 	
@@ -344,6 +349,7 @@ int getSquadScore(){
 	if(this.units.isEmpty()){
 		return i;
 	}
+	
 	for(Unit unit : new ArrayList<Unit>(this.units)){
 		i = i + getScoreOf(unit);
 	}
@@ -396,7 +402,15 @@ void Regroup(Position pos){
 					}
 					
 					if(myData.getSimScore(unit) > 0.70 && myData.isNearEnemyOrBetter(unit)){
-						continue; 
+						if(unit.isIdle()){
+							Position attack = til.getPositionToFight(unit);
+							if(attack != null){
+								unit.attack(attack);
+							}
+						}
+						else {
+							continue;
+						}
 						// win the local fight before retreating.
 					}
 					else {
@@ -416,7 +430,7 @@ void Regroup(Position pos){
 						}
 						else {
 							if(unit.getDistance(pos) > 300){
-							unit.move(pos);
+								unit.move(pos);
 							}
 						}
 					}
@@ -426,8 +440,13 @@ void Regroup(Position pos){
 					}
 					
 					if(this.myData.isSpellCaster(unit) && unit.getDistance(pos) > 250){
-						if(unit.getOrderTarget().getDistance(pos) > 600){
+						if(unit.isIdle() && unit.getDistance(pos) >= 400){
 							unit.move(pos);
+						}
+						if(unit.getOrderTarget() != null){
+							if(unit.getOrderTarget().getDistance(pos) > 600){
+								unit.move(pos);
+							}
 						}
 					}
 				}
@@ -438,6 +457,12 @@ void Regroup(Position pos){
 
 boolean shouldRegroup(){	
 	int bonus = game.getFrameCount() / 100;
+	
+	
+	if(this.averageUnitScore >= 0.85){
+		return false;
+	}
+	
 	
 	if(myData.currentTarget == null){
 		return false;
@@ -451,10 +476,10 @@ boolean shouldRegroup(){
 		}
 	}
 	
-	if(!this.units.isEmpty() && SquadsAverageDistTo(this.getUnits().get(0).getPosition()) >= 200 + bonus && 
+	if(!this.units.isEmpty() && SquadsAverageDistTo(this.getUnits().get(0).getPosition()) >= 400 + bonus && 
 	!myData.currentTarget.MilUnits.isEmpty() && 
 	this.SquadsAverageDistTo(this.target) < 2000 &&
-	!EnemysNearby(this.getUnits().get(0).getPosition(), 400)){
+	!EnemysNearby(this.getUnits().get(0).getPosition(), 500)){
 		return true;
 	}
 	else {
@@ -498,7 +523,15 @@ void squadMicro(){
 //			}
 			
 			if(unit.isIdle() && til.IsMilitrayUnit(unit) && myData.canBeDistrubed(unit)){
+				// https://www.youtube.com/watch?v=SBmz2DdSCPQ
+				// WAH EWAH WAH WAH WAH WAH WAH WAH WAH WAH
+				Position WAH = til.getPositionToFight(unit);
+				if(WAH != null){
+					unit.attack(WAH);
+				}
+				else {
 				unit.attack(this.target);
+				}
 			}
 			
 			if(unit.getType().equals(UnitType.Zerg_Lurker) && !unit.isMoving() && !myData.isNearEnemyOrBetter(unit) && myData.canBeDistrubed(unit)){
@@ -512,7 +545,6 @@ void squadMicro(){
 						break;
 					}
 				}
-				
 				for(Unit yes : new ArrayList<>(this.units)){
 					if(yes.isMoving() || yes.getOrder().equals(Order.AttackMove)){
 						unit.move(yes.getPosition());
@@ -521,10 +553,12 @@ void squadMicro(){
 				}
 			}
 			
+			
 		// end of units loop.	
 		}
 	}
 	// 
+	
 	
 	if(this.State == 2 && target!=null){
 		// defending
@@ -624,17 +658,17 @@ void operate(){
 		
 		if(this.target==null){
 			this.target = myData.nextAttackPosition;
-			System.out.println("Target is null, LUL");
+			til.Print("Target is null, LOL");
 		}
 		
 		for(Unit unit : new ArrayList<>(this.units)){
 			
-			if(unit.isLoaded() && !myData.isNearEnemyOrBetter(unit)){
-				Unit mcravesucks = myData.getTransport(unit);
-				if(mcravesucks != null){
-					mcravesucks.unload(unit);
-				}
-			}
+//			if(unit.isLoaded() && !myData.isNearEnemyOrBetter(unit)){
+//				Unit mcravesucks = myData.getTransport(unit);
+//				if(mcravesucks != null){
+//					mcravesucks.unload(unit);
+//				}
+//			}
 
 			if(!this.flee.containsKey(unit) && myData.canBeDistrubed(unit) ){
 				// ^^ called inside the loop
@@ -666,6 +700,7 @@ void operate(){
 								break;
 							}
 						}
+						
 						for(Unit yes : new ArrayList<>(this.units)){
 							if(yes.isMoving() || yes.getOrder().equals(Order.AttackMove)){
 								unit.move(yes.getPosition());
@@ -846,6 +881,7 @@ boolean isAttacking2(Unit unit){
 	 return unit.getOrder().equals(Order.AttackUnit) || unit.getOrder().equals(Order.AttackMove);
 	 
 }
+
 
 
 }
