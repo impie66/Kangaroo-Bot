@@ -34,6 +34,19 @@ and a fork from [McRave](https://github.com/Cmccrave/McRave) using [jBWAPI](http
 
 <h1>Updates</h1>
 
+
+<b>6/03/2020</b>
+* This segument isn't about updates. Just some general points about my bot. 
+* I uploaded version 1.0 onto SSCAIT/BASIL. I don't expect it to do well. It's all about fun here. 
+* Currently has a couple builds for each race. Z and T have match up specific openers. These are completely [unconventional](http://satirist.org/ai/starcraft/blog/archives/914-an-advantage-for-playing-random-on-BASIL.html) random builds i made up. 
+* P is well... uh... Special :) (>tfw it has the highest win rate of the 3 races. Voom voom goon zealot go fast)
+* KangarooBot doesn't build of "Supply" like most bots do. (As in Build SCV at 9 supply). I just give it an arraylist of unitypes and it'll make them once it has the resources. Same with units. It doesn't react very well to the enemys units. It'll make whatever it manages to put together. 
+* Bot currently has trouble finding enemy buildings stashed in corners of its base. I have coded up something temporarily while i find something else.  
+* The bot hasn't versed a bot before prior to the upload. Everything is subject to get worse. 
+
+
+<br>
+
 <b>9/08/2019</b>
 * Now supports RANDOM
 * FFA support. Still has issues that If bot had. Can't see unit's killed by the other players. Bot will attack the weakest player.
