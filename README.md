@@ -34,6 +34,16 @@ and a fork from [McRave](https://github.com/Cmccrave/McRave) using [jBWAPI](http
 
 <h1>Updates</h1>
 
+<b>12/03/2019</b>
+<br />
+Was running a minecraft server with some mates for abit. But now i'm back
+* Added teching up and a "Main unit goal". Main unit goal is what the bot wants to primarily build. 
+* Added a small delay for siegetanks to siege up upon contact with the enemy (WIP)
+* There is a known bug that the bot forgets where the enemy is and scouts around the map. This can work in my favour as it sometimes targets last stored attack position which is often enemy bases. So for now it's a Feature
+* Reworked unit unit production
+* Also broke unit production
+* Bot now attempts to run away from its own spider mines.
+
 
 <b>6/03/2020</b>
 * This segument isn't about updates. Just some general points about my bot. 
