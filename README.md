@@ -34,7 +34,23 @@ and a fork from [McRave](https://github.com/Cmccrave/McRave) using [jBWAPI](http
 
 <h1>Updates</h1>
 
-<b>12/03/2019</b>
+<b>22/03/2020</b>
+<br />
+It's not my fault! PoE and doom came out
+* Bot will now attack bases rather than the main if applicable
+* Reworked some terran openings
+* Bot will now attempt to kill defences/workers instead of random buildings.
+* Some general SIM improvements.
+* Added some basic aggression detection
+* Also added some basic DT/lurker detection and reaction
+* Tanks/Spidermines now get a pay reduction for friendly fire
+* Added 2 protoss builds. 12 nexus and some shit tier DT rush. 
+* Alot of poor bugs were killed in the process of the update
+* But to make up for that i introduced alot more
+<br />
+There will be bugs still but i stil need to test against more bots. 
+
+<b>12/03/2020</b>
 <br />
 Was running a minecraft server with some mates for abit. But now i'm back
 * Added teching up and a "Main unit goal". Main unit goal is what the bot wants to primarily build. 
