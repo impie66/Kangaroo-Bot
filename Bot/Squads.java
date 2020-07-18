@@ -282,20 +282,20 @@ void onFrame(){
 				// TODO FIX GOON MICRO
 				// really need to do
 				
-				if(unit.getType().equals(UnitType.Zerg_Mutalisk) && unit.isAttacking() && myData.canBeDistrubed(unit)){
-					if(myData.weaponCoolingDown(unit)){
-						Unit target = unit.getOrderTarget();
-						if(til.shouldMutaKiteAgainst(unit, target)){
-							Position pos = til.GetKitePosMuta(unit, target);
-							if(pos != null){
-							int cc = game.getFrameCount() + unit.getType().groundWeapon().damageCooldown();
-							myData.DND(unit, cc);
-							unit.move(pos);
-							unit.patrol(unit.getPosition(), true);
-							}
-						}
-					}
-				}
+//				if(unit.getType().equals(UnitType.Zerg_Mutalisk) && unit.isAttacking() && myData.canBeDistrubed(unit)){
+//					if(myData.weaponCoolingDown(unit)){
+//						Unit target = unit.getOrderTarget();
+//						if(til.shouldMutaKiteAgainst(unit, target)){
+//							Position pos = til.GetKitePosMuta(unit, target);
+//							if(pos != null){
+//							int cc = game.getFrameCount() + unit.getType().groundWeapon().damageCooldown();
+//							myData.DND(unit, cc);
+//							unit.move(pos);
+//							unit.patrol(unit.getPosition(), true);
+//							}
+//						}
+//					}
+//				}
 				
 				//Onion rings..... yummy.... I'm hungry now
 //				if(unit.getKillCount() > 0){
@@ -628,7 +628,7 @@ void squadMicro(){
 	if(this.State == 2 && target!=null){
 		// defending
 		for(Unit unit : new ArrayList<>(this.units)){
-			if(unit.isIdle() && unit.getDistance(this.target) > 400){
+			if(unit.isIdle() && unit.getPosition().getApproxDistance(this.target) > 1000){
 				unit.attack(this.target);
 			}
 			else {
@@ -790,7 +790,7 @@ void operate(){
 							unit.move(this.target);
 						}
 						else {
-							if(unit.getOrderTargetPosition().getApproxDistance(this.target) > 1000 && myData.canBeDistrubed(unit) && myData.isNearEnemyOrBetter(unit)){
+							if(unit.getOrderTargetPosition().getApproxDistance(this.target) > 2000 && myData.canBeDistrubed(unit) && myData.isNearEnemyOrBetter(unit)){
 								unit.move(this.target);
 							}
 						}
@@ -801,14 +801,14 @@ void operate(){
 					}
 					
 					if(unit.equals(UnitType.Protoss_Carrier) && this.target != null){
-						if(unit.getOrderTargetPosition().getApproxDistance(this.target) > 1000){
+						if(unit.getOrderTargetPosition().getApproxDistance(this.target) > 2000){
 							if(!myData.isNearEnemyOrBetter(unit)){
 								unit.attack(this.target);
 							}
 						}
 					}
 					
-					if(unit.getOrderTargetPosition().getApproxDistance(this.target) > 1000){
+					if(unit.getOrderTargetPosition().getApproxDistance(this.target) > 2000){
 						if(!myData.isNearEnemyOrBetter(unit)){
 							unit.attack(this.target);
 						}
@@ -818,7 +818,7 @@ void operate(){
 						for(Unit yes : new ArrayList<>(this.units)){
 							if(myData.isNearEnemyOrBetter(unit) && myData.getSimScore(unit) > 0.35){
 								unit.move(yes.getPosition());
-								break;
+								break;	
 							}
 						}
 						
@@ -829,7 +829,11 @@ void operate(){
 							}
 						}
 					}
+					
+					
 				}
+				
+				
 						
 			}
 			

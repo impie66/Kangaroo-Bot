@@ -168,8 +168,17 @@ public class BotTech {
 			}
 		}
 		
+		if(a == 10){
+			if(self.allUnitCount(UnitType.Zerg_Zergling) > 10){
+				return true;
+			}
+		}
 		
-		
+		if(a == 11){
+			if(self.allUnitCount(UnitType.Zerg_Hydralisk) > 6){
+				return true;
+			}
+		}
 		
 		return false;
 		

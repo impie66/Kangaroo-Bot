@@ -1,14 +1,34 @@
 Changelog
-Goons now micro (Sorta) (WIP)
-Reworked Terran openings. They aren't the best BUT they are better :)
-Bot now attacks defences and or workers of the enemy player instead of random buildings
-Sim improvements. Bot now counts the energy of the enemy terran player for the use of lurkers/dts. 
-Bot now will try to attack the 3rd or more bases instead of the main
-Bot now has "tech goals" will tech up when the conditions are right
-Very basic rush detection (WIP)
-Basic DT/Lurker reaction 
-Tanks now get a pay reduction when friendly firing
-Added the WIP tag to my changes text fire but deep down i know everything here is broken or a WIP. 
 
-I FUCKING WAS USING ONUNITCREATE FOR ENEMY UNITS THE WHOLE TIME. AND I HAD SOME IMPORTANT SHIT I HAD HOPED RUN BUT NOO
-FUCK ME
+Bot now "remembers" units in the fog and will sim them along with visible units.
+Many attempts to fix the "Forget where the enemy is" bug. I think i am breaking it more.
+Killed many bugs
+Added some Zerg vs Random builds. (Will make mutas or hydras depending on the matchup)
+Spell casters now get their daily rations reduced if they waste a spell on one unit.
+Added race specific build items. E.G protoss will made a stargate when doing a dumb DT build. 
+Also added corsairs. but who cares about them?
+DT and air units will not retreat if detected or un-able to be attacked.
+
+https://www.youtube.com/watch?v=yjO1bMHbDpY
+bin ich verruckt?
+
+
+L R L R STOP & DASH & UP & TALK B B A B S
+R
+L
+R
+STOP
+AND
+DASH
+AND
+UP
+AND
+TALK
+B
+B
+A
+B
+S
+
+
+

@@ -9,6 +9,8 @@ import bwapi.Game;
 import bwapi.Order;
 import bwapi.Unit;
 import bwapi.Position;
+import bwapi.Race;
+import bwapi.TilePosition;
 import bwapi.UnitType;
 import bwem.*;
 
@@ -21,6 +23,7 @@ int defenceScore;
 int maxWorkers;
 ArrayList<Mineral> Mins;
 ArrayList<Geyser> Geysers;
+HashMap<Unit, TilePosition> GeyserT;
 ArrayList<Unit>Pawns;
 ArrayList<Unit>Gases;
 HashMap<Unit, ArrayList<Unit>> gasWorkers;
@@ -41,6 +44,14 @@ List<Mineral> blockingMinerals;
 		this.maxWorkers = 9 + (Mins.size() / 2) + (Geysers.size() * 3);
 		this.voidedWorkers = new ArrayList<Unit>();
 		this.blockingMinerals = bass.getBlockingMinerals();
+		this.GeyserT = new HashMap<>();
+		
+		if(!this.Geysers.isEmpty()){
+			for(Geyser g : this.Geysers){
+				this.GeyserT.put(g.getUnit(), g.getCenter().toTilePosition());
+			}
+		}
+		
 	}
 	
 	void assignWorker(Unit worker){
@@ -96,6 +107,10 @@ List<Mineral> blockingMinerals;
 				
 				
 			}
+			
+//			for(Geyser g : this.Geysers){
+//				game.drawLineMap(this.GeyserT.get(g).toPosition(), this.depot.getPosition(), Color.Blue);
+//			}
 			
 			for(Unit unit : gasWorkers.keySet()){
 				ArrayList<Unit> workers = gasWorkers.get(unit);
@@ -425,7 +440,8 @@ List<Mineral> blockingMinerals;
 	}
 	
 	boolean canDoTheGreenStuff(){
-		if(game.getFrameCount() >= 9000){
+		
+		if(game.getFrameCount() >= 15000){
 			return true;
 		}
 		

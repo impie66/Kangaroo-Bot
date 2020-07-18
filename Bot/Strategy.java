@@ -37,6 +37,7 @@ public class Strategy {
 	String enemyName;
 	int GFR; // How many frames till we start REALLY making our goals?
 	boolean moveRegroup = false;
+	boolean canGatherGasEarly = false;
 	
 	Strategy(Race ee, ArrayList<Base> ep, Data myDataa, Game gamee, ArrayList<ChokePoint> cocks){
 		this.enemy = ee;
@@ -57,6 +58,7 @@ public class Strategy {
 		this.AB = new ArrayList<>();
 		this.GFR = 8000;
 		this.moveRegroup = false;
+		this.canGatherGasEarly = false;
 		Opener();
 	}
 
@@ -64,174 +66,275 @@ public class Strategy {
 		// TODO Auto-generated keyboard smash
 		// feelsGoodMan Cancer clap	
 		if(self.getRace().equals(Race.Zerg)){
-			//if z
 			this.AB.add(UnitType.Zerg_Hydralisk_Den);
-			if(this.enemy.equals(Race.Zerg)){
-			this.buildName = "ZvZ Generic";
-			this.mainGoal.add(UnitType.Zerg_Mutalisk);
-			this.techGoals.add(UnitType.Zerg_Spire);
-			pBuilding neww = new pBuilding(UnitType.Zerg_Hatchery, Expands.get(0).getLocation(), true);
-			neww.canBeCancelled = false;
-			neww.save = 0;
-			pBuildings.add(neww);
-			pBuildings.add(new pBuilding(UnitType.Zerg_Spawning_Pool, self.getStartLocation(), 300));
-			pBuildings.add(new pBuilding(UnitType.Zerg_Extractor, null));
-			pBuildings.add(new pBuilding(UnitType.Zerg_Creep_Colony, Expands.get(0).getLocation(), 15, true, false, 1));
-			pBuildings.add(new pBuilding(UnitType.Zerg_Creep_Colony, Expands.get(0).getLocation(), 15, true, false, 1));
-			pBuildings.add(new pBuilding(UnitType.Zerg_Spire, self.getStartLocation()));
-			pBuildings.add(new pBuilding(UnitType.Zerg_Hatchery, self.getStartLocation()));
-			pBuildings.add(new pBuilding(UnitType.Zerg_Creep_Colony, Expands.get(0).getLocation(), 20));
-			pBuildings.add(new pBuilding(UnitType.Zerg_Creep_Colony, self.getStartLocation(), 20));
-			pBuildings.add(new pBuilding(UnitType.Zerg_Evolution_Chamber, null));
-			pBuildings.add(new pBuilding(UnitType.Zerg_Hatchery, null, true));
-			pBuildings.add(new pBuilding(UnitType.Zerg_Queens_Nest, self.getStartLocation()));
-			pBuildings.add(new pBuilding(UnitType.Zerg_Evolution_Chamber, null));
-			pBuildings.add(new pBuilding(UnitType.Zerg_Hydralisk_Den, self.getStartLocation()));
-			pBuildings.add(new pBuilding(UnitType.Zerg_Hatchery, self.getStartLocation()));
-			pBuildings.add(new pBuilding(UnitType.Zerg_Hatchery, self.getStartLocation()));
-			pBuildings.add(new pBuilding(UnitType.Zerg_Hatchery, null, true));
-			pBuildings.add(new pBuilding(UnitType.Zerg_Ultralisk_Cavern, self.getStartLocation()));
-			pBuildings.add(new pBuilding(UnitType.Zerg_Defiler_Mound, self.getStartLocation()));
-			pBuildings.add(new pBuilding(UnitType.Zerg_Hatchery, null, true));
-			pBuildings.add(new pBuilding(UnitType.Zerg_Hatchery, null, true));
-			pBuildings.add(new pBuilding(UnitType.Zerg_Hatchery, null, true));
-			pBuildings.add(new pBuilding(UnitType.Zerg_Hatchery, null));
-			pBuildings.add(new pBuilding(UnitType.Zerg_Hatchery, null));
-			pBuildings.add(new pBuilding(UnitType.Zerg_Hatchery, null));
-			pBuildings.add(new pBuilding(UnitType.Zerg_Hatchery, null));
-			// int typee, int RIDD, TechType techh, UpgradeType up, UnitType morph, Data data
-			stuffQueue.add(new BotTech(1, 1, TechType.Lurker_Aspect, UpgradeType.None, UnitType.None, myData));
-			stuffQueue.add(new BotTech(2, 0, TechType.None, UpgradeType.Metabolic_Boost, UnitType.None, myData));
-			stuffQueue.add(new BotTech(2, 1, TechType.None, UpgradeType.Zerg_Flyer_Attacks, UnitType.None, myData));
-			stuffQueue.add(new BotTech(2, 1, TechType.None, UpgradeType.Zerg_Flyer_Carapace, UnitType.None, myData));
-			stuffQueue.add(new BotTech(2, 2, TechType.None, UpgradeType.Muscular_Augments, UnitType.None, myData));
-			stuffQueue.add(new BotTech(2, 2, TechType.None, UpgradeType.Grooved_Spines, UnitType.None, myData));
-			stuffQueue.add(new BotTech(2, 1, TechType.None, UpgradeType.Zerg_Melee_Attacks, UnitType.None, myData));
-			stuffQueue.add(new BotTech(2, 2, TechType.None, UpgradeType.Zerg_Missile_Attacks, UnitType.None, myData));
-			stuffQueue.add(new BotTech(2, 1, TechType.None, UpgradeType.Zerg_Carapace, UnitType.None, myData));
-			stuffQueue.add(new BotTech(2, 1, TechType.None, UpgradeType.Pneumatized_Carapace, UnitType.None, myData));
-			stuffQueue.add(new BotTech(3, 0, TechType.None, UpgradeType.None, UnitType.Zerg_Sunken_Colony, myData));
-			stuffQueue.add(new BotTech(3, 0, TechType.None, UpgradeType.None, UnitType.Zerg_Sunken_Colony, myData));
-			stuffQueue.add(new BotTech(3, 0, TechType.None, UpgradeType.None, UnitType.Zerg_Spore_Colony, myData));
-			stuffQueue.add(new BotTech(3, 0, TechType.None, UpgradeType.None, UnitType.Zerg_Spore_Colony, myData));
-			stuffQueue.add(new BotTech(3, 0, TechType.None, UpgradeType.None, UnitType.Zerg_Lair, myData, true));
-			stuffQueue.add(new BotTech(3, 1, TechType.None, UpgradeType.None, UnitType.Zerg_Hive, myData));
-			stuffQueue.add(new BotTech(1, 1, TechType.Ensnare, UpgradeType.None, UnitType.None, myData));
-			stuffQueue.add(new BotTech(2, 1, TechType.None, UpgradeType.Adrenal_Glands, UnitType.None, myData));
-			stuffQueue.add(new BotTech(1, 2, TechType.Consume, UpgradeType.None, UnitType.None, myData));
-			stuffQueue.add(new BotTech(1, 2, TechType.Plague, UpgradeType.None, UnitType.None, myData));
-		}
-		else if (this.enemy.equals(Race.Terran)){
-			this.buildName = "ZvT Generic";
-			this.techGoals.add(UnitType.Zerg_Spire);
-			this.mainGoal.add(UnitType.Zerg_Mutalisk);
-			pBuilding neww = new pBuilding(UnitType.Zerg_Hatchery, Expands.get(0).getLocation(), true);
-			neww.canBeCancelled = false;
-			neww.save = 0;
-			pBuildings.add(neww);
-			pBuildings.add(new pBuilding(UnitType.Zerg_Spawning_Pool, self.getStartLocation(), 300));
-			pBuildings.add(new pBuilding(UnitType.Zerg_Extractor, null));
-			pBuildings.add(new pBuilding(UnitType.Zerg_Creep_Colony, Expands.get(0).getLocation(), 15, true, false, 1));
-			pBuildings.add(new pBuilding(UnitType.Zerg_Creep_Colony, Expands.get(0).getLocation(), 15, true, false, 1));
-			pBuildings.add(new pBuilding(UnitType.Zerg_Creep_Colony, Expands.get(0).getLocation(), 15, true, false, 1));
-			pBuildings.add(new pBuilding(UnitType.Zerg_Spire, self.getStartLocation()));
-			pBuildings.add(new pBuilding(UnitType.Zerg_Hydralisk_Den, self.getStartLocation()));
-			pBuildings.add(new pBuilding(UnitType.Zerg_Evolution_Chamber, null));
-			pBuildings.add(new pBuilding(UnitType.Zerg_Hatchery, self.getStartLocation()));
-			pBuildings.add(new pBuilding(UnitType.Zerg_Evolution_Chamber, null));
-			pBuildings.add(new pBuilding(UnitType.Zerg_Hatchery, null, true));
-			pBuildings.add(new pBuilding(UnitType.Zerg_Creep_Colony, self.getStartLocation(), 20));
-			pBuildings.add(new pBuilding(UnitType.Zerg_Queens_Nest, self.getStartLocation()));
-			pBuildings.add(new pBuilding(UnitType.Zerg_Hatchery, self.getStartLocation()));
-			pBuildings.add(new pBuilding(UnitType.Zerg_Hatchery, self.getStartLocation()));
-			pBuildings.add(new pBuilding(UnitType.Zerg_Hatchery, null, true));
-			pBuildings.add(new pBuilding(UnitType.Zerg_Ultralisk_Cavern, self.getStartLocation()));
-			pBuildings.add(new pBuilding(UnitType.Zerg_Defiler_Mound, self.getStartLocation()));
-			pBuildings.add(new pBuilding(UnitType.Zerg_Hatchery, null, true));
-			pBuildings.add(new pBuilding(UnitType.Zerg_Hatchery, null, true));
-			pBuildings.add(new pBuilding(UnitType.Zerg_Hatchery, null, true));
-			pBuildings.add(new pBuilding(UnitType.Zerg_Hatchery, self.getStartLocation()));
-			pBuildings.add(new pBuilding(UnitType.Zerg_Hatchery, self.getStartLocation()));
-			pBuildings.add(new pBuilding(UnitType.Zerg_Hatchery, self.getStartLocation()));
-			pBuildings.add(new pBuilding(UnitType.Zerg_Hatchery, self.getStartLocation()));
-			pBuildings.add(new pBuilding(UnitType.Zerg_Hatchery, self.getStartLocation()));
-			stuffQueue.add(new BotTech(1, 8, TechType.Lurker_Aspect, UpgradeType.None, UnitType.None, myData, true));
-			stuffQueue.add(new BotTech(2, 0, TechType.None, UpgradeType.Metabolic_Boost, UnitType.None, myData));
-			stuffQueue.add(new BotTech(2, 2, TechType.None, UpgradeType.Muscular_Augments, UnitType.None, myData));
-			stuffQueue.add(new BotTech(2, 2, TechType.None, UpgradeType.Grooved_Spines, UnitType.None, myData));
-			stuffQueue.add(new BotTech(2, 1, TechType.None, UpgradeType.Zerg_Melee_Attacks, UnitType.None, myData));
-			stuffQueue.add(new BotTech(2, 2, TechType.None, UpgradeType.Zerg_Missile_Attacks, UnitType.None, myData));
-			stuffQueue.add(new BotTech(2, 1, TechType.None, UpgradeType.Zerg_Carapace, UnitType.None, myData));
-			stuffQueue.add(new BotTech(2, 1, TechType.None, UpgradeType.Pneumatized_Carapace, UnitType.None, myData));
-			stuffQueue.add(new BotTech(3, 0, TechType.None, UpgradeType.None, UnitType.Zerg_Sunken_Colony, myData));
-			stuffQueue.add(new BotTech(3, 0, TechType.None, UpgradeType.None, UnitType.Zerg_Sunken_Colony, myData));
-			stuffQueue.add(new BotTech(3, 0, TechType.None, UpgradeType.None, UnitType.Zerg_Sunken_Colony, myData));
-			stuffQueue.add(new BotTech(3, 0, TechType.None, UpgradeType.None, UnitType.Zerg_Spore_Colony, myData));
-			stuffQueue.add(new BotTech(3, 0, TechType.None, UpgradeType.None, UnitType.Zerg_Spore_Colony, myData));
-			stuffQueue.add(new BotTech(3, 0, TechType.None, UpgradeType.None, UnitType.Zerg_Lair, myData, true));
-			stuffQueue.add(new BotTech(3, 0, TechType.None, UpgradeType.None, UnitType.Zerg_Hive, myData, true));
-			stuffQueue.add(new BotTech(1, 1, TechType.Ensnare, UpgradeType.None, UnitType.None, myData));
-			stuffQueue.add(new BotTech(2, 1, TechType.None, UpgradeType.Adrenal_Glands, UnitType.None, myData));
-			stuffQueue.add(new BotTech(1, 2, TechType.Consume, UpgradeType.None, UnitType.None, myData));
-			stuffQueue.add(new BotTech(1, 2, TechType.Plague, UpgradeType.None, UnitType.None, myData));
-		}
-		else {
-			// if enemy is P
-			this.buildName = "ZvP generic";
-			this.techGoals.add(UnitType.None);
-			this.mainGoal.add(UnitType.Zerg_Hydralisk);
-			pBuilding neww = new pBuilding(UnitType.Zerg_Hatchery, Expands.get(0).getLocation(), true);
-			neww.canBeCancelled = false;
-			neww.save = 0;
-			pBuildings.add(neww);
-			pBuildings.add(new pBuilding(UnitType.Zerg_Spawning_Pool, self.getStartLocation(), 50));
-			pBuildings.add(new pBuilding(UnitType.Zerg_Extractor, null));
-			pBuildings.add(new pBuilding(UnitType.Zerg_Creep_Colony, Expands.get(0).getLocation(), 15, true, false, 1));
-			pBuildings.add(new pBuilding(UnitType.Zerg_Creep_Colony, Expands.get(0).getLocation(), 15, true, false, 1));
-			pBuildings.add(new pBuilding(UnitType.Zerg_Creep_Colony, Expands.get(0).getLocation(), 15, true, false, 1));
-			pBuildings.add(new pBuilding(UnitType.Zerg_Hydralisk_Den, self.getStartLocation(), 200, 1));
-			pBuildings.add(new pBuilding(UnitType.Zerg_Evolution_Chamber, null));
-			pBuildings.add(new pBuilding(UnitType.Zerg_Creep_Colony, Expands.get(0).getLocation(), 20));
-			pBuildings.add(new pBuilding(UnitType.Zerg_Creep_Colony, self.getStartLocation(), 20));
-			pBuildings.add(new pBuilding(UnitType.Zerg_Hatchery, self.getStartLocation()));
-			pBuildings.add(new pBuilding(UnitType.Zerg_Evolution_Chamber, null));
-			pBuildings.add(new pBuilding(UnitType.Zerg_Hatchery, null, true));
-			pBuildings.add(new pBuilding(UnitType.Zerg_Spire, self.getStartLocation()));
-			pBuildings.add(new pBuilding(UnitType.Zerg_Queens_Nest, self.getStartLocation()));
-			pBuildings.add(new pBuilding(UnitType.Zerg_Hatchery, self.getStartLocation()));
-			pBuildings.add(new pBuilding(UnitType.Zerg_Hatchery	, self.getStartLocation()));
-			pBuildings.add(new pBuilding(UnitType.Zerg_Hatchery, null, true));
-			pBuildings.add(new pBuilding(UnitType.Zerg_Ultralisk_Cavern, self.getStartLocation()));
-			pBuildings.add(new pBuilding(UnitType.Zerg_Defiler_Mound, self.getStartLocation()));
-			pBuildings.add(new pBuilding(UnitType.Zerg_Hatchery, null, true));
-			pBuildings.add(new pBuilding(UnitType.Zerg_Hatchery, null, true));
-			pBuildings.add(new pBuilding(UnitType.Zerg_Hatchery, null, true));
-			pBuildings.add(new pBuilding(UnitType.Zerg_Hatchery, self.getStartLocation()));
-			pBuildings.add(new pBuilding(UnitType.Zerg_Hatchery, self.getStartLocation()));
-			pBuildings.add(new pBuilding(UnitType.Zerg_Hatchery, self.getStartLocation()));
-			pBuildings.add(new pBuilding(UnitType.Zerg_Hatchery, self.getStartLocation()));
-			pBuildings.add(new pBuilding(UnitType.Zerg_Hatchery, self.getStartLocation()));
-			stuffQueue.add(new BotTech(1, 2, TechType.Lurker_Aspect, UpgradeType.None, UnitType.None, myData));
-			stuffQueue.add(new BotTech(2, 0, TechType.None, UpgradeType.Metabolic_Boost, UnitType.None, myData));
-			stuffQueue.add(new BotTech(2, 2, TechType.None, UpgradeType.Muscular_Augments, UnitType.None, myData));
-			stuffQueue.add(new BotTech(2, 2, TechType.None, UpgradeType.Grooved_Spines, UnitType.None, myData));
-			stuffQueue.add(new BotTech(2, 1, TechType.None, UpgradeType.Zerg_Melee_Attacks, UnitType.None, myData));
-			stuffQueue.add(new BotTech(2, 2, TechType.None, UpgradeType.Zerg_Missile_Attacks, UnitType.None, myData));
-			stuffQueue.add(new BotTech(2, 1, TechType.None, UpgradeType.Zerg_Carapace, UnitType.None, myData));
-			stuffQueue.add(new BotTech(2, 1, TechType.None, UpgradeType.Pneumatized_Carapace, UnitType.None, myData));
-			stuffQueue.add(new BotTech(2, 1, TechType.None, UpgradeType.Adrenal_Glands, UnitType.None, myData));
-			stuffQueue.add(new BotTech(1, 1, TechType.Ensnare, UpgradeType.None, UnitType.None, myData));
-			stuffQueue.add(new BotTech(3, 0, TechType.None, UpgradeType.None, UnitType.Zerg_Sunken_Colony, myData));
-			stuffQueue.add(new BotTech(3, 0, TechType.None, UpgradeType.None, UnitType.Zerg_Sunken_Colony, myData));
-			stuffQueue.add(new BotTech(3, 0, TechType.None, UpgradeType.None, UnitType.Zerg_Sunken_Colony, myData));
-			stuffQueue.add(new BotTech(3, 0, TechType.None, UpgradeType.None, UnitType.Zerg_Spore_Colony, myData));
-			stuffQueue.add(new BotTech(3, 0, TechType.None, UpgradeType.None, UnitType.Zerg_Spore_Colony, myData));
-			stuffQueue.add(new BotTech(3, 0, TechType.None, UpgradeType.None, UnitType.Zerg_Lair, myData));
-			stuffQueue.add(new BotTech(3, 0, TechType.None, UpgradeType.None, UnitType.Zerg_Hive, myData));
-			stuffQueue.add(new BotTech(1, 2, TechType.Consume, UpgradeType.None, UnitType.None, myData));
-			stuffQueue.add(new BotTech(1, 2, TechType.Plague, UpgradeType.None, UnitType.None, myData));
-			// int typee, int RIDD, TechType techh, UpgradeType up, UnitType morph, Data dataa
-		}
+			//if z
+			int chosenBuild = 4;
+			Random rand = new Random();
+			int n = rand.nextInt(4) + 1;
+			if(n == 4 || chosenBuild == 4){
+				this.buildName = "Meme Proxy Sunken Build"; // NAME IS IMPORTANT. DON'T CHANGE
+				pBuilding one = new pBuilding(UnitType.Zerg_Hatchery, null, Race.Terran);
+				one.maxRange = 200;
+				one.proxy = true;
+				one.save = 1;
+				one.waitForCreep = false;
+				one.buildWithScout = true;
+				pBuildings.add(one);
+				pBuilding two = new pBuilding(UnitType.Zerg_Hatchery, null, Race.Protoss);
+				two.proxy = true;
+				two.maxRange = 200;
+				two.save = 1;
+				two.waitForCreep = false;
+				pBuildings.add(two);
+				two.buildWithScout = true;
+				pBuildings.add(new pBuilding(UnitType.Zerg_Spawning_Pool, self.getStartLocation()) );
+				pBuilding b = new pBuilding(UnitType.Zerg_Creep_Colony, null, Race.Zerg);
+				b.proxy = true;
+				b.save = 1;
+				b.buildWithScout = true;
+				pBuildings.add(b);
+				for(int i = 0; i<=6;i++){
+					pBuilding yes = new pBuilding(UnitType.Zerg_Creep_Colony, Expands.get(0).getLocation(), 50, true, false, 1);
+					yes.proxy = true;
+					pBuildings.add(yes);
+					stuffQueue.add(new BotTech(3, 0, TechType.None, UpgradeType.None, UnitType.Zerg_Sunken_Colony, myData, true));
+				}
+				pBuildings.add(new pBuilding(UnitType.Zerg_Hatchery, null));
+				pBuildings.add(new pBuilding(UnitType.Zerg_Hydralisk_Den, self.getStartLocation(), 300));
+				pBuildings.add(new pBuilding(UnitType.Zerg_Spire, self.getStartLocation()));
+			}
+			else {
+				if(this.enemy.equals(Race.Zerg)){
+					this.buildName = "ZvZ Generic";
+					this.mainGoal.add(UnitType.Zerg_Mutalisk);
+					this.techGoals.add(UnitType.Zerg_Spire);
+					this.canGatherGasEarly = true;
+					pBuilding neww = new pBuilding(UnitType.Zerg_Hatchery, Expands.get(0).getLocation(), true);
+					neww.canBeCancelled = false;
+					neww.save = 0;
+					pBuildings.add(neww);
+					pBuildings.add(new pBuilding(UnitType.Zerg_Spawning_Pool, self.getStartLocation(), 300));
+					pBuildings.add(new pBuilding(UnitType.Zerg_Extractor, null));
+					pBuildings.add(new pBuilding(UnitType.Zerg_Creep_Colony, Expands.get(0).getLocation(), 15, true, false, 1));
+					pBuildings.add(new pBuilding(UnitType.Zerg_Creep_Colony, Expands.get(0).getLocation(), 15, true, false, 1));
+					pBuildings.add(new pBuilding(UnitType.Zerg_Spire, self.getStartLocation()));
+					pBuildings.add(new pBuilding(UnitType.Zerg_Hatchery, self.getStartLocation()));
+					pBuildings.add(new pBuilding(UnitType.Zerg_Creep_Colony, Expands.get(0).getLocation(), 20));
+					pBuildings.add(new pBuilding(UnitType.Zerg_Creep_Colony, self.getStartLocation(), 20));
+					pBuildings.add(new pBuilding(UnitType.Zerg_Evolution_Chamber, null));
+					pBuildings.add(new pBuilding(UnitType.Zerg_Hatchery, null, true));
+					pBuildings.add(new pBuilding(UnitType.Zerg_Queens_Nest, self.getStartLocation()));
+					pBuildings.add(new pBuilding(UnitType.Zerg_Evolution_Chamber, null));
+					pBuildings.add(new pBuilding(UnitType.Zerg_Hydralisk_Den, self.getStartLocation()));
+					pBuildings.add(new pBuilding(UnitType.Zerg_Hatchery, self.getStartLocation()));
+					pBuildings.add(new pBuilding(UnitType.Zerg_Hatchery, self.getStartLocation()));
+					pBuildings.add(new pBuilding(UnitType.Zerg_Hatchery, null, true));
+					pBuildings.add(new pBuilding(UnitType.Zerg_Ultralisk_Cavern, self.getStartLocation()));
+					pBuildings.add(new pBuilding(UnitType.Zerg_Defiler_Mound, self.getStartLocation()));
+					pBuildings.add(new pBuilding(UnitType.Zerg_Hatchery, null, true));
+					pBuildings.add(new pBuilding(UnitType.Zerg_Hatchery, null, true));
+					pBuildings.add(new pBuilding(UnitType.Zerg_Hatchery, null, true));
+					pBuildings.add(new pBuilding(UnitType.Zerg_Hatchery, null));
+					pBuildings.add(new pBuilding(UnitType.Zerg_Hatchery, null));
+					pBuildings.add(new pBuilding(UnitType.Zerg_Hatchery, null));
+					pBuildings.add(new pBuilding(UnitType.Zerg_Hatchery, null));
+					// int typee, int RIDD, TechType techh, UpgradeType up, UnitType morph, Data data
+					stuffQueue.add(new BotTech(1, 1, TechType.Lurker_Aspect, UpgradeType.None, UnitType.None, myData));
+					stuffQueue.add(new BotTech(2, 0, TechType.None, UpgradeType.Metabolic_Boost, UnitType.None, myData));
+					stuffQueue.add(new BotTech(2, 1, TechType.None, UpgradeType.Zerg_Flyer_Attacks, UnitType.None, myData));
+					stuffQueue.add(new BotTech(2, 1, TechType.None, UpgradeType.Zerg_Flyer_Carapace, UnitType.None, myData));
+					stuffQueue.add(new BotTech(2, 2, TechType.None, UpgradeType.Muscular_Augments, UnitType.None, myData));
+					stuffQueue.add(new BotTech(2, 2, TechType.None, UpgradeType.Grooved_Spines, UnitType.None, myData));
+					stuffQueue.add(new BotTech(2, 10, TechType.None, UpgradeType.Zerg_Melee_Attacks, UnitType.None, myData));
+					stuffQueue.add(new BotTech(2, 11, TechType.None, UpgradeType.Zerg_Missile_Attacks, UnitType.None, myData));
+					stuffQueue.add(new BotTech(2, 1, TechType.None, UpgradeType.Zerg_Carapace, UnitType.None, myData));
+					stuffQueue.add(new BotTech(2, 1, TechType.None, UpgradeType.Pneumatized_Carapace, UnitType.None, myData));
+					stuffQueue.add(new BotTech(3, 0, TechType.None, UpgradeType.None, UnitType.Zerg_Sunken_Colony, myData));
+					stuffQueue.add(new BotTech(3, 0, TechType.None, UpgradeType.None, UnitType.Zerg_Sunken_Colony, myData));
+					stuffQueue.add(new BotTech(3, 0, TechType.None, UpgradeType.None, UnitType.Zerg_Spore_Colony, myData));
+					stuffQueue.add(new BotTech(3, 0, TechType.None, UpgradeType.None, UnitType.Zerg_Spore_Colony, myData));
+					stuffQueue.add(new BotTech(3, 0, TechType.None, UpgradeType.None, UnitType.Zerg_Lair, myData, true));
+					stuffQueue.add(new BotTech(3, 1, TechType.None, UpgradeType.None, UnitType.Zerg_Hive, myData));
+					stuffQueue.add(new BotTech(1, 1, TechType.Ensnare, UpgradeType.None, UnitType.None, myData));
+					stuffQueue.add(new BotTech(2, 1, TechType.None, UpgradeType.Adrenal_Glands, UnitType.None, myData));
+					stuffQueue.add(new BotTech(1, 2, TechType.Consume, UpgradeType.None, UnitType.None, myData));
+					stuffQueue.add(new BotTech(1, 2, TechType.Plague, UpgradeType.None, UnitType.None, myData));
+				}
+				else if (this.enemy.equals(Race.Terran)){
+					this.buildName = "ZvT Generic";
+					this.techGoals.add(UnitType.Zerg_Spire);
+					this.mainGoal.add(UnitType.Zerg_Mutalisk);
+					this.canGatherGasEarly = true;
+					pBuilding neww = new pBuilding(UnitType.Zerg_Hatchery, Expands.get(0).getLocation(), true);
+					neww.canBeCancelled = false;
+					neww.save = 0;
+					pBuildings.add(neww);
+					pBuildings.add(new pBuilding(UnitType.Zerg_Spawning_Pool, self.getStartLocation(), 300));
+					pBuildings.add(new pBuilding(UnitType.Zerg_Extractor, null));
+					pBuildings.add(new pBuilding(UnitType.Zerg_Creep_Colony, Expands.get(0).getLocation(), 15, true, false, 1));
+					pBuildings.add(new pBuilding(UnitType.Zerg_Creep_Colony, Expands.get(0).getLocation(), 15, true, false, 1));
+					pBuildings.add(new pBuilding(UnitType.Zerg_Creep_Colony, Expands.get(0).getLocation(), 15, true, false, 1));
+					pBuildings.add(new pBuilding(UnitType.Zerg_Spire, self.getStartLocation()));
+					pBuildings.add(new pBuilding(UnitType.Zerg_Hydralisk_Den, self.getStartLocation()));
+					pBuildings.add(new pBuilding(UnitType.Zerg_Evolution_Chamber, null));
+					pBuildings.add(new pBuilding(UnitType.Zerg_Hatchery, self.getStartLocation()));
+					pBuildings.add(new pBuilding(UnitType.Zerg_Evolution_Chamber, null));
+					pBuildings.add(new pBuilding(UnitType.Zerg_Hatchery, null, true));
+					pBuildings.add(new pBuilding(UnitType.Zerg_Creep_Colony, self.getStartLocation(), 20));
+					pBuildings.add(new pBuilding(UnitType.Zerg_Queens_Nest, self.getStartLocation()));
+					pBuildings.add(new pBuilding(UnitType.Zerg_Hatchery, self.getStartLocation()));
+					pBuildings.add(new pBuilding(UnitType.Zerg_Hatchery, self.getStartLocation()));
+					pBuildings.add(new pBuilding(UnitType.Zerg_Hatchery, null, true));
+					pBuildings.add(new pBuilding(UnitType.Zerg_Ultralisk_Cavern, self.getStartLocation()));
+					pBuildings.add(new pBuilding(UnitType.Zerg_Defiler_Mound, self.getStartLocation()));
+					pBuildings.add(new pBuilding(UnitType.Zerg_Hatchery, null, true));
+					pBuildings.add(new pBuilding(UnitType.Zerg_Hatchery, null, true));
+					pBuildings.add(new pBuilding(UnitType.Zerg_Hatchery, null, true));
+					pBuildings.add(new pBuilding(UnitType.Zerg_Hatchery, self.getStartLocation()));
+					pBuildings.add(new pBuilding(UnitType.Zerg_Hatchery, self.getStartLocation()));
+					pBuildings.add(new pBuilding(UnitType.Zerg_Hatchery, self.getStartLocation()));
+					pBuildings.add(new pBuilding(UnitType.Zerg_Hatchery, self.getStartLocation()));
+					pBuildings.add(new pBuilding(UnitType.Zerg_Hatchery, self.getStartLocation()));
+					stuffQueue.add(new BotTech(1, 8, TechType.Lurker_Aspect, UpgradeType.None, UnitType.None, myData, true));
+					stuffQueue.add(new BotTech(2, 0, TechType.None, UpgradeType.Metabolic_Boost, UnitType.None, myData));
+					stuffQueue.add(new BotTech(2, 2, TechType.None, UpgradeType.Muscular_Augments, UnitType.None, myData));
+					stuffQueue.add(new BotTech(2, 2, TechType.None, UpgradeType.Grooved_Spines, UnitType.None, myData));
+					stuffQueue.add(new BotTech(2, 10, TechType.None, UpgradeType.Zerg_Melee_Attacks, UnitType.None, myData));
+					stuffQueue.add(new BotTech(2, 11, TechType.None, UpgradeType.Zerg_Missile_Attacks, UnitType.None, myData));
+					stuffQueue.add(new BotTech(2, 1, TechType.None, UpgradeType.Zerg_Carapace, UnitType.None, myData));
+					stuffQueue.add(new BotTech(2, 1, TechType.None, UpgradeType.Pneumatized_Carapace, UnitType.None, myData));
+					stuffQueue.add(new BotTech(3, 0, TechType.None, UpgradeType.None, UnitType.Zerg_Sunken_Colony, myData));
+					stuffQueue.add(new BotTech(3, 0, TechType.None, UpgradeType.None, UnitType.Zerg_Sunken_Colony, myData));
+					stuffQueue.add(new BotTech(3, 0, TechType.None, UpgradeType.None, UnitType.Zerg_Sunken_Colony, myData));
+					stuffQueue.add(new BotTech(3, 0, TechType.None, UpgradeType.None, UnitType.Zerg_Spore_Colony, myData));
+					stuffQueue.add(new BotTech(3, 0, TechType.None, UpgradeType.None, UnitType.Zerg_Spore_Colony, myData));
+					stuffQueue.add(new BotTech(3, 0, TechType.None, UpgradeType.None, UnitType.Zerg_Lair, myData, true));
+					stuffQueue.add(new BotTech(3, 0, TechType.None, UpgradeType.None, UnitType.Zerg_Hive, myData, true));
+					stuffQueue.add(new BotTech(1, 1, TechType.Ensnare, UpgradeType.None, UnitType.None, myData));
+					stuffQueue.add(new BotTech(2, 1, TechType.None, UpgradeType.Adrenal_Glands, UnitType.None, myData));
+					stuffQueue.add(new BotTech(1, 2, TechType.Consume, UpgradeType.None, UnitType.None, myData));
+					stuffQueue.add(new BotTech(1, 2, TechType.Plague, UpgradeType.None, UnitType.None, myData));
+				}
+				else if (this.enemy.equals(Race.Protoss)) {
+					// if enemy is P
+					this.buildName = "ZvP generic";
+					this.techGoals.add(UnitType.None);
+					this.mainGoal.add(UnitType.Zerg_Hydralisk);
+					this.canGatherGasEarly = true;
+					pBuilding neww = new pBuilding(UnitType.Zerg_Hatchery, Expands.get(0).getLocation(), true);
+					neww.canBeCancelled = false;
+					neww.save = 0;
+					pBuildings.add(neww);
+					pBuildings.add(new pBuilding(UnitType.Zerg_Spawning_Pool, self.getStartLocation(), 50));
+					pBuildings.add(new pBuilding(UnitType.Zerg_Extractor, null));
+					pBuildings.add(new pBuilding(UnitType.Zerg_Creep_Colony, Expands.get(0).getLocation(), 15, true, false, 1));
+					pBuildings.add(new pBuilding(UnitType.Zerg_Creep_Colony, Expands.get(0).getLocation(), 15, true, false, 1));
+					pBuildings.add(new pBuilding(UnitType.Zerg_Creep_Colony, Expands.get(0).getLocation(), 15, true, false, 1));
+					pBuildings.add(new pBuilding(UnitType.Zerg_Hydralisk_Den, self.getStartLocation(), 200, 1));
+					pBuildings.add(new pBuilding(UnitType.Zerg_Evolution_Chamber, null));
+					pBuildings.add(new pBuilding(UnitType.Zerg_Creep_Colony, Expands.get(0).getLocation(), 20));
+					pBuildings.add(new pBuilding(UnitType.Zerg_Creep_Colony, self.getStartLocation(), 20));
+					pBuildings.add(new pBuilding(UnitType.Zerg_Hatchery, self.getStartLocation()));
+					pBuildings.add(new pBuilding(UnitType.Zerg_Evolution_Chamber, null));
+					pBuildings.add(new pBuilding(UnitType.Zerg_Hatchery, null, true));
+					pBuildings.add(new pBuilding(UnitType.Zerg_Spire, self.getStartLocation()));
+					pBuildings.add(new pBuilding(UnitType.Zerg_Queens_Nest, self.getStartLocation()));
+					pBuildings.add(new pBuilding(UnitType.Zerg_Hatchery, self.getStartLocation()));
+					pBuildings.add(new pBuilding(UnitType.Zerg_Hatchery	, self.getStartLocation()));
+					pBuildings.add(new pBuilding(UnitType.Zerg_Hatchery, null, true));
+					pBuildings.add(new pBuilding(UnitType.Zerg_Ultralisk_Cavern, self.getStartLocation()));
+					pBuildings.add(new pBuilding(UnitType.Zerg_Defiler_Mound, self.getStartLocation()));
+					pBuildings.add(new pBuilding(UnitType.Zerg_Hatchery, null, true));
+					pBuildings.add(new pBuilding(UnitType.Zerg_Hatchery, null, true));
+					pBuildings.add(new pBuilding(UnitType.Zerg_Hatchery, null, true));
+					pBuildings.add(new pBuilding(UnitType.Zerg_Hatchery, self.getStartLocation()));
+					pBuildings.add(new pBuilding(UnitType.Zerg_Hatchery, self.getStartLocation()));
+					pBuildings.add(new pBuilding(UnitType.Zerg_Hatchery, self.getStartLocation()));
+					pBuildings.add(new pBuilding(UnitType.Zerg_Hatchery, self.getStartLocation()));
+					pBuildings.add(new pBuilding(UnitType.Zerg_Hatchery, self.getStartLocation()));
+					stuffQueue.add(new BotTech(1, 2, TechType.Lurker_Aspect, UpgradeType.None, UnitType.None, myData));
+					stuffQueue.add(new BotTech(2, 0, TechType.None, UpgradeType.Metabolic_Boost, UnitType.None, myData));
+					stuffQueue.add(new BotTech(2, 2, TechType.None, UpgradeType.Muscular_Augments, UnitType.None, myData));
+					stuffQueue.add(new BotTech(2, 2, TechType.None, UpgradeType.Grooved_Spines, UnitType.None, myData));
+					stuffQueue.add(new BotTech(2, 10, TechType.None, UpgradeType.Zerg_Melee_Attacks, UnitType.None, myData));
+					stuffQueue.add(new BotTech(2, 11, TechType.None, UpgradeType.Zerg_Missile_Attacks, UnitType.None, myData));
+					stuffQueue.add(new BotTech(2, 1, TechType.None, UpgradeType.Zerg_Carapace, UnitType.None, myData));
+					stuffQueue.add(new BotTech(2, 1, TechType.None, UpgradeType.Pneumatized_Carapace, UnitType.None, myData));
+					stuffQueue.add(new BotTech(2, 1, TechType.None, UpgradeType.Adrenal_Glands, UnitType.None, myData));
+					stuffQueue.add(new BotTech(1, 1, TechType.Ensnare, UpgradeType.None, UnitType.None, myData));
+					stuffQueue.add(new BotTech(3, 0, TechType.None, UpgradeType.None, UnitType.Zerg_Sunken_Colony, myData));
+					stuffQueue.add(new BotTech(3, 0, TechType.None, UpgradeType.None, UnitType.Zerg_Sunken_Colony, myData));
+					stuffQueue.add(new BotTech(3, 0, TechType.None, UpgradeType.None, UnitType.Zerg_Sunken_Colony, myData));
+					stuffQueue.add(new BotTech(3, 0, TechType.None, UpgradeType.None, UnitType.Zerg_Spore_Colony, myData));
+					stuffQueue.add(new BotTech(3, 0, TechType.None, UpgradeType.None, UnitType.Zerg_Spore_Colony, myData));
+					stuffQueue.add(new BotTech(3, 0, TechType.None, UpgradeType.None, UnitType.Zerg_Lair, myData));
+					stuffQueue.add(new BotTech(3, 0, TechType.None, UpgradeType.None, UnitType.Zerg_Hive, myData));
+					stuffQueue.add(new BotTech(1, 2, TechType.Consume, UpgradeType.None, UnitType.None, myData));
+					stuffQueue.add(new BotTech(1, 2, TechType.Plague, UpgradeType.None, UnitType.None, myData));
+					// int typee, int RIDD, TechType techh, UpgradeType up, UnitType morph, Data dataa
+				}
+				else {
+					// if unknown
+					this.buildName = "ZvU Generic";
+					this.mainGoal.add(UnitType.Zerg_Mutalisk);
+					this.techGoals.add(UnitType.Zerg_Spire);
+					this.canGatherGasEarly = true;
+					pBuilding neww = new pBuilding(UnitType.Zerg_Hatchery, Expands.get(0).getLocation(), true);
+					neww.canBeCancelled = false;
+					neww.save = 0;
+					pBuildings.add(neww);
+					pBuildings.add(new pBuilding(UnitType.Zerg_Spawning_Pool, self.getStartLocation(), 300));
+					pBuildings.add(new pBuilding(UnitType.Zerg_Extractor, null));
+					pBuildings.add(new pBuilding(UnitType.Zerg_Creep_Colony, Expands.get(0).getLocation(), 15, true, false, 1));
+					pBuildings.add(new pBuilding(UnitType.Zerg_Creep_Colony, Expands.get(0).getLocation(), 15, true, false, 1));
+					pBuildings.add(new pBuilding(UnitType.Zerg_Creep_Colony, Expands.get(0).getLocation(), 20));
+					pBuildings.add(new pBuilding(UnitType.Zerg_Hydralisk_Den, self.getStartLocation(), Race.Protoss));
+					pBuildings.add(new pBuilding(UnitType.Zerg_Spire, self.getStartLocation()));
+					pBuildings.add(new pBuilding(UnitType.Zerg_Hatchery, self.getStartLocation()));
+					pBuildings.add(new pBuilding(UnitType.Zerg_Creep_Colony, self.getStartLocation(), 20));
+					pBuildings.add(new pBuilding(UnitType.Zerg_Evolution_Chamber, null));
+					pBuildings.add(new pBuilding(UnitType.Zerg_Hatchery, null, true));
+					pBuildings.add(new pBuilding(UnitType.Zerg_Queens_Nest, self.getStartLocation()));
+					pBuildings.add(new pBuilding(UnitType.Zerg_Evolution_Chamber, null));
+					pBuildings.add(new pBuilding(UnitType.Zerg_Hydralisk_Den, self.getStartLocation()));
+					pBuildings.add(new pBuilding(UnitType.Zerg_Hatchery, self.getStartLocation()));
+					pBuildings.add(new pBuilding(UnitType.Zerg_Hatchery, self.getStartLocation()));
+					pBuildings.add(new pBuilding(UnitType.Zerg_Hatchery, null, true));
+					pBuildings.add(new pBuilding(UnitType.Zerg_Ultralisk_Cavern, self.getStartLocation()));
+					pBuildings.add(new pBuilding(UnitType.Zerg_Defiler_Mound, self.getStartLocation()));
+					pBuildings.add(new pBuilding(UnitType.Zerg_Hatchery, null, true));
+					pBuildings.add(new pBuilding(UnitType.Zerg_Hatchery, null, true));
+					pBuildings.add(new pBuilding(UnitType.Zerg_Hatchery, null, true));
+					pBuildings.add(new pBuilding(UnitType.Zerg_Hatchery, null));
+					pBuildings.add(new pBuilding(UnitType.Zerg_Hatchery, null));
+					pBuildings.add(new pBuilding(UnitType.Zerg_Hatchery, null));
+					pBuildings.add(new pBuilding(UnitType.Zerg_Hatchery, null));
+					// int typee, int RIDD, TechType techh, UpgradeType up, UnitType morph, Data data
+					stuffQueue.add(new BotTech(1, 1, TechType.Lurker_Aspect, UpgradeType.None, UnitType.None, myData));
+					stuffQueue.add(new BotTech(2, 0, TechType.None, UpgradeType.Metabolic_Boost, UnitType.None, myData));
+					stuffQueue.add(new BotTech(2, 1, TechType.None, UpgradeType.Zerg_Flyer_Attacks, UnitType.None, myData));
+					stuffQueue.add(new BotTech(2, 1, TechType.None, UpgradeType.Zerg_Flyer_Carapace, UnitType.None, myData));
+					stuffQueue.add(new BotTech(2, 2, TechType.None, UpgradeType.Muscular_Augments, UnitType.None, myData));
+					stuffQueue.add(new BotTech(2, 2, TechType.None, UpgradeType.Grooved_Spines, UnitType.None, myData));
+					stuffQueue.add(new BotTech(2, 10, TechType.None, UpgradeType.Zerg_Melee_Attacks, UnitType.None, myData));
+					stuffQueue.add(new BotTech(2, 11, TechType.None, UpgradeType.Zerg_Missile_Attacks, UnitType.None, myData));
+					stuffQueue.add(new BotTech(2, 1, TechType.None, UpgradeType.Zerg_Carapace, UnitType.None, myData));
+					stuffQueue.add(new BotTech(2, 1, TechType.None, UpgradeType.Pneumatized_Carapace, UnitType.None, myData));
+					stuffQueue.add(new BotTech(3, 0, TechType.None, UpgradeType.None, UnitType.Zerg_Sunken_Colony, myData));
+					stuffQueue.add(new BotTech(3, 0, TechType.None, UpgradeType.None, UnitType.Zerg_Sunken_Colony, myData));
+					stuffQueue.add(new BotTech(3, 0, TechType.None, UpgradeType.None, UnitType.Zerg_Sunken_Colony, myData));
+					stuffQueue.add(new BotTech(3, 0, TechType.None, UpgradeType.None, UnitType.Zerg_Spore_Colony, myData));
+					stuffQueue.add(new BotTech(3, 0, TechType.None, UpgradeType.None, UnitType.Zerg_Spore_Colony, myData));
+					stuffQueue.add(new BotTech(3, 0, TechType.None, UpgradeType.None, UnitType.Zerg_Lair, myData, true));
+					stuffQueue.add(new BotTech(3, 1, TechType.None, UpgradeType.None, UnitType.Zerg_Hive, myData));
+					stuffQueue.add(new BotTech(1, 1, TechType.Ensnare, UpgradeType.None, UnitType.None, myData));
+					stuffQueue.add(new BotTech(2, 1, TechType.None, UpgradeType.Adrenal_Glands, UnitType.None, myData));
+					stuffQueue.add(new BotTech(1, 2, TechType.Consume, UpgradeType.None, UnitType.None, myData));
+					stuffQueue.add(new BotTech(1, 2, TechType.Plague, UpgradeType.None, UnitType.None, myData));
+				}
+			}
+
+
 		
 	}
 	// UnitType ype, TilePosition where, int max, boolean creep, boolean isExpand, int save
@@ -240,7 +343,7 @@ public class Strategy {
 		// https://www.youtube.com/watch?v=6FEDrU85FLE
 		if(game.enemy().getRace().equals(Race.Protoss) || tryP == true){
 			Random rand = new Random();
-			int n = rand.nextInt(2) + 1;
+			int n = rand.nextInt(3) + 1;
 			// if we are T and the enemy is P.
 			if(n==1){
 			this.type = "mech";
@@ -282,7 +385,7 @@ public class Strategy {
 			stuffQueue.add(new BotTech(2, 0, TechType.None, UpgradeType.Terran_Vehicle_Plating, UnitType.None, myData));
 			stuffQueue.add(new BotTech(2, 0, TechType.None, UpgradeType.Terran_Vehicle_Weapons, UnitType.None, myData));
 			}
-			else {
+			else if(n == 2){
 				buildName = "Bio Tank";
 				type = "bio";
 				this.techGoals.add(UnitType.Terran_Armory);
@@ -334,13 +437,44 @@ public class Strategy {
 				stuffQueue.add(new BotTech(2, 0, TechType.None, UpgradeType.Terran_Vehicle_Weapons, UnitType.None, myData));
 				stuffQueue.add(new BotTech(1, 1, TechType.Irradiate, UpgradeType.None, UnitType.None, myData));
 			}
+			else {
+				// if n == 3
+				buildName = "McRave 12 BUNKERBUNKERBUNKERBUNKERBUNKERBUNKERBUNKERBUNKERBUNKERBUNKERBUNKERBUNKERBUNKER";
+				type = "Dunno lol";
+				this.AB.add(UnitType.Terran_Barracks); // make this if the enemy is being a cunt
+				this.mainGoal.add(UnitType.Terran_Battlecruiser);
+				pBuildings.add(new pBuilding(UnitType.Terran_Supply_Depot, null, 300));
+				pBuildings.add(new pBuilding(UnitType.Terran_Barracks, null, 300));
+				pBuilding neww = new pBuilding(UnitType.Terran_Command_Center, Expands.get(0).getLocation(), true);
+				neww.canBeCancelled = false;
+				pBuildings.add(neww);// don't ask
+				pBuildings.add(new pBuilding(UnitType.Terran_Bunker, null, 50));
+				pBuildings.add(new pBuilding(UnitType.Terran_Bunker, null, 50));
+				pBuildings.add(new pBuilding(UnitType.Terran_Bunker, null, 50));
+				pBuildings.add(new pBuilding(UnitType.Terran_Bunker, null, 50));
+				pBuildings.add(new pBuilding(UnitType.Terran_Bunker, null, 50));
+				pBuildings.add(new pBuilding(UnitType.Terran_Bunker, null, 50));
+				pBuildings.add(new pBuilding(UnitType.Terran_Bunker, null, 50));
+				pBuildings.add(new pBuilding(UnitType.Terran_Bunker, null, 50));
+				pBuildings.add(new pBuilding(UnitType.Terran_Bunker, null, 50));
+				pBuildings.add(new pBuilding(UnitType.Terran_Bunker, null, 50));
+				pBuildings.add(new pBuilding(UnitType.Terran_Bunker, null, 50));
+				pBuildings.add(new pBuilding(UnitType.Terran_Bunker, null, 50));
+				pBuildings.add(new pBuilding(UnitType.Terran_Bunker, null, 50));
+				pBuildings.add(new pBuilding(UnitType.Terran_Bunker, null, 50)); // adding one more to literally out-do mcrave
+				pBuildings.add(new pBuilding(UnitType.Terran_Barracks, null, 300));
+				pBuildings.add(new pBuilding(UnitType.Terran_Factory, null, 300, true));
+				pBuildings.add(new pBuilding(UnitType.Terran_Starport, null, 300, true));
+				pBuildings.add(new pBuilding(UnitType.Terran_Science_Facility, null, 300, true));
+
+			}
 			
 		}
 		else {
 			// default build
 			int chosenBuild = 0;
 			Random rand = new Random();
-			int n = rand.nextInt(3) + 1;
+			int n = rand.nextInt(4) + 1;
 			if(n == 1 || chosenBuild == 1){
 				this.buildName = "The Neohuman Build";
 				this.type = "bio";
@@ -524,15 +658,47 @@ public class Strategy {
 				stuffQueue.add(new BotTech(2, 0, TechType.None, UpgradeType.Terran_Vehicle_Weapons, UnitType.None, myData));
 				stuffQueue.add(new BotTech(1, 1, TechType.Irradiate, UpgradeType.None, UnitType.None, myData));
 			}
+			else {
+				buildName = "McRave 12 BUNKERBUNKERBUNKERBUNKERBUNKERBUNKERBUNKERBUNKERBUNKERBUNKERBUNKERBUNKERBUNKER";
+				type = "Dunno lol";
+				this.AB.add(UnitType.Terran_Barracks); // make this if the enemy is being a cunt
+				this.mainGoal.add(UnitType.Terran_Battlecruiser);
+				pBuildings.add(new pBuilding(UnitType.Terran_Supply_Depot, null, 300));
+				pBuildings.add(new pBuilding(UnitType.Terran_Barracks, null, 300));
+				pBuilding neww = new pBuilding(UnitType.Terran_Command_Center, Expands.get(0).getLocation(), true);
+				neww.canBeCancelled = false;
+				pBuildings.add(neww);// don't ask
+				pBuildings.add(new pBuilding(UnitType.Terran_Bunker, null, 50));
+				pBuildings.add(new pBuilding(UnitType.Terran_Bunker, null, 50));
+				pBuildings.add(new pBuilding(UnitType.Terran_Bunker, null, 50));
+				pBuildings.add(new pBuilding(UnitType.Terran_Bunker, null, 50));
+				pBuildings.add(new pBuilding(UnitType.Terran_Bunker, null, 50));
+				pBuildings.add(new pBuilding(UnitType.Terran_Bunker, null, 50));
+				pBuildings.add(new pBuilding(UnitType.Terran_Bunker, null, 50));
+				pBuildings.add(new pBuilding(UnitType.Terran_Bunker, null, 50));
+				pBuildings.add(new pBuilding(UnitType.Terran_Bunker, null, 50));
+				pBuildings.add(new pBuilding(UnitType.Terran_Bunker, null, 50));
+				pBuildings.add(new pBuilding(UnitType.Terran_Bunker, null, 50));
+				pBuildings.add(new pBuilding(UnitType.Terran_Bunker, null, 50));
+				pBuildings.add(new pBuilding(UnitType.Terran_Bunker, null, 50));
+				pBuildings.add(new pBuilding(UnitType.Terran_Bunker, null, 50)); // adding one more to literally out-do mcrave
+				pBuildings.add(new pBuilding(UnitType.Terran_Barracks, null, 300));
+				pBuildings.add(new pBuilding(UnitType.Terran_Factory, null, 300, true));
+				pBuildings.add(new pBuilding(UnitType.Terran_Starport, null, 300, true));
+				pBuildings.add(new pBuilding(UnitType.Terran_Science_Facility, null, 300, true));
+				pBuildings.add(new pBuilding(UnitType.Terran_Starport, null, 300, true));
+				pBuildings.add(new pBuilding(UnitType.Terran_Starport, null, 300, true));
+				pBuildings.add(new pBuilding(UnitType.Terran_Starport, null, 300, true));
+			}
 		}
 		
 	} else {
 		// p
 		// https://www.youtube.com/watch?v=fe4EK4HSPkI
 		// DOOT DOOT DOOT DOOT DOOT DOOT DOOOOT DOOOOOOOOOOOOOT DOOOOOOOOOOOOOOOOOOOOOOOOOOOOT
-		int chosenBuild = 0;
+		int chosenBuild = 3;
 		Random rand = new Random();
-		int n;
+		int n;	
 		if(chosenBuild != 0){
 			n = chosenBuild;
 		}
@@ -579,7 +745,7 @@ public class Strategy {
 			stuffQueue.add(new BotTech(2, 0, TechType.None, UpgradeType.Khaydarin_Amulet, UnitType.None, myData));
 			stuffQueue.add(new BotTech(2, 0, TechType.None, UpgradeType.Carrier_Capacity, UnitType.None, myData));
 		}
-		else if (n == 3){
+		else if (n == 3 || chosenBuild == 3){
 			this.buildName = "Dumb DT build";
 			this.mainGoal.add(UnitType.Protoss_Dark_Templar);
 			this.techGoals.add(UnitType.Protoss_Citadel_of_Adun);

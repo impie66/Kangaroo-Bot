@@ -152,13 +152,19 @@ public class Spellcaster {
 			
 				if(help.targetsPosition()){
 					for(Unit unit : enemy){
-						if(help.equals(TechType.Psionic_Storm) && unit.getType().isBuilding()){
-							continue;
-						}
-						
-						if(myUnit.canUseTech(help, unit.getPosition()) && data.self.hasResearched(help) && !isBusy(myUnit) && !targetAlreadyEffected(help, unit)){
-							myUnit.useTech(help, unit.getPosition());
-							break;
+						if(data.self.hasResearched(help) && !isBusy(myUnit) && !targetAlreadyEffected(help, unit)){
+							if(help.equals(TechType.Psionic_Storm) && unit.getType().isBuilding()){
+								continue;
+							}
+							
+							if(!isWorthToCast(myUnit, unit.getPosition(), help, help.getWeapon().outerSplashRadius())){
+								continue;
+							}
+												
+							if(myUnit.canUseTech(help, unit.getPosition()) && isWorthToCast(myUnit, unit.getPosition(), help, help.getWeapon().outerSplashRadius())){
+								myUnit.useTech(help, unit.getPosition());
+								break;
+							}
 						}
 					}
 				}
@@ -241,6 +247,7 @@ public class Spellcaster {
 		
 		if(type.equals(UnitType.Terran_Science_Vessel)){
 			hurtful.add(TechType.EMP_Shockwave);
+			hurtful.add(TechType.Irradiate);
 			helpful.add(TechType.Defensive_Matrix);
 		}
 		
@@ -276,7 +283,8 @@ public class Spellcaster {
 		   unit.getOrder().equals(Order.InfestingCommandCenter) ||
 		   unit.getOrder().equals(Order.MoveToInfest) ||
 		   unit.getOrder().equals(Order.CastInfestation) ||
-		   unit.getOrder().equals(Order.CastConsume)){
+		   unit.getOrder().equals(Order.CastConsume) ||
+		   unit.getOrder().equals(Order.CastIrradiate)  ){
 			return true;
 		}
 		   
@@ -319,12 +327,84 @@ public class Spellcaster {
 			return target.getShields() != target.getType().maxShields();
 		}
 		
+		if(what.equals(TechType.Irradiate)){
+			return target.isIrradiated();
+		}
+		
 		return false;
 		
 		
 	}
 	
 
+	boolean canFriendlyFire(TechType type){
+		if(type.equals(TechType.Ensnare) || type.equals(TechType.Plague) || type.equals(TechType.Psionic_Storm)){
+			return true;
+		}
+		
+		return false;
+	}
+	
+	
+	boolean isWorthToCast(Unit caster, Position pos, TechType type, int radius){
+		int myScore = 0;
+		int enemyScore = 0;
+		
+		if(!this.data.techScores.containsKey(type)){
+			this.data.techScores.put(type, 0);
+		}
+		
+		for(Unit unit : game.getUnitsInRadius(pos, radius)){
+			if(game.enemies().contains(unit.getPlayer())){
+				// if bad boi
+				enemyScore = enemyScore + data.getScoreOf(unit);
+//				if(type.targetsPosition()){
+//					if(caster.canUseTech(type, pos)){
+//						
+//					}
+//				}
+//				
+//				if(type.targetsUnit()){
+//					if(caster.canUseTech(type, unit)){
+//						enemyScore = enemyScore + data.getScoreOf(unit);
+//					}
+//				}
+
+			}
+			else {
+				// if good guy
+				myScore = myScore + data.getScoreOf(unit);
+			}
+				
+		}
+		
+		till.Print("My Score: " + myScore);
+		till.Print("Enemy Score: " + enemyScore);
+		
+		if(enemyScore > myScore){
+			int value = data.techScores.get(type);
+			till.Print("Score required: " + value);
+			if(enemyScore >= value){
+				till.Print("Good thing happened");
+				// if the enemy score is good nuff to cast
+				return true;
+			}
+			else{
+				// well then fuck it.
+				till.Print("Bad thing happened");
+				return false;
+			}
+		}
+		else {
+			return false;
+		}
+		
+
+		
+		
+	}
+	
+	
 	
 	
 	

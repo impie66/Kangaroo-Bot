@@ -12,7 +12,7 @@ public class DecisionManager {
 	boolean canWin;
 	Evaluator evaluator;
 	Simulator simulator;
-	BWMirrorAgentFactory factory;
+	JBWAPIAgentFactory factory;
 	int myScore;
 	int enemyScore;
 	int myIncome;	
@@ -25,7 +25,7 @@ public class DecisionManager {
 		this.canWin = false;
 		this.sim = new Simulator.Builder().build();
 		this.evaluator = new Evaluator();
-		this.factory =  new BWMirrorAgentFactory(game);
+		this.factory =  new JBWAPIAgentFactory(game);
 		this.myScore = 0;
 		this.enemyScore = 0;
 
@@ -107,7 +107,7 @@ public class DecisionManager {
 	boolean simBattle(ArrayList<Unit> myUnits, ArrayList<UnitType> enemyUnits, int dur, Player ply){
 		//Special thanks to Jabbo for telling me how to wipe my ass.
 		this.simulator = sim;
-		this.factory = new BWMirrorAgentFactory();
+		this.factory = new JBWAPIAgentFactory();
 		int myScoreBefore = 0;
 		int myScoreAfter = 0;
 		int enemyScoreBefore = 0;
@@ -213,14 +213,14 @@ public class DecisionManager {
 		
 	}
 	
-	boolean evaluateBattle(ArrayList<Unit> myUnits, ArrayList<Unit> enemyUnits, double min, boolean setScore){
+	boolean evaluateBattle(ArrayList<Unit> myUnits, Pair<ArrayList<Unit>, ArrayList<FogUnit>> enemy, double min, boolean setScore){
 		this.evaluator = new Evaluator();
 		
 		ArrayList<Agent>myA = new ArrayList<>();
 		ArrayList<Agent>enemyA = new ArrayList<>();
 		boolean ED = false;
-		boolean MinesDoSomethingOtherThanBait = false;
-		
+		ArrayList<Unit> enemyUnits = enemy.getFirst();
+		ArrayList<FogUnit> fog = enemy.getSecond();
 		 for(Unit unit : enemyUnits){
 			 Agent asd = factory.of(unit);
 			 
@@ -268,18 +268,21 @@ public class DecisionManager {
 			 enemyA.add(asd);
 			 }
 			 
-			 if(!unit.getType().isBuilding() && !unit.getType().isFlyer() && MinesDoSomethingOtherThanBait == false){
-				 MinesDoSomethingOtherThanBait = true;
-			 }
+
 		 }
 		
 		
+		 for(FogUnit unit : fog){
+			 Agent asd = FogAgent(unit.type, unit.ply);
+			 asd.setHealth(unit.hp);
+			 asd.setEnergy(unit.energy);
+			 asd.setShields(unit.shields);
+		 }
 	
 					
 		 for(Unit unit : myUnits){
 			 Agent asd = factory.of(unit);
 			 asd.setKiter(false);
-			
 			 if(unit.getType().equals(UnitType.Protoss_Carrier)){
 				 Agent yess = factory.of(UnitType.Protoss_Carrier);
 				 ArrayList<Agent> childs = new ArrayList<>();
@@ -296,15 +299,13 @@ public class DecisionManager {
 				 
 			 }
 			 
-			 if(unit.getType().equals(UnitType.Terran_Vulture)){
+			 if(unit.getType().equals(UnitType.Terran_Vulture) && game.self().hasResearched(TechType.Spider_Mines)){
 				 
-				 if(MinesDoSomethingOtherThanBait){
-					 for(int i=0;i<unit.getSpiderMineCount();i++){
-						Agent yes = factory.of(UnitType.Terran_Vulture_Spider_Mine);
-						 myA.add(yes);
-					}
-				 }
-
+				 for(int i=0;i<unit.getSpiderMineCount();i++){
+					Agent yes = factory.of(UnitType.Terran_Vulture_Spider_Mine);
+						myA.add(yes);
+				}
+				 
 			 }
 			 
 			 if(unit.getType().equals(UnitType.Zerg_Lurker) || unit.getType().equals(UnitType.Protoss_Dark_Templar)){
@@ -319,7 +320,7 @@ public class DecisionManager {
 	
 		 
 		 
-		double score = evaluator.evaluate(myA, enemyA);
+		double score = evaluator.evaluate(myA, enemyA).value;
 		if(setScore == true){
 			for(Unit unit : myUnits){
 				if(game.self().getUnits().contains(unit)){
@@ -368,7 +369,7 @@ public class DecisionManager {
 		 }
 		 
 		 
-		double score = evaluator.evaluate(myA, enemyA);
+		double score = evaluator.evaluate(myA, enemyA).value;
 		if(score >= 0.75){
 			return true;
 		}
@@ -381,7 +382,7 @@ public class DecisionManager {
 	Agent FogAgent(UnitType unit, Player ply){
 		 Agent asd = factory.of(unit);
 		 asd.setMaxHealth(unit.maxHitPoints());
-		 asd.setSpeed((float) unit.topSpeed());
+		 asd.setSpeedFactor((float) unit.topSpeed());
 		 asd.setMaxShields(unit.maxShields());	 
 		 Weapon Gwep = new Weapon();
 		 Weapon Awep = new Weapon();

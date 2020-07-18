@@ -17,6 +17,8 @@ public class pBuilding {
 	boolean rangeIncreaseOnFail = true;
 	boolean canSkip;
 	Race buildOnlyForRace;
+	boolean proxy = false;
+	boolean buildWithScout = false;
 	
 	public pBuilding(UnitType ype, TilePosition where){
 		this.type = ype;
@@ -28,6 +30,8 @@ public class pBuilding {
 		this.frameCheck = 0;
 		this.canSkip = false;
 		this.buildOnlyForRace = Race.None;
+		this.proxy = false;
+		this.buildWithScout = false;
 	}
 	
 	public pBuilding(UnitType ype, TilePosition where, Race r){
@@ -40,6 +44,8 @@ public class pBuilding {
 		this.frameCheck = 0;
 		this.canSkip = false;
 		this.buildOnlyForRace = r;
+		this.proxy = false;
+		this.buildWithScout = false;
 	}
 	
 	public pBuilding(UnitType ype, TilePosition where, int max){
@@ -52,6 +58,8 @@ public class pBuilding {
 		this.frameCheck = 0;
 		this.canSkip = false;
 		this.buildOnlyForRace = Race.None;
+		this.proxy = false;
+		this.buildWithScout = false;
 	}
 	
 	public pBuilding(UnitType ype, TilePosition where, int max, boolean creep){
@@ -64,6 +72,8 @@ public class pBuilding {
 		this.frameCheck = 0;
 		this.canSkip = false;
 		this.buildOnlyForRace = Race.None;
+		this.proxy = false;
+		this.buildWithScout = false;
 	}
 	
 	
@@ -76,6 +86,8 @@ public class pBuilding {
 		this.frameCheck = 0;
 		this.canSkip = false;
 		this.buildOnlyForRace = Race.None;
+		this.proxy = false;
+		this.buildWithScout = false;
 	}
 	
 	
@@ -89,6 +101,8 @@ public class pBuilding {
 		this.canBeCancelled = true;
 		this.canSkip = false;
 		this.buildOnlyForRace = Race.None;
+		this.proxy = false;
+		this.buildWithScout = false;
 	}
 	
 	
@@ -102,6 +116,8 @@ public class pBuilding {
 		this.frameCheck = 0;
 		this.canSkip = false;
 		this.buildOnlyForRace = Race.None;
+		this.proxy = false;
+		this.buildWithScout = false;
 	}
 	
 	public pBuilding(UnitType ype, TilePosition where, int max, boolean creep, boolean yes, int save){
@@ -114,6 +130,8 @@ public class pBuilding {
 		this.frameCheck = 0;
 		this.canSkip = false;
 		this.buildOnlyForRace = Race.None;
+		this.proxy = false;
+		this.buildWithScout = false;
 	}
 	
 	public pBuilding(UnitType ype, TilePosition where, int max, boolean creep, boolean yes, int save, int frame){
@@ -126,6 +144,8 @@ public class pBuilding {
 		this.frameCheck = frame;
 		this.canSkip = false;
 		this.buildOnlyForRace = Race.None;
+		this.proxy = false;
+		this.buildWithScout = false;
 	}
 	
 	public pBuilding(UnitType ype, TilePosition where, int max, boolean creep, boolean yes, int save, int frame, boolean c){
@@ -139,6 +159,8 @@ public class pBuilding {
 		this.canBeCancelled = c;
 		this.canSkip = false;
 		this.buildOnlyForRace = Race.None;
+		this.proxy = false;
+		this.buildWithScout = false;
 	}
 	
 	
@@ -155,12 +177,20 @@ public class pBuilding {
 	}
 	
 	boolean canSkip(Race race){
+		
+		if(race.equals(Race.Unknown)){
+			return false;
+		}
+		
 		if(this.buildOnlyForRace.equals(Race.None)){
 			return false;
 		}
 		else {
-			if(race.equals(this.buildOnlyForRace)){
-				return false;
+			// if race field
+			if(!race.equals(Race.Unknown)){
+				if(race.equals(this.buildOnlyForRace)){
+					return false;
+				}
 			}
 		}
 		

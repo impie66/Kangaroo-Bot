@@ -49,7 +49,7 @@ public class Util {
 	//NOT EVEN USED LUL
 
 	void Print(String str){
-		boolean enablePrinting = false;
+		boolean enablePrinting = true;
 		if(enablePrinting){
 			System.out.println(str);
 		}
@@ -132,8 +132,8 @@ public class Util {
 		if(unitt.getDistance(targett) <= 200){
 			int Int1  = targett.getX() - unitt.getX();
 			int Int2 = targett.getY() - unitt.getY(); 
-			Int3 = (int) (unitt.getX() - Int1 / 0.10);
-			Int4 =  (int) (unitt.getY() - Int2 / 0.10);
+			Int3 = (int) (unitt.getX() - Int1 / 0.05);
+			Int4 =  (int) (unitt.getY() - Int2 / 0.05);
 		}
 		else {
 			int Int1  = targett.getX() - unitt.getX();
@@ -292,6 +292,32 @@ public class Util {
 		
 		return ret;
 	}
+	
+	ArrayList<Unit> getEnemyArmyUnitsNearMe(Unit me, Integer radius, Boolean bool){
+		ArrayList<Unit> ret = new ArrayList<>();
+		for(Unit unit : game.getUnitsInRadius(me.getPosition(), radius)){
+			if(game.enemies().contains(unit.getPlayer())){ // IF THE UNIT IS AN ENEMY UNIT, FUCKING DIPSHIT.
+				if(bool == true){ // include buildings
+					if(unit.getType().isBuilding() && myData.IsMilitrayBuilding(unit)){
+						ret.add(unit);
+					}
+				}
+				else { // don't include buildings
+					if(!unit.getType().isBuilding() && myData.IsMilitrayUnit(unit)){
+						ret.add(unit);
+					}
+				}
+			}
+		}
+		
+		if(ret.isEmpty()){
+			return null;
+		}
+		
+		
+		return ret;
+	}
+	
 	
 	ArrayList<Unit> getFriendlyUnitsNearMe(Unit me, Integer radius, Boolean bool){
 		ArrayList<Unit> ret = new ArrayList<>();
@@ -467,6 +493,9 @@ public class Util {
 	
 
  boolean ShouldBeFocused(Unit weeheads){
+	 
+	 
+	 
 	
 	if(weeheads.getType() == UnitType.Terran_Vulture_Spider_Mine){
 		if(weeheads.isDetected() || !weeheads.isBurrowed()){

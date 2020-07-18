@@ -17,6 +17,7 @@ import bwapi.TechType;
 import bwapi.TilePosition;
 import bwapi.Unit;
 import bwapi.UnitType;
+import bwapi.WeaponType;
 
 
 public class Data {
@@ -46,6 +47,7 @@ public class Data {
 	ArrayList<BotPlayer> players;
 	ArrayList<Spellcaster> spellCasters;
 	ArrayList<Position> Scans;
+	ArrayList<FogUnit> fogUnits;
 	HashMap<Unit, Double> unitScore = new HashMap<Unit, Double>();
 	////REEEEEEEEEEEEEEEEEEEEE
 	int enemyScore;
@@ -61,10 +63,14 @@ public class Data {
 	boolean hasEarlyExpanded = false;
 	ArrayList<ChokePoint> ramps = new ArrayList<>();
 	HashMap<ChokePoint, ArrayList<Region>> asdfg = new HashMap<>();
+	HashMap<Unit, TilePosition> geysers = new HashMap<>();
 	int pStats = 0;
 	int lastExpandFrame = 5000;
 	ChokePoint mainChoke;
-	boolean canFuckBab; // is there a 3 or more bases? if so we'll attack the 3rd base 
+	boolean canFuckBab; // is there a 3 or more bases? if so we'll attack the bases. 
+	boolean needsGas;
+	HashMap<TechType, Integer> techScores = new HashMap<>();
+
 	
 	public Data(Game gaem, BWEM b, Base myBasee){
 		this.game = gaem;
@@ -102,7 +108,8 @@ public class Data {
 		this.pStats = 0;
 		DoTheThing();
 		this.defencePos = TilePosition.None;
-
+		this.fogUnits = new ArrayList<>();
+		this.geysers = new HashMap<>();
 	}
 	
 	void DoTheThing(){
@@ -113,8 +120,6 @@ public class Data {
 			}
 		}
 		
-		
-
 		int max = bewb.getMap().getBases().size();
 		ArrayList<Base> temp = new ArrayList<Base>();
 		int i = 0;
@@ -145,12 +150,14 @@ public class Data {
 			DoTheGridThing();
 			this.defencePos = getDefencePos();
 			this.mainChoke = setMainChoke(myBase, Expands.get(0));
-			
+			FuckMeBannerLordIsComingOutIn3HoursIGottaGetThisShitDone();
 
 	}
 	
 	void onFrame(){
 		
+		
+	
 		
 		if(this.nextAttackPosition != null){
 			if(!this.currentTarget.attackPositions.contains(this.nextAttackPosition)){
@@ -167,7 +174,6 @@ public class Data {
 				if (game.isVisible(tileCorrespondingToP)) {
 					boolean buildingStillThere = EnemysNearby(p,70);
 					if (buildingStillThere == false) {
-						this.attackPositions.remove(p);
 						if(this.currentTarget.attackPositions.contains(p)){
 							this.currentTarget.attackPositions.remove(p);
 						}
@@ -192,11 +198,13 @@ public class Data {
 								if(unit.getEnergy() < 50){
 									continue;
 								}
+								
 								for(Base starts : bewb.getMap().getBases()){
-									if(!game.isExplored(starts.getLocation())){
+									if(!game.isExplored(starts.getLocation()) && game.hasPath(self.getStartLocation().toPosition(), starts.getCenter())){
 										unit.useTech(TechType.Scanner_Sweep);
 										break scanners;
 									}
+									
 								}
 								
 								for(Base starts : bewb.getMap().getBases()){
@@ -212,11 +220,11 @@ public class Data {
 
 					for(Base starts : bewb.getMap().getBases()){
 
-						if(!game.isVisible(starts.getCenter().toTilePosition()) && !scouts.contains(starts)){
+						if(!game.isVisible(starts.getCenter().toTilePosition()) && !scouts.contains(starts) && game.hasPath(self.getStartLocation().toPosition(), starts.getCenter())){
 							this.scouts.add(starts);
 						}
 						
-						if(!game.isExplored(starts.getLocation()) && starts.isStartingLocation()){
+						if(!game.isExplored(starts.getLocation()) && starts.isStartingLocation() && game.hasPath(self.getStartLocation().toPosition(), starts.getCenter())){
 							this.scouts.add(starts);
 						}
 						
@@ -225,94 +233,119 @@ public class Data {
 				}
 			
 			
-			if(!scouts.isEmpty() && this.currentTarget.attackPositions.isEmpty()){
-				
-				for(Base pos : this.scouts){
-					Position yes = pos.getCenter();
-					if(!this.currentTarget.attackPositions.contains(yes)){
-						this.currentTarget.attackPositions.add(yes);
-						Area a = bewb.getMap().getNearestArea(pos.getCenter().toTilePosition());
-						
-						if(game.getFrameCount() >= 10000){
-							if (!this.currentTarget.attackPositions.contains(a.getTopLeft())){
-								this.currentTarget.attackPositions.add(a.getTopLeft().toPosition());
-							}
-							if (!this.currentTarget.attackPositions.contains(a.getBottomRight())){
-								this.currentTarget.attackPositions.add(a.getBottomRight().toPosition());
-							}
+				if(!scouts.isEmpty() && this.currentTarget.attackPositions.isEmpty()){
+					Print("Trigger 1");
+					for(Base pos : this.scouts){
+						Position yes = pos.getCenter();
+						if(!this.currentTarget.attackPositions.contains(yes)){
+							this.currentTarget.attackPositions.add(yes);
+							Area a = bewb.getMap().getNearestArea(pos.getCenter().toTilePosition());
 							
-							ArrayList<Region> ja = getUnexporedRegionsNear(pos.getCenter(), 700);
-							
-							if(ja != null){
-								for(Region r : ja){
-									if (!this.currentTarget.attackPositions.contains(r.getCenter())){
-										this.currentTarget.attackPositions.add(r.getCenter());
+							if(game.getFrameCount() >= 10000){
+								if (!this.currentTarget.attackPositions.contains(a.getTopLeft())){
+									this.currentTarget.attackPositions.add(a.getTopLeft().toPosition());
+								}
+								if (!this.currentTarget.attackPositions.contains(a.getBottomRight())){
+									this.currentTarget.attackPositions.add(a.getBottomRight().toPosition());
+								}
+								
+								ArrayList<Region> ja = getUnexporedRegionsNear(pos.getCenter(), 700);
+								
+								if(ja != null){
+									for(Region r : ja){
+										if (!this.currentTarget.attackPositions.contains(r.getCenter())){
+											this.currentTarget.attackPositions.add(r.getCenter());
+										}
 									}
 								}
 							}
+							
 						}
-						
 					}
+					this.nextAttackPosition = this.currentTarget.attackPositions.get(0);
 				}
-				this.nextAttackPosition = this.currentTarget.attackPositions.get(0);
-			}
 			
 			}
 			else {
-				if(!scouts.isEmpty()){
-					for(Position pos : new ArrayList<>(this.attackPositions)){
-						if(scouts.contains(pos)){
-							this.attackPositions.remove(pos);
+				// if attack pos is not empty
+				if(!scouts.isEmpty() && !currentTarget.Buildings.isEmpty()){
+					Print("Trigger 2");
+					for(Position pos : new ArrayList<>(this.currentTarget.attackPositions)){
+						for(Base base : scouts){
+							if(pos.getApproxDistance(base.getCenter()) < 25){
+								this.currentTarget.attackPositions.remove(pos);
+							}
 						}
 					}
 					scouts.clear();
 					
 				}
 				
+				//trigger 2.5 is related to the issue
 				
 				// if target attack positions not empty
 				if(!this.currentTarget.attackPositions.contains(this.nextAttackPosition)){
-					for(Position pos : new ArrayList<>(this.attackPositions)){
+					Print("Trigger 2.5");
+					for(Position pos : new ArrayList<>(this.currentTarget.attackPositions)){
 						this.nextAttackPosition = pos;
 						break;
 					}
 				}
+				
+				
+				
+				
+				
+				
+				
 			}
 									
 		}	
 		
 		
 		if(!this.scouts.isEmpty()){
-			if(!this.currentTarget.attackPositions.isEmpty()){
+			if(!this.currentTarget.attackPositions.isEmpty() && !this.currentTarget.Buildings.isEmpty()){
+				Print("Trigger 3");
+				for(Base bass : new ArrayList<Base>(this.scouts)){
+					if(this.currentTarget.attackPositions.contains(bass.getCenter())){
+						this.currentTarget.attackPositions.remove(bass.getCenter());
+					}
+				}
 				scouts.clear();
 				if(this.nextAttackPosition == null){
 					this.nextAttackPosition = this.currentTarget.attackPositions.get(0);
 				}
+				
+				for(Base bass : new ArrayList<Base>(this.scouts)){
+					Print("Trigger 4");
+					boolean cont = true;
+					if(game.isVisible(bass.getCenter().toTilePosition())){
+						cont = EnemysNearby(bass.getCenter(), 500);
+						if(!cont == true){
+							// if no enemies
+							this.scouts.remove(bass);
+							if(this.nextAttackPosition.equals(bass.getCenter())){
+								this.nextAttackPosition = null;
+							}
+							
+							if(this.currentTarget.attackPositions.contains(bass.getCenter())){
+								this.currentTarget.attackPositions.remove(bass.getCenter());
+							}
+						}
+					}
+					
+				}
+				
+				
 
 			}
 			
-			for(Base bass : new ArrayList<Base>(this.scouts)){
-				boolean cont = true;
-				if(game.isVisible(bass.getCenter().toTilePosition())){
-					cont = EnemysNearby(bass.getCenter(), 500);
-					if(!cont == true){
-						// if no enemies
-						this.scouts.remove(bass);
-						if(this.nextAttackPosition.equals(bass.getCenter())){
-							this.nextAttackPosition = null;
-						}
-						
-						if(this.currentTarget.attackPositions.contains(bass.getCenter())){
-							this.currentTarget.attackPositions.remove(bass.getCenter());
-						}
-					}
-				}
-				
-			}
+
 		}
 
 		if(this.currentTarget != null){
 			if(!this.currentTarget.attackPositions.isEmpty() && this.nextAttackPosition == null){
+				Print("Trigger 5");
 				for(Position pos : this.currentTarget.attackPositions){
 					this.nextAttackPosition = pos;
 					break;
@@ -343,9 +376,9 @@ public class Data {
 				game.drawTextMap(getDefencePos().toPosition(), "Build Defences somewhere around here");
 			}
 		}
-
 		
-	}
+			
+	} // end of update
 	
 	void DoTheThingsThatDoChokesPointsThatDoOfTheGiveBack(){
 		for(Base bass : Expands){
@@ -551,9 +584,12 @@ public class Data {
 	public ArrayList<Unit> GetEnemyUnitsNearby(Position pos, int radius, boolean include){
 		 ArrayList<Unit> Mine = new ArrayList<Unit>();
 		for (Unit targets : game.getUnitsInRadius(pos, radius)) {
-			if (targets.getPlayer().isEnemy(self) == true && IsMilitrayUnit(targets) == true && !Mine.contains(targets) && targets.isCompleted()) {
+			if (targets.getPlayer().isEnemy(self) == true && IsMilitrayUnit(targets) == true && !Mine.contains(targets) && targets.isCompleted() && !targets.getType().isWorker()) {
 				Mine.add(targets);
-
+			}
+			
+			if(targets.getType().isWorker() && isWorkerDoingTheBad(targets)){
+				Mine.add(targets);
 			}
 			
 			if(targets.getPlayer().isEnemy(self) == true && IsMilitrayBuilding(targets) == true && include == true && targets.isCompleted()){
@@ -564,6 +600,21 @@ public class Data {
 		return Mine;
 
 		
+	}
+	
+	
+	boolean isWorkerDoingTheBad(Unit unit){
+		if(!unit.getType().isWorker()){
+			return false;
+		}
+		
+		if(unit.isAttacking() || unit.getOrder().equals(Order.AttackUnit) || unit.getOrder().equals(Order.AttackMove) || unit.getOrder().equals(Order.Repair) || unit.getOrder().equals(Order.MoveToRepair)){
+			return true;
+		}
+		
+		
+		
+		return false;
 	}
 	
 	public boolean IsMilitrayUnit(Unit unit) {
@@ -652,14 +703,18 @@ public class Data {
 			if(unit.getType().isResourceDepot()){
 				if(!claimed.contains(looped)){
 					claimed.add(looped);
-				}
+				}	
 			}
 		}
 		
-		for(Base yes : new ArrayList<Base>(enemyBases)){
-			if(!claimed.contains(yes)){
-				claimed.add(yes);
+		
+		for(BotPlayer p : players){
+			for(Base bah : p.Bases){
+				if(!claimed.contains(bah)){
+					claimed.add(bah);
+				}
 			}
+					
 		}
 			
 		return claimed.contains(bass);
@@ -1498,8 +1553,45 @@ public class Data {
 		
 		return null;
 	}
-
 	
+	
+	void Print(String str){
+		boolean yes = true;	
+		if(yes){
+		System.out.println(str);
+		}
+	}
+	
+	
+	boolean isGatheringGas(){
+		for(Unit unit : getAllOf(self.getRace().getWorker())){
+			if(unit.isGatheringGas()){
+				return true;
+			}
+		}
+		
+		return false;
+	}
+	
+	
+	void FuckMeBannerLordIsComingOutIn3HoursIGottaGetThisShitDone(){
+		// how much score do we need to use this
+		// mostly for deciding when to cast offensive spells
+		// https://www.youtube.com/watch?v=NwVwsW0XZvY
+			
+		techScores.put(TechType.Ensnare, 150);
+		techScores.put(TechType.Spawn_Broodlings, 25);
+		techScores.put(TechType.Dark_Swarm, 450);
+		techScores.put(TechType.Plague, 450);
+		techScores.put(TechType.Psionic_Storm, 450);
+		techScores.put(TechType.EMP_Shockwave, 300);
+		
+		
+		
+		
+	}
+
+
 	
 }
 
