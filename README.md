@@ -34,6 +34,42 @@ and a fork from [McRave](https://github.com/Cmccrave/McRave) using [jBWAPI](http
 
 <h1>Updates</h1>
 
+<b>20/08/2020</b>
+<br />
+<b>1.04</b>
+<p>Mein herz brennt</p>
+<p>Alot of shit happened. But i'm back for a short while. I fixed a few things but the 1.04 recent update is to see what Bot v Bot stuff i need to fix (I only test against the inbuilt computer)</p>
+
+* Bot now "remembers" units in the fog and will sim them along with visible units.
+* Many attempts to fix the "Forget where the enemy is" bug. I think i am breaking it more.
+* Many bugs were aborted. They are now in a more hellish and hot place. 
+* Added some sort of ZvR build.
+* Redid unit production. It may be better in some cases but no promises. 
+* Spell casters now get their daily rations reduced if they waste a spell on one unit.
+* Added race specific build items. E.G protoss will made a stargate when doing a dumb DT build. 
+* Bot now uses Dakka jets properly. 
+* DT and air units have now been sponsored by gFuel and will not retreat if unattackable. 
+* Stepped deeper into insanity
+* Improved retreating to the point where retreating is no longer an option. 
+* Bot will no longer send your data to china. (Thanks trump for banning my bot in the states)
+<i>inb4 my shitcode spaghetti bot gets invested by the NSA</i>
+* Zerg bot now has a taste of communism and milkshakes. ```makeMoreDronesAndProbablyDie();```
+* Pornhub no longer recommends SCAT porn if the bot is running. 
+
+<b>I can't be fucked updating the code in the repo</b>
+
+<b>Many bugs incoming! Stay tuned to the ShitPostersGuild™</b>
+
+[!verygoodphoto](https://i.imgur.com/3IABLCe.png)
+<b>Please click if this doesnt work</b>
+
+
+
+<br />
+
+
+<br />
+
 <b>22/03/2020</b>
 <br />
 It's not my fault! PoE and doom came out
