@@ -60,7 +60,7 @@ and a fork from [McRave](https://github.com/Cmccrave/McRave) using [jBWAPI](http
 
 <b>Many bugs incoming! Stay tuned to the ShitPostersGuild™</b>
 
-[!verygoodphoto](https://i.imgur.com/3IABLCe.png)
+![verygoodphoto](https://i.imgur.com/3IABLCe.png)
 <b>Please click if this doesnt work</b>
 
 
