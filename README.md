@@ -34,6 +34,33 @@ and a fork from [McRave](https://github.com/Cmccrave/McRave) using [jBWAPI](http
 
 <h1>Updates</h1>
 
+<b>8/07/2021</b>
+<br />
+<br>1.1</br>
+<p> Oh lord he coming..</p>
+<br />
+
+* Spell caster class file got sued and works 35% of the time, everytime.
+* The building placement got caught cheating, now sleeps on a couch. nah for reals it's kinda better?
+* Something about my bot being dumb. I have no idea what i changed
+* Bot now remembers unit in the fog of war. #Blessed.
+* Unit simulation is now worse thanks to dietary restrictions
+* Smarter and worser unit targetting
+* Goons can still get fucked.
+* Terran Mech no longer does the marine hell build
+* Vultures got grounded for planting mines ontop of friendly units. It now does this slightly less.
+* Mine dragging?
+* Detectors started a violently abusing drugs
+* Leader of the workers union is in jail, now they work for worses pay and conditions. 
+* If you really what to know what im working with you should check out the changes.txt file
+* Special thanks to myself and no one else.
+* 
+<br />
+
+![mcRave23235](https://i.imgur.com/sDwNsP9.jpg)
+
+</br >
+
 <b>20/08/2020</b>
 <br />
 <b>1.04</b>
