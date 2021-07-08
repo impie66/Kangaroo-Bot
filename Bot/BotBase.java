@@ -31,6 +31,7 @@ ArrayList<Unit> voidedWorkers;
 Base Base;
 Game game;
 List<Mineral> blockingMinerals;
+HashMap<Integer, ArrayList<Unit>> mineralG = new HashMap<>(); // MINERAL ID, ARRAYLIST (WORKERS)
 
 	public BotBase(Game gamee, Unit unit, Base bass){
 		this.depot = unit;
@@ -50,6 +51,10 @@ List<Mineral> blockingMinerals;
 			for(Geyser g : this.Geysers){
 				this.GeyserT.put(g.getUnit(), g.getCenter().toTilePosition());
 			}
+		}
+		
+		for(Mineral min : bass.getMinerals()){
+			mineralG.put(min.getUnit().getID(), new ArrayList<>());
 		}
 		
 	}
@@ -122,12 +127,20 @@ List<Mineral> blockingMinerals;
 				if(this.gasWorkers.get(unit).size() < 3 && canDoTheGreenStuff()){
 					Unit worker = getPawnGatheringMins();
 					if(worker != null){
-					ArrayList<Unit> list = this.gasWorkers.get(unit);
-					list.add(worker);
-					worker.gather(unit);
-					//System.out.println("Assigning a new gas worker to refinery");
-					this.gasWorkers.put(unit, list);
-					break;
+						ArrayList<Unit> list = this.gasWorkers.get(unit);
+						list.add(worker);
+						worker.gather(unit);
+						//System.out.println("Assigning a new gas worker to refinery");
+						this.gasWorkers.put(unit, list);
+						Unit m = getAssignedWorker(worker);
+						if(m != null){
+							ArrayList<Unit> ret = mineralG.get(m.getID());
+							if(ret.contains(worker)){
+								ret.remove(worker);
+								mineralG.put(m.getID(), ret);
+							}
+						}
+						break;
 					}
 				}
 			}
@@ -136,6 +149,9 @@ List<Mineral> blockingMinerals;
 				for(Mineral min : new ArrayList<>(this.blockingMinerals)){
 					Unit yes = min.getUnit();
 					game.drawCircleMap(yes.getPosition(), yes.getType().width(), Color.Cyan);
+					if(yes.getPosition() != Position.Unknown){
+						game.drawTextMap(yes.getPosition(), "HELLO YES I AM A CUNT");
+					}
 				}
 			}
 
@@ -147,8 +163,45 @@ List<Mineral> blockingMinerals;
 			if(game.isVisible(unit.getTilePosition())){
 				if(!unit.getType().isMineralField()){
 					this.MineralDeplete(unit);
+					continue;
 				}
 			}
+			
+
+			ArrayList<Unit> w = mineralG.get(min.getUnit().getID());
+			for(Unit u : w){
+				if(!u.exists() || u.getType().isBuilding() || u.isGatheringGas()){
+					if(w.contains(u)){	
+					w.remove(unit);
+					mineralG.put(min.getUnit().getID(), w);
+					continue;
+					//System.out.println("Caught invalid worker for base: " + this.id);
+					}
+				}
+				
+//				if(u.isGatheringMinerals()){
+//					Unit t = getUnitTarget(u);
+//					if(t != null){
+//						if(t.getPosition().getApproxDistance(this.Base.getCenter()) > 1000){
+//							
+//						}
+//					}
+//				}
+				
+				if(u.isGatheringMinerals() && !u.isCarryingMinerals() && !voidedWorkers.contains(u)){
+					Unit t = getUnitTarget(u);
+					Unit myT = getAssignedWorker(u);
+					if(t != null){
+						if(t!=myT){
+							// not my target mineral patch
+							u.gather(myT);
+						}
+					}
+				}
+			}
+			
+			
+
 		}
 		
 		for(Unit unit : new ArrayList<>(this.gasWorkers.keySet())){
@@ -171,6 +224,7 @@ List<Mineral> blockingMinerals;
 		boolean kitkat = false;
 		if(!voidedWorkers.contains(worker)){
 			if(!this.Gases.isEmpty() && canDoTheGreenStuff()){
+				main:
 				for(Unit unit : new ArrayList<Unit>(this.Gases)){
 					if(isGas(unit)){
 						if(this.gasWorkers.containsKey(unit) == true){
@@ -185,7 +239,25 @@ List<Mineral> blockingMinerals;
 								}
 							}
 							else {
-								GatherMinerals(worker);
+								Unit g = getAssignedWorker(worker);
+								if(g == null){
+									GatherMinerals(worker);
+								}
+								else {
+				
+									Unit t = getUnitTarget(worker);
+									if(t != null){
+										for(Mineral min : new ArrayList<>(blockingMinerals)){
+											if(min.getUnit() == t){
+												continue main;
+											}
+										}
+									}
+									
+									if(worker.canGather(g)){
+										worker.gather(g);
+									}
+								}
 							}
 						}
 					}
@@ -194,14 +266,20 @@ List<Mineral> blockingMinerals;
 			
 			if(kitkat == false){
 				if(blockingMinerals.isEmpty()){
-				GatherMinerals(worker);
+					Unit g = getAssignedWorker(worker);
+					if(g == null){
+						GatherMinerals(worker);
+					}
+					else {
+						if(worker.canGather(g)){
+							worker.gather(g);
+						}
+					}
 				}
 				else {
-					for(Mineral min : this.blockingMinerals){
-						Unit unit = min.getUnit();
-						if(worker.canGather(unit) && worker.hasPath(unit.getPosition())){
-							worker.gather(unit);
-						}
+					for(Mineral m : this.blockingMinerals){
+						worker.gather(m.getUnit());
+						return;
 					}
 				}
 			}
@@ -275,13 +353,15 @@ List<Mineral> blockingMinerals;
 		return this.Pawns.size();
 	}
 	
+	
+	
 	void pawnDeath(Unit pawn){
 		
 		if(this.Pawns.contains(pawn)){
 			this.Pawns.remove(pawn);
 		}
 		
-		if(isGasWorker(pawn)){
+		if(isGasWorker(pawn)){	
 			Unit refinery = getAssignedRefinery(pawn);
 			if(refinery != null){
 				ArrayList<Unit> list = gasWorkers.get(refinery);
@@ -292,6 +372,16 @@ List<Mineral> blockingMinerals;
 			//System.out.println(this.depot.getPosition().getApproxDistance(refinery.getPosition()));
 			
 		}
+		
+		for(Mineral m : new ArrayList<>(this.Mins)){
+			ArrayList<Unit> ret = mineralG.get(m.getUnit().getID());
+			if(ret.contains(pawn)){
+				ret.remove(pawn);
+				mineralG.put(m.getUnit().getID(), ret);
+				break;
+			}
+		}
+	
 		
 	}
 	
@@ -357,6 +447,9 @@ List<Mineral> blockingMinerals;
 			if(min.getUnit().equals(unit)){
 				this.Mins.remove(min);
 				this.maxWorkers = (Mins.size() / 2) + (Geysers.size() * 3);
+				if(mineralG.containsKey(unit.getID())){
+					mineralG.remove(unit.getID());
+				}
 				//System.out.println("asdf");
 			}
 		}
@@ -382,19 +475,23 @@ List<Mineral> blockingMinerals;
 	}
 	
 	void GatherMinerals(Unit worker){
-		Unit closestMineral = null;
-		for (Mineral things : new ArrayList<Mineral>(this.Mins)) {
-			Unit neutralUnit = things.getUnit();
-			if (neutralUnit.isBeingGathered() == false) {
-				if (closestMineral == null
-						|| worker.getDistance(neutralUnit) < worker.getDistance(closestMineral)) {
-					closestMineral = neutralUnit;
+		
+		
+		Unit closestMineral = getTheBestBlueCuntToDoCuntyThingsTo();
+		if (closestMineral != null) {
+			ArrayList<Unit> ret = mineralG.get(closestMineral.getID());
+			if(!ret.contains(worker)){
+				ret.add(worker);
+			}
+			mineralG.put(closestMineral.getID(), ret);
+			if(!closestMineral.isVisible()){
+				worker.move(this.depot.getPosition());
+			}
+			else{
+				if(worker.canGather(closestMineral)){
+					worker.gather(closestMineral, false);
 				}
 			}
-		}
-
-		if (closestMineral != null) {
-			worker.gather(closestMineral, false);
 		}
 	}
 	
@@ -441,11 +538,83 @@ List<Mineral> blockingMinerals;
 	
 	boolean canDoTheGreenStuff(){
 		
-		if(game.getFrameCount() >= 15000){
-			return true;
+		if(!game.self().getRace().equals(Race.Zerg)){
+			if(game.getFrameCount() >= 15000 && game.self().gas() <= 200){
+				return true;
+			}
 		}
 		
 		return this.Pawns.size() >= 8;
+	}
+	
+	Unit getTheBestBlueCuntToDoCuntyThingsTo(){
+		Unit r = null;
+		int l = getHighestGatheredCount();
+		
+		if(this.Mins.isEmpty()){
+			//System.out.println("No mins for workers to gather at base: (BotBase)" + this.id);
+			return null;
+		}
+		
+		for(Mineral m : this.Mins){
+			
+			int w = mineralG.get(m.getUnit().getID()).size();
+			
+			if(w <= l){
+				r = m.getUnit();
+				l = w;
+			}
+			
+		}
+		
+		if(r == null){
+			//System.out.println("Cannot find mineral to gather to at: " + this.id);
+		}
+		
+		return r;
+
+	}
+	
+	Unit getAssignedWorker(Unit pawn){
+		Unit r = null;
+		for(Mineral m : new ArrayList<>(this.Mins)){
+			ArrayList<Unit> workers = mineralG.get(m.getUnit().getID());
+			if(workers != null){
+				if(workers.contains(pawn)){
+					return m.getUnit();
+				}
+			}
+		}
+		
+		return r;
+	}
+	
+	int getHighestGatheredCount(){
+		int r = 0;
+		for(Mineral m : new ArrayList<>(this.Mins)){
+			int size = mineralG.get(m.getUnit().getID()).size();
+			if(size > r){
+				r = size;
+			}
+		}
+		
+		return r;
+	}
+	
+	Unit getUnitTarget(Unit unit){
+		Unit ret = null;
+		if(unit.getTarget() != null){
+			ret = unit.getTarget();
+		}
+		
+		if(ret == null){
+			if(unit.getOrderTarget() != null){
+				ret = unit.getOrderTarget();
+			}
+		}
+		
+		return ret;
+		
 	}
 
 }

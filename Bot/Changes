@@ -1,0 +1,34 @@
+Changelog
+
+Fixed high templar being cowards?
+McRave BC build now puts stuff inside base and saves for it
+dumb fuck idiot is dumb. 
+Bot now properly sims units in the fog of war with other visible units
+Rewrote the sim again (Count: 3->5 rewrites)
+Bot now targets closest base defence and workers when pillaging. <--- no idea if working tbh
+Bot will now reset its build queue with a item of importance is constructed
+Bot will attempt to move units that block building placements and shortly delay the construction
+Reworked spellcasters again for like the 4th time.
+Fixed goons
+Also forget to sim enemy casters
+Mech build now properly limits marines  if(Marines + marinesInQueue < marinesMax){Do();}
+bot now sends 3 SCVS to repair bunkers and turrets
+bot now sims air units against enemy units that can hit air to see if it can stay.
+Bot now uses simulator instead of evaluator when simming big portions of its army
+Scouter now runs from units in the fog of war
+Threated simulators family to the point where it nows properly simulates stim/spider mines if applicable. 
+Vulture/Spidermine rewrite
+Bot will now make units when floating mins
+highly experimental mine dragging
+Units now shit talk and say random shit
+Minor adjustments to how things works
+Threatened how things work's family so i could make minor adjustments.
+Bot now resets unit constuction for addons (BCS mostly)
+Bribed building placement for protoss to be less efficient
+Bot now mines semi efficiently
+Improved Detector Use
+And a ton of other shit i dunno i forgot what i did
+
+https://www.youtube.com/watch?v=5bfseWNmlds
+https://www.youtube.com/watch?v=BeKgZfxsdiQ
+

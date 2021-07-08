@@ -104,10 +104,11 @@ public class DecisionManager {
 
 }
 	
-	boolean simBattle(ArrayList<Unit> myUnits, ArrayList<UnitType> enemyUnits, int dur, Player ply){
+	boolean simBattle(ArrayList<Unit> myUnits, ArrayList<UnitType> enemyUnits, int dur, Player ply, Race r){
 		//Special thanks to Jabbo for telling me how to wipe my ass.
 		this.simulator = sim;
 		this.factory = new JBWAPIAgentFactory();
+		Race race = r;
 		int myScoreBefore = 0;
 		int myScoreAfter = 0;
 		int enemyScoreBefore = 0;
@@ -158,7 +159,7 @@ public class DecisionManager {
 		 
 	 
 		 for(UnitType unit : enemyUnits){
-			 Agent asd = FogAgent(unit, ply);
+			 Agent asd = FogAgent(unit, ply, race);
 			 simulator.addAgentB(asd);
 			 enemyScoreBefore = enemyScoreBefore + asd.getHealth() + asd.getShields();
 		 }
@@ -213,7 +214,283 @@ public class DecisionManager {
 		
 	}
 	
-	boolean evaluateBattle(ArrayList<Unit> myUnits, Pair<ArrayList<Unit>, ArrayList<FogUnit>> enemy, double min, boolean setScore){
+	boolean simBattle2(ArrayList<Unit> myUnits, Pair<ArrayList<Unit>,ArrayList<FogUnit>> enemyUnits, int dur, BotPlayer ply, Race r){
+		//Special thanks to Jabbo for telling me how to wipe my ass.
+		this.simulator = sim;
+		this.factory = new JBWAPIAgentFactory();
+		Race race = r;
+		int myScoreBefore = 0;
+		int myScoreAfter = 0;
+		int enemyScoreBefore = 0;
+		int enemyScoreAfter = 0;
+		simulator.reset();
+		
+		if(myUnits.isEmpty()){
+			this.canWin = false;
+			return false;
+		}
+				
+	
+		 for(Unit unit : myUnits){
+			 Agent asd = factory.of(unit);
+			 if(unit.getType().equals(UnitType.Protoss_Dark_Templar) || unit.getType().equals(UnitType.Zerg_Lurker)){
+				 BotPlayer p = myData.getBotPlayer(unit.getPlayer());
+				 if(p != null){
+					 asd.setDetected(p.canScan()); // only works for terran
+				 }
+			 }
+			 
+			 if(unit.equals(UnitType.Terran_Vulture) && unit.getPlayer().hasResearched(TechType.Spider_Mines)){
+				 for(int i = 0; i<=unit.getSpiderMineCount();i++){
+					 Agent a = factory.of(UnitType.Terran_Vulture_Spider_Mine);
+					 simulator.addAgentA(a);
+				 }
+			 }
+			 
+			 if(unit.equals(UnitType.Protoss_Carrier)){
+				 ArrayList<Agent> kids = new ArrayList<>();
+				 for(int i = 0; i<=unit.getInterceptorCount();i++){
+					 Agent a = factory.of(UnitType.Protoss_Interceptor);
+					 kids.add(a);
+					 simulator.addAgentA(a);
+				 }
+				 
+				 asd.setInterceptors(kids);
+			 }
+			 
+		 
+			 simulator.addAgentA(asd);
+			 myScoreBefore = myScoreBefore + asd.getHealth() + asd.getShields(); 
+		 }
+		 
+		 for(Unit unit : enemyUnits.getLeft()){
+			 Agent asd = factory.of(unit);
+			 simulator.addAgentB(asd);
+			 enemyScoreBefore = enemyScoreBefore + asd.getHealth() + asd.getShields();
+			 
+			 
+			 if(unit.getType().equals(UnitType.Terran_Marine) || unit.getType().equals(UnitType.Terran_Firebat)){
+				 asd.setCanStim(ply.techtypes.contains(TechType.Stim_Packs));
+			 }
+			 
+			 if(unit.equals(UnitType.Terran_Vulture) && ply.techtypes.contains(UnitType.Terran_Vulture_Spider_Mine) ){
+				 for(int i = 0; i<=unit.getSpiderMineCount();i++){
+					 Agent a = factory.of(UnitType.Terran_Vulture_Spider_Mine);
+					 simulator.addAgentA(a);
+				 }
+			 }
+			 
+		 }
+		 
+	 
+		 for(FogUnit unit : enemyUnits.getRight()){
+			 Agent asd = FogAgent(unit.type, ply.player, race);
+			 asd.setHealth(unit.hp);
+			 asd.setShields(unit.shields);
+			 simulator.addAgentB(asd);
+			 enemyScoreBefore = enemyScoreBefore + unit.hp + unit.shields;
+		 }
+		 
+		 
+		//System.out.println("My Size Before: " + simulator.getAgentsA().size());
+		//System.out.println("Enemy Size Before: " + simulator.getAgentsB().size());
+		//ArrayList<Agent> p1Before = new ArrayList<>(simulator.getAgentsA());
+		//ArrayList<Agent> p2Before = new ArrayList<>(simulator.getAgentsB());
+		
+		simulator.simulate(dur);
+		
+		//ArrayList<Agent> p1After = new ArrayList<>(simulator.getAgentsA());
+		//ArrayList<Agent> p2After = new ArrayList<>(simulator.getAgentsB());
+		
+		for(Agent unit : simulator.getAgentsA()){
+			myScoreAfter = myScoreAfter + unit.getHealth() + unit.getShields();
+		}
+		
+		for(Agent unit : simulator.getAgentsB()){
+			enemyScoreAfter = enemyScoreAfter + unit.getHealth() + unit.getShields();
+		}
+		
+		//System.out.println("My Size After: " + simulator.getAgentsA().size());
+		//System.out.println("Enemy Size After: " + simulator.getAgentsB().size());
+		
+		//System.out.println("P1 Health Before: " + myScoreBefore);
+		//System.out.println("P2 Health Before: " + enemyScoreBefore);
+		//System.out.println("P1 Health After: " + myScoreAfter);
+		//System.out.println("P2 Health after: " + enemyScoreAfter);
+		int P1 = Math.abs(myScoreBefore - myScoreAfter);
+		int P2 = Math.abs(enemyScoreBefore - enemyScoreAfter);
+		//System.out.println("P1 " + P1);
+		//System.out.println("P2 " + P2);
+		
+		if(myScoreAfter >= myScoreBefore){
+			if(myScoreAfter >= enemyScoreAfter){
+				this.canWin = true;
+				return true;
+			}
+		}
+		
+		if(myScoreAfter >= enemyScoreAfter){
+			//this.canWin = true;	
+			return true;
+		}
+		else {
+			//this.canWin = false;
+			return false;
+		}
+		
+		
+	}
+	
+	
+	SimResult evaluateBattle(ArrayList<Unit> myUnits, Pair<ArrayList<Unit>, ArrayList<FogUnit>> enemy, double min, VeryLarge larg, boolean setScore){
+		this.evaluator = new Evaluator();
+	
+		
+		ArrayList<Agent>myA = new ArrayList<>();
+		ArrayList<Agent>enemyA = new ArrayList<>();
+		boolean ED = false;
+		ArrayList<Unit> enemyUnits = enemy.getFirst();
+		ArrayList<FogUnit> fog = enemy.getSecond();
+		int jk = 0;
+		
+		 for(Unit unit : enemyUnits){
+			BotPlayer ply = myData.getBotPlayer(unit.getPlayer());
+			 Agent asd = factory.of(unit);
+			 
+			 if(unit.getType().equals(UnitType.Protoss_Carrier)){
+				 Agent yess = factory.of(UnitType.Protoss_Carrier);
+				 ArrayList<Agent> childs = new ArrayList<>();
+				 for(int i = 0; i < unit.getInterceptorCount(); i++){
+					 Agent yes = factory.of(UnitType.Protoss_Interceptor);
+					 if(!childs.contains(yes)){
+						 childs.add(yes);
+					 }
+					 enemyA.add(yes);
+				 }
+				 
+				 yess.setInterceptors(childs);
+				 enemyA.add(yess);
+				 
+			 }
+			 
+			 if(unit.isLoaded() && !enemyA.contains(asd)){
+				 enemyA.add(asd);
+			 }
+			 
+			 if(unit.getType().isDetector()){
+				 ED = true;
+			 }
+			 
+			 if(unit.getType().equals(UnitType.Terran_Marine) || unit.getType().equals(UnitType.Terran_Firebat)){
+				 asd.setCanStim(ply.techtypes.contains(TechType.Stim_Packs));
+			 }
+			 
+			 if(unit.getType().equals(UnitType.Terran_Vulture) && ply.techtypes.contains(TechType.Spider_Mines)){
+				 for(int i=0;i<unit.getSpiderMineCount();i++){
+					 Agent yes = factory.of(UnitType.Terran_Vulture_Spider_Mine);
+					 enemyA.add(yes);
+				 }
+			 }
+			 
+			 		 
+			 if(unit.isCloaked() || unit.getType().equals(UnitType.Zerg_Lurker)){
+				 if(myData.self.getRace().equals(Race.Terran)){
+					 if(myData.HasScansAvailable()){
+						 asd.setDetected(true);
+					 }
+				 }
+			 }
+			 
+			 
+			 if(!enemyA.contains(asd)){
+			 enemyA.add(asd);
+			 }
+			 
+
+		 }
+		
+		
+		 for(FogUnit unit : fog){
+			 Agent asd = FogAgent(unit.type, unit.ply, unit.type.getRace());
+			 asd.setHealth(unit.hp);
+			 asd.setEnergy(unit.energy);
+			 asd.setShields(unit.shields);
+			 if(!enemyUnits.contains(unit.unit)){
+				 if(!enemyA.contains(asd)){
+					 enemyA.add(asd);
+					 jk++;
+				}
+			 }
+		 }
+		
+						
+		 for(Unit unit : myUnits){
+			 Agent asd = factory.of(unit);	 
+			 asd.setKiter(false);
+			 if(unit.getType().equals(UnitType.Protoss_Carrier)){
+				 Agent yess = factory.of(UnitType.Protoss_Carrier);
+				 ArrayList<Agent> childs = new ArrayList<>();
+				 for(int i = 0; i < unit.getInterceptorCount(); i++){
+					 Agent yes = factory.of(UnitType.Protoss_Interceptor);
+					 if(!childs.contains(yes)){
+						 childs.add(yes);
+					 }
+					 myA.add(yes);
+				 }
+				 
+				 yess.setInterceptors(childs);
+				 myA.add(yess);
+				 
+			 }
+			 
+			 if(unit.getType().equals(UnitType.Terran_Vulture) && game.self().hasResearched(TechType.Spider_Mines)){
+				 
+				 for(int i=0;i<unit.getSpiderMineCount();i++){
+					Agent yes = factory.of(UnitType.Terran_Vulture_Spider_Mine);
+					myA.add(yes);
+				}
+				 
+			 }
+			 
+			 if(unit.getType().equals(UnitType.Terran_Marine) || unit.getType().equals(UnitType.Terran_Firebat)){
+				 asd.setCanStim(unit.getPlayer().hasResearched(TechType.Stim_Packs));
+			 }
+			 
+			 if(unit.getType().equals(UnitType.Zerg_Lurker) || unit.getType().equals(UnitType.Protoss_Dark_Templar)){
+				 asd.setDetected(ED);
+			 }
+			 
+		 	if(!myA.contains(asd)){
+			 myA.add(asd);	 
+		 	}
+		 	
+		 }
+		 
+	
+		 
+		 
+		double score = evaluator.evaluate(myA, enemyA).value;
+		
+		if(setScore == true){
+			for(Unit unit : myUnits){
+				if(game.self().getUnits().contains(unit)){
+				// ^^ apparently better then unit.exists();
+				myData.newUnitScore(unit, score);
+				}
+			}
+		}
+		
+		SimResult result = new SimResult(false,0.5,jk);
+		result.canWin = score >= min;
+		result.simScore = score;
+
+
+		return result;
+		
+		// fin
+		}
+	
+	double getEvaluatorScore(ArrayList<Unit> myUnits, Pair<ArrayList<Unit>, ArrayList<FogUnit>> enemy){
 		this.evaluator = new Evaluator();
 		
 		ArrayList<Agent>myA = new ArrayList<>();
@@ -221,6 +498,8 @@ public class DecisionManager {
 		boolean ED = false;
 		ArrayList<Unit> enemyUnits = enemy.getFirst();
 		ArrayList<FogUnit> fog = enemy.getSecond();
+
+		
 		 for(Unit unit : enemyUnits){
 			 Agent asd = factory.of(unit);
 			 
@@ -273,13 +552,18 @@ public class DecisionManager {
 		
 		
 		 for(FogUnit unit : fog){
-			 Agent asd = FogAgent(unit.type, unit.ply);
+			 Agent asd = FogAgent(unit.type, unit.ply, unit.type.getRace());
 			 asd.setHealth(unit.hp);
 			 asd.setEnergy(unit.energy);
 			 asd.setShields(unit.shields);
+			 if(!enemyUnits.contains(unit.unit)){
+				 if(!enemyA.contains(asd)){
+					 enemyA.add(asd);
+				}
+			 }
 		 }
-	
-					
+		
+						
 		 for(Unit unit : myUnits){
 			 Agent asd = factory.of(unit);
 			 asd.setKiter(false);
@@ -317,34 +601,17 @@ public class DecisionManager {
 		 	}
 		 }
 		 
-	
 		 
 		 
-		double score = evaluator.evaluate(myA, enemyA).value;
-		if(setScore == true){
-			for(Unit unit : myUnits){
-				if(game.self().getUnits().contains(unit)){
-				// ^^ apparently better then unit.exists();
-				myData.newUnitScore(unit, score);
-				}
-			}
-		}
+		 
+		return evaluator.evaluate(myA, enemyA).value;
 
-		
-		//System.out.println("Local Score: " + score);
-		if(score >= min){
-			return true;
-		}
-		else {
-			return false;
-		}
-		
 		
 		// fin
 		}
 	
 	
-	boolean evaluateBattle2(ArrayList<Unit> myUnits, ArrayList<UnitType> type, Player target){
+	boolean evaluateBattle2(ArrayList<Unit> myUnits, ArrayList<UnitType> type, Player target, Race r){
 		this.evaluator = new Evaluator();
 		ArrayList<Agent>myA = new ArrayList<>();
 		ArrayList<Agent>enemyA = new ArrayList<>();
@@ -364,13 +631,13 @@ public class DecisionManager {
 		 }
 		 
 		 for(UnitType unit : type){
-			 Agent asd = FogAgent(unit, target);
+			 Agent asd = FogAgent(unit, target, r);
 			 enemyA.add(asd);
 		 }
 		 
 		 
 		double score = evaluator.evaluate(myA, enemyA).value;
-		if(score >= 0.75){
+		if(score >= 0.65){
 			return true;
 		}
 		else {
@@ -379,8 +646,9 @@ public class DecisionManager {
 		
 	}
 		
-	Agent FogAgent(UnitType unit, Player ply){
+	Agent FogAgent(UnitType unit, Player ply, Race r){
 		 Agent asd = factory.of(unit);
+		 Race race = r;
 		 asd.setMaxHealth(unit.maxHitPoints());
 		 asd.setSpeedFactor((float) unit.topSpeed());
 		 asd.setMaxShields(unit.maxShields());	 
@@ -396,7 +664,12 @@ public class DecisionManager {
 		 Gwep.setOuterSplashRadius(ground.outerSplashRadius());
 		 WeaponType air = unit.airWeapon();
 		 Awep.setDamage(air.damageAmount());
-		 Awep.setHits(1);
+		 if(unit.equals(UnitType.Protoss_Zealot)){
+			 Awep.setHits(2); 
+		 }
+		 else {
+			 Awep.setHits(1); 
+		 }
 		 Awep.setInnerSplashRadius(air.innerSplashRadius());
 		 Awep.setMaxRange(air.maxRange());
 		 Awep.setMedianSplashRadius(air.medianSplashRadius());
@@ -416,15 +689,13 @@ public class DecisionManager {
 		unit.equals(UnitType.Zerg_Ultralisk) ||
 		unit.equals(UnitType.Protoss_Zealot) ||
 		unit.equals(UnitType.Protoss_Dark_Templar) ||
-		unit.equals(UnitType.Terran_Firebat) ){
+		unit.equals(UnitType.Terran_Firebat) || unit.equals(UnitType.Zerg_Broodling) ){
 		asd.setMelee(true);
 			 
 		 }
 		 else {
 			 asd.setMelee(false);
 		 }
-		 
-		 Race race = myData.enemyRace;
 		 
 		 
 		 if(race.equals(Race.Zerg)){

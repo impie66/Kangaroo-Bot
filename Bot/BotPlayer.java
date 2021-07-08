@@ -28,12 +28,17 @@ public class BotPlayer {
 	Data data;
 	Player player;
 	int armyScore;
+	int ecoScore;
 	int defenceScore;
 	int mIncome = 0;
 	int gIncome = 0;
 	int Aggression = 1;
 	int scanEnergy;
+	HashMap<UpgradeType, Integer> upgrades;
+	ArrayList<TechType> techtypes;
 	ArrayList<Unit> c;
+	
+	
 	
 	public BotPlayer(Race racee, Game gaem, Util till, Data myData, Player p){
 		this.race = racee;
@@ -61,7 +66,10 @@ public class BotPlayer {
 		this.basePositions = new ArrayList<>();
 		this.scanEnergy = 0;
 		this.startLocation = null;
+		this.ecoScore = 0;
 		this.c = new ArrayList<>();
+		this.upgrades = new HashMap<>();
+		this.techtypes = new ArrayList<>();
 
 	}
 	
@@ -71,6 +79,11 @@ public class BotPlayer {
 			this.Buildings.add(unit);
 			if(unit.getType().equals(UnitType.Terran_Comsat_Station)){
 				this.scanEnergy = this.scanEnergy + unit.getEnergy();
+			}
+			if(unit.getType().equals(UnitType.Terran_Barracks) ||
+			unit.getType().equals(UnitType.Terran_Factory) ||
+			unit.getType().equals(UnitType.Protoss_Gateway)){
+			this.armyScore = this.armyScore + unit.getType().mineralPrice();
 			}
 		//System.out.println("Enemy Building Discovered: " + unit.getType().toString() + " For Player: " + unit.getPlayer().getName());
 		}
@@ -142,6 +155,10 @@ public class BotPlayer {
 					}
 				}
 				
+				if(type.isWorker()){
+					newWorker();
+				}
+				
 
 			}
 		}
@@ -157,6 +174,7 @@ public class BotPlayer {
 		if(!this.Bases.contains(unit)){
 			this.Bases.add(unit);
 			Base bass = Util.getClosestBaseLocation(unit.getCenter());
+			this.ecoScore = this.ecoScore + 400;
 			if(!this.attackPositions.contains(unit.getCenter())){
 				this.attackPositions.add(unit.getCenter());
 			}
@@ -190,7 +208,6 @@ public class BotPlayer {
 			}
 			
 
-			
 			if(!this.MilUnits.contains(unit) && util.IsMilitrayUnit(unit)){
 				
 				this.MilUnits.add(unit);
@@ -232,6 +249,7 @@ public class BotPlayer {
 	void unitDeath(Unit unit){
 
 		if(game.enemies().contains(unit.getPlayer())){
+			UnitType type = unit.getType();
 			
 			if(this.MilUnits.contains(unit)){
 				this.MilUnits.remove(unit);
@@ -259,10 +277,22 @@ public class BotPlayer {
 			
 			if(this.Bases.contains(unit)){
 				this.Bases.remove(unit);
+				this.ecoScore = this.ecoScore - 400;
 			}
 			
 			if(this.basePositions.contains(unit)){
 				this.basePositions.remove(unit);
+			}
+			
+			if(unit.getType().isWorker()){
+				WorkerDeath();
+			}
+			
+			if(!this.unitCount.keySet().contains(type)){
+				this.unitCount.put(type, 0);
+			}
+			else{
+			this.unitCount.put(type, this.unitCount.get(type) - 1);
 			}
 						
 		}
@@ -298,6 +328,8 @@ public class BotPlayer {
 				defenceScore = defenceScore + data.getScoreOf(unit);
 			}
 		}
+		
+		
 	}
 	
 	void updateRace(Race yes){
@@ -358,11 +390,14 @@ public class BotPlayer {
 	}
 	
 	void newWorker(){
+			
 		this.workerAmount++;
+		this.ecoScore = this.ecoScore + 50;
 	}
 	
 	void WorkerDeath(){
 		this.workerAmount--;
+		this.ecoScore = this.ecoScore - 50;
 	}
 	
 	
@@ -378,7 +413,9 @@ public class BotPlayer {
 	ArrayList<UnitType> getOffensiveUnits(){
 		ArrayList<UnitType> yes = new ArrayList<>();	
 		for(UnitType type : this.Types){
+			if(!type.isBuilding()){
 			yes.add(type);
+			}
 		}
 		
 		for(UnitType typee : addGhostUnits()){
@@ -453,4 +490,38 @@ public class BotPlayer {
 		}
 	}
 	
+	int VeryNumberOfTheLargeDetectors(){
+		return this.howManyHave(UnitType.Terran_Missile_Turret) + this.howManyHave(UnitType.Terran_Science_Vessel) + this.howManyHave(UnitType.Zerg_Overlord) + 
+				this.howManyHave(UnitType.Zerg_Spore_Colony) + this.howManyHave(UnitType.Protoss_Observer) + this.howManyHave(UnitType.Protoss_Photon_Cannon);
+	}
+	
+	int VeryNumberOfTheLargeDetectorsDTS(){
+		return this.howManyHave(UnitType.Terran_Missile_Turret) + this.howManyHave(UnitType.Terran_Science_Vessel) + 
+		this.howManyHave(UnitType.Zerg_Spore_Colony) + this.howManyHave(UnitType.Protoss_Observer) + this.howManyHave(UnitType.Protoss_Photon_Cannon);
+	}
+	
+	void registerUpgrade(UpgradeType t){
+		
+		if(!upgrades.keySet().contains(t)){
+			upgrades.put(t, 1);
+		}
+	
+			
+	}
+	
+	void registerUpgrade(UpgradeType t, int amount){
+		
+		if(!upgrades.keySet().contains(t)){
+			upgrades.put(t, amount);
+		}
+	
+			
+	}
+	
+	void registerTech(TechType t){
+		if(!this.techtypes.contains(t)){
+			game.sendText("HEY!, Where did you get " + t.toString());
+			this.techtypes.add(t);
+		}
+	}
 }

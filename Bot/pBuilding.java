@@ -19,6 +19,7 @@ public class pBuilding {
 	Race buildOnlyForRace;
 	boolean proxy = false;
 	boolean buildWithScout = false;
+	int tries = 0;
 	
 	public pBuilding(UnitType ype, TilePosition where){
 		this.type = ype;
@@ -177,6 +178,11 @@ public class pBuilding {
 	}
 	
 	boolean canSkip(Race race){
+		
+		
+		if(race == null){
+			return false;
+		}
 		
 		if(race.equals(Race.Unknown)){
 			return false;

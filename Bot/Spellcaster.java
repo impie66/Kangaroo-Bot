@@ -1,6 +1,7 @@
 package Bot;
 
 import java.util.ArrayList;
+import java.util.function.Predicate;
 
 import bwapi.*;
 
@@ -24,39 +25,30 @@ public class Spellcaster {
 	}
 	
 	
-	void onCombat(){
-		// once combat starts near the spellcaster
-
-	}
-	
-	void onAllyTakeDamage(){
-		// trigger when an ally takes damage
-	
-	}
-	
-	
 	void combatLoop(ArrayList<Unit> friendly, ArrayList<Unit> enemy){
 		Unit myUnit = this.unit;
 		
+		if(unit.getType() != UnitType.Zerg_Lurker){
+			if(helpful.isEmpty() && hurtful.isEmpty()){
+				return;
+			}
+		}
 		
-		if(myUnit.getType().equals(UnitType.Terran_Siege_Tank_Tank_Mode) && unit.canSiege() && this.data.getSimScore(myUnit) > 0.20){
+		
+		if(myUnit.getType().equals(UnitType.Terran_Siege_Tank_Tank_Mode) && myUnit.canSiege()){
 			for(Unit unit : enemy){
 				if(myUnit.getPosition().getApproxDistance(unit.getPosition()) < 520 && myUnit.getPosition().getApproxDistance(unit.getPosition()) > 110){
-					if(myUnit.canSiege()){
 					myUnit.siege();
 					break;
-					}
 				}
 			}
 		}
 		
-		if(myUnit.getType().equals(UnitType.Zerg_Lurker) && unit.canBurrow()){
+		if(myUnit.getType().equals(UnitType.Zerg_Lurker) && !myUnit.isBurrowed() && myUnit.canBurrow()){
 			for(Unit unit : enemy){
-				if(myUnit.getPosition().getApproxDistance(unit.getPosition()) < 250){
-					if(myUnit.canBurrow()){
+				if(myUnit.getPosition().getApproxDistance(unit.getPosition()) < 300){			
 					myUnit.burrow();
 					break;
-					}
 				}
 			}
 		}
@@ -71,7 +63,7 @@ public class Spellcaster {
 //			myUnit.cloak();
 //		}
 		
-		if(myUnit.getType().equals(UnitType.Zerg_Defiler) && myUnit.getEnergy() < 200 && data.canBeDistrubed(myUnit)){
+		if(myUnit.getType().equals(UnitType.Zerg_Defiler) && myUnit.getEnergy() < 175 && data.canBeDistrubed(myUnit)){
 			for(Unit unit : friendly){
 				if(unit.getType().equals(UnitType.Zerg_Zergling) || unit.getType().equals(UnitType.Zerg_Broodling)){
 					if(!myUnit.getOrder().equals(Order.CastConsume) && !isBusy(myUnit)){
@@ -88,6 +80,7 @@ public class Spellcaster {
 		
 					
 		if(!friendly.isEmpty()){
+			help:
 			for(TechType help : helpful){
 				main:
 				if(help.targetsUnit()){
@@ -100,49 +93,92 @@ public class Spellcaster {
 				}
 			
 				if(help.targetsPosition()){
-					if(help.equals(TechType.Spider_Mines)){
-						for(Unit unit : friendly){
-							
-							if(unit.getType().equals(UnitType.Terran_Vulture_Spider_Mine)){
-								continue;
-							}
-							
-						   if(data.isNearEnemyOrBetter(unit) && myUnit.canUseTech(help, myUnit.getPosition()) && data.self.hasResearched(help) && !isBusy(myUnit) && !data.AlreadyMinesNearby(unit.getPosition(), 50)){
-								myUnit.useTech(help, myUnit.getPosition());
-								data.DND(myUnit, game.getFrameCount() + 10);
-								break;
-							}
-						   
-						}
+					if(help.equals(TechType.Spider_Mines) && data.self.hasResearched(help)){
 						
-					}
-					else {
-						// if not mines
-						for(Unit unit : friendly){
-							if(data.isInCombat(unit) &&	 myUnit.canUseTech(help, unit.getPosition()) && data.self.hasResearched(help) && !isBusy(myUnit)){
-								myUnit.useTech(help, unit.getPosition());
-								break;
+							boolean canDrop = false;
+							
+							for(Unit unit : game.getUnitsInRadius(myUnit.getPosition(), 200)){
+								
+								if(unit.getType().isFlyer() || unit.getType().isBuilding()){
+									continue;
+								}
+								else {
+									if(unit.getType().isWorker() && !till.isAttacking(unit)){
+										continue;
+									}
+									
+									if(unit.isLockedDown()){
+										continue;
+									}
+									// will set because invalid units are continuing.
+									canDrop = true;
+								}
+
+								
 							}
+
+						if(canDrop == true){						
+							if(!data.AlreadyMinesNearby(myUnit.getPosition(), 80)){
+								// if mines nearby
+									
+								if(myUnit.canUseTech(help, myUnit.getPosition()) && !isBusy(myUnit)){
+									myUnit.useTech(help, myUnit.getPosition());
+									data.DND(myUnit, game.getFrameCount() + 10);
+								}
+							}	
+						}
+
+				}
+				else {
+					// if not mines
+					for(Unit unit : friendly){
+						if(data.isInCombat(unit) &&	 myUnit.canUseTech(help, unit.getPosition()) && data.self.hasResearched(help) && !isBusy(myUnit)){
+							myUnit.useTech(help, unit.getPosition());
+							break;
 						}
 					}
 				}
-				
-
 		
-			}	
-		}
+				} // end of target pos
+			} // end of help	
+		} // end of friendy check
+		
 		
 		// MJGA (Make Java Greater Again)
 		// https://www.youtube.com/watch?v=asDlYjJqzWE
 		// IT'S CLOSING ON YOU
 			
 		if(!enemy.isEmpty()){
+			main:
 			for(TechType help : hurtful){
-				main:
+				
+				
+				if(!data.self.hasResearched(help)){
+					continue;
+				}
+					
 				if(help.targetsUnit()){
-					for(Unit unit : enemy){
-						if(myUnit.canUseTech(help, unit) && data.self.hasResearched(help) && !isBusy(myUnit) && !targetAlreadyEffected(help, unit)){
+					
+
+				for(Unit unit : enemy){
+						
+						if(help.equals(TechType.Irradiate)){
+							if(!unit.getType().isOrganic()){
+								continue;
+							}
+						}
+						
+						
+						
+						if(unit.isCloaked() || unit.isBurrowed()){
+							if(!unit.isDetected()){
+								continue;
+							}
+						}
+											
+						if(myUnit.canUseTech(help, unit) && data.self.hasResearched(help) && !isBusy(myUnit) && !targetAlreadyEffected(help, unit) && !data.isBeingCastedOn(unit, help) && isWorthToCastSingleTarget(help, unit) && isItFuckingWorth(unit)){
 							myUnit.useTech(help, unit);
+							data.tents.add(new Intent(myUnit, unit, help));
 							//System.out.println("Casting: " + help.toString() + " Targetting: " + unit.getType().toString());
 							data.game.drawLineMap(myUnit.getPosition(), unit.getPosition(), Color.White);
 							break main;
@@ -157,11 +193,11 @@ public class Spellcaster {
 								continue;
 							}
 							
-							if(!isWorthToCast(myUnit, unit.getPosition(), help, help.getWeapon().outerSplashRadius())){
+							if(!isWorthToCast(myUnit, unit.getPosition(), help, 70)){
 								continue;
 							}
 												
-							if(myUnit.canUseTech(help, unit.getPosition()) && isWorthToCast(myUnit, unit.getPosition(), help, help.getWeapon().outerSplashRadius())){
+							if(myUnit.canUseTech(help, unit.getPosition())){
 								myUnit.useTech(help, unit.getPosition());
 								break;
 							}
@@ -184,7 +220,7 @@ public class Spellcaster {
 		
 		if(type.equals(UnitType.Terran_Medic)){
 			helpful.add(TechType.Healing);
-			hurtful.add(TechType.Optical_Flare);
+			//hurtful.add(TechType.Optical_Flare);
 		}
 					
 		if(type.equals(UnitType.Zerg_Queen)){
@@ -284,7 +320,11 @@ public class Spellcaster {
 		   unit.getOrder().equals(Order.MoveToInfest) ||
 		   unit.getOrder().equals(Order.CastInfestation) ||
 		   unit.getOrder().equals(Order.CastConsume) ||
-		   unit.getOrder().equals(Order.CastIrradiate)  ){
+		   unit.getOrder().equals(Order.CastIrradiate) ||
+		   unit.getOrder().equals(Order.CastMindControl) || 
+		   unit.getOrder().equals(Order.HealMove) || 
+		   unit.getOrder().equals(Order.MedicHeal) ||
+		   unit.getOrder().equals(Order.MedicHealToIdle)){
 			return true;
 		}
 		   
@@ -299,6 +339,11 @@ public class Spellcaster {
 			return target.isBlind();
 		}
 		
+		
+		if(what.equals(TechType.Healing)){
+			return target.isBeingHealed();
+		}
+			
 		if(what.equals(TechType.Lockdown)){
 			return target.isLockedDown();
 		}
@@ -324,11 +369,19 @@ public class Spellcaster {
 		}
 		
 		if(what.equals(TechType.EMP_Shockwave)){
-			return target.getShields() != target.getType().maxShields();
+			if(target.getType().maxShields() > 0 && target.getShields() > 0){
+				return true;
+				// return yes;
+				//https://www.youtube.com/watch?v=_un9PYsE1_g
+			}
 		}
 		
 		if(what.equals(TechType.Irradiate)){
 			return target.isIrradiated();
+		}
+		
+		if(what.equals(TechType.Mind_Control)){
+			return target.getPlayer() != game.self();
 		}
 		
 		return false;
@@ -338,7 +391,7 @@ public class Spellcaster {
 	
 
 	boolean canFriendlyFire(TechType type){
-		if(type.equals(TechType.Ensnare) || type.equals(TechType.Plague) || type.equals(TechType.Psionic_Storm)){
+		if(type.equals(TechType.Ensnare) || type.equals(TechType.Plague) || type.equals(TechType.Psionic_Storm) || type.equals(TechType.Nuclear_Strike)){
 			return true;
 		}
 		
@@ -347,64 +400,152 @@ public class Spellcaster {
 	
 	
 	boolean isWorthToCast(Unit caster, Position pos, TechType type, int radius){
+
 		int myScore = 0;
 		int enemyScore = 0;
-		
-		if(!this.data.techScores.containsKey(type)){
-			this.data.techScores.put(type, 0);
+		int max = caster.getType().sightRange();
+		WeaponType ouch = type.getWeapon();
+		int r = ouch.innerSplashRadius() + ouch.outerSplashRadius();
+		if(r == 0){
+			r = 60;
 		}
 		
+		if(!this.data.techScores.containsKey(type)){
+			this.data.techScores.put(type, type.energyCost());
+		}
+		
+				
 		for(Unit unit : game.getUnitsInRadius(pos, radius)){
-			if(game.enemies().contains(unit.getPlayer())){
-				// if bad boi
-				enemyScore = enemyScore + data.getScoreOf(unit);
-//				if(type.targetsPosition()){
-//					if(caster.canUseTech(type, pos)){
-//						
-//					}
-//				}
-//				
-//				if(type.targetsUnit()){
-//					if(caster.canUseTech(type, unit)){
-//						enemyScore = enemyScore + data.getScoreOf(unit);
-//					}
-//				}
+			
+			//till.Print("is Mili: " + this.data.IsMilitrayUnit(unit) );
+			
 
+			
+			if(game.enemies().contains(unit.getPlayer())){
+				
+
+				
+					for(Unit a : game.getUnitsInRadius(unit.getPosition(), r)){
+						
+						if(a == unit){
+							continue;
+						}
+								
+						if(!data.IsMilitrayUnit(unit)){
+							if(a.getType().isWorker()){
+								if(!data.isWorkerDoingTheBad(a)){ // if attacking, moving to attack or repairing
+									continue;
+								}
+							}
+							else {
+								continue;
+							}
+						}
+						
+						// look for units around that one.
+
+						if(ouch.targetsAir() && a.isFlying()){
+							continue;
+						}
+						
+						if(ouch.targetsNonBuilding() && a.getType().isBuilding()){
+							continue;
+						}
+						
+						if(ouch.targetsOrganic() && !a.getType().isOrganic()){
+							continue;
+						}
+							
+						
+						if(!targetAlreadyEffected(type, a)){
+							enemyScore = enemyScore + data.getScoreOf(a);
+						}
+					}
+
+				
 			}
 			else {
 				// if good guy
-				myScore = myScore + data.getScoreOf(unit);
+				if(game.allies().contains(unit.getPlayer()) || unit.getPlayer().equals(game.self())){
+					for(Unit a : game.getUnitsInRadius(unit.getPosition(), r)){
+
+						if(a == unit){
+							continue;
+						}
+						
+						if(ouch.targetsAir() && a.isFlying()){
+							continue;
+						}
+						
+						if(ouch.targetsNonBuilding() && a.getType().isBuilding()){
+							continue;
+						}
+						
+						if(ouch.targetsOrganic() && !a.getType().isOrganic()){
+							continue;
+						}
+						
+						if(game.allies().contains(a.getPlayer()) || a.getPlayer().equals(game.self())){
+							if(data.IsMilitrayUnit(a)){
+								myScore = myScore + data.getScoreOf(a);
+							}
+						}
+						
+						
+					}
+					
+				}
 			}
+			
+			if(enemyScore >= this.data.techScores.get(type) && enemyScore >= myScore){
+				return true;
+			}
+			
+			enemyScore = 0;
+			myScore = 0;
 				
 		}
 		
-		till.Print("My Score: " + myScore);
-		till.Print("Enemy Score: " + enemyScore);
-		
-		if(enemyScore > myScore){
-			int value = data.techScores.get(type);
-			till.Print("Score required: " + value);
-			if(enemyScore >= value){
-				till.Print("Good thing happened");
-				// if the enemy score is good nuff to cast
-				return true;
-			}
-			else{
-				// well then fuck it.
-				till.Print("Bad thing happened");
-				return false;
-			}
-		}
-		else {
-			return false;
-		}
-		
+
+		return false;
 
 		
 		
 	}
 	
 	
+	boolean isWorthToCastSingleTarget(TechType type, Unit target){
+		if(!this.data.techScores.containsKey(type)){
+			this.data.techScores.put(type, 70);
+		}
+		int cost = this.data.techScores.get(type);
+		int score = data.getScoreOf(target);
+		return score >= cost;
+	}
+	
+	boolean isItFuckingWorth(Unit target){
+		// https://www.youtube.com/watch?v=vVy9Lgpg1m8
+		
+		
+		if(target.getType().isWorker()){
+			return this.data.isInCombat(target);
+		}
+		
+	
+		if(target.getType().equals(UnitType.Zerg_Overlord) || target.getType().equals(UnitType.Zerg_Larva) || target.getType().equals(UnitType.Zerg_Egg) ||
+		target.getType().equals(UnitType.Zerg_Egg) || target.getType().equals(UnitType.Protoss_Scarab) || target.getType().equals(UnitType.Protoss_Interceptor) || target.getType().equals(UnitType.Protoss_Observer) ||
+		target.getType().equals(UnitType.Terran_Vulture_Spider_Mine)){
+			// FUCKING BLACKLIST THESE MOTHER FUCKERS
+			// FUCKING LAGGERS
+			return false;
+		}
+		
+		
+		return till.hasWeapons(target.getType());
+		
+	}
+	
+	// todo idk 
 	
 	
 	

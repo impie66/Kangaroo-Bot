@@ -19,6 +19,7 @@ public class FogUnit {
 	int shields;
 	int energy;
 	int lastSeen;
+	int setToUnknownAt;
 
 
 	FogUnit(Unit unit, UnitType type, int ID){
@@ -33,6 +34,7 @@ public class FogUnit {
 		this.shields = unit.getShields();
 		this.energy  = unit.getEnergy();
 		this.lastSeen = 0;
+		this.setToUnknownAt = 0;
 	}
 	
 	

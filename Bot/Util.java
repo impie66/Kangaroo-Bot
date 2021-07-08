@@ -5,6 +5,7 @@ import java.io.FileInputStream;
 import java.io.InputStream;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 
 import javax.sound.sampled.AudioInputStream;
@@ -37,19 +38,21 @@ public class Util {
 	static BWEM bewb;
 	Player self;
 	Jps jps;
+	ArrayList<UnitType> uqReseters;
 	
 	Util(Game gaem, Data darta, BWEM b){
 		this.game = gaem;
 		this.myData = darta;
 		this.bewb = b;
 		self = game.self();
+		this.uqReseters = new ArrayList<>();
 		
 	}
 	
 	//NOT EVEN USED LUL
 
 	void Print(String str){
-		boolean enablePrinting = true;
+		boolean enablePrinting = false;
 		if(enablePrinting){
 			System.out.println(str);
 		}
@@ -97,6 +100,22 @@ public class Util {
 		}
 		
 
+		Position Kite1 = new Position(Int3, Int4);
+		//System.out.println("Kite2: " + Kite1);
+		return Kite1;
+		
+	}
+	
+	public Position GetKitePos2Pos(Position start, Position end){
+
+		int Int3;
+		int Int4;
+		
+		int Int1  = end.getX() - start.getX();
+		int Int2 = end.getY() - start.getY(); 
+		Int3 = (int) (start.getX() - Int1 / 0.40);
+		Int4 =  (int) (start.getY() - Int2 / 0.40);
+		
 		Position Kite1 = new Position(Int3, Int4);
 		//System.out.println("Kite2: " + Kite1);
 		return Kite1;
@@ -443,29 +462,61 @@ public class Util {
 			if(a.isSieged()){
 				a.unsiege();
 			}
-		a.move(pos, true);
+			a.move(pos);
 		}
 		
 	}
 	
 	void reteatUnit(Unit unit){
-		
+		boolean brek = false;
 		if(unit.getOrder() == Order.EnterTransport){
 			return;
 		}
 		
-		ArrayList<Unit> s = getEnemyUnitsNearMe(unit, 500, true);
+		ArrayList<Unit> s = getEnemyUnitsNearMe(unit, 350, true);
+		ArrayList<FogUnit> ss = myData.getFogUnitsNearby(unit.getPosition(), 350);
+		
 		
 		if(s == null){
-			if(unit.getDistance(self.getStartLocation().toPosition()) > 100){
-				if(unit.isSieged()){
-					unit.unsiege();
+			if(!ss.isEmpty()){
+				Print("RETREATING FROM FOG UNIT CAUSE DUMB DUMB CODE");
+				Position aaa = getClosestCopyPastaFogUnit(unit, ss);
+				Position pos = GetKitePos2Pos(unit.getPosition(), aaa);
+				if(pos != null){
+					if(unit.isSieged()){
+						unit.unsiege();
+					}
+					
+					if(!unit.hasPath(pos)){
+					pos = self.getStartLocation().toPosition();
+					}
+					
+					if(pos.isValid(game)){
+					unit.move(pos);
+					myData.DND(unit, 50);
+					brek = true;
+					}
+					else {
+					unit.move(self.getStartLocation().toPosition());
+					myData.DND(unit, 50);
+					brek = true;
+					}
 				}
-				unit.move(self.getStartLocation().toPosition());
+			}
+			if(brek == false){
+				if(unit.getDistance(self.getStartLocation().toPosition()) > 300){
+					if(unit.isSieged() && unit.canUnsiege()){
+						unit.unsiege();
+					}
+					if(unit.isBurrowed() && unit.canUnburrow()){
+						unit.unburrow();
+					}
+					unit.move(self.getStartLocation().toPosition());
+				}
 			}
 		}
 		else {
-		Unit aa = s.get(0);
+		Unit aa = getClosestUnitFromArrayThatCanAttackMe(unit, s);
 		Position pos = GetKitePos2(unit, aa);
 			if(pos != null){
 				if(unit.isSieged()){
@@ -483,6 +534,11 @@ public class Util {
 				else {
 				unit.move(self.getStartLocation().toPosition());
 				myData.DND(unit, 50);
+				}
+			}
+			else {
+				if(unit.getDistance(self.getStartLocation().toPosition()) > 300){
+					unit.move(self.getStartLocation().toPosition());
 				}
 			}
 			
@@ -604,7 +660,10 @@ public class Util {
 		 type.equals(UnitType.Zerg_Defiler) ||
 		 type.equals(UnitType.Terran_Vulture) ||
 		 type.equals(UnitType.Protoss_High_Templar) ||
-		 type.equals(UnitType.Zerg_Lurker)){
+		 type.equals(UnitType.Zerg_Lurker) ||
+		 type.equals(UnitType.Protoss_Dark_Archon) ||
+		 type.equals(UnitType.Terran_Dropship) ||
+		 type.equals(UnitType.Protoss_Shuttle) ){
 			return true;
 			
 		}
@@ -679,6 +738,14 @@ public class Util {
 				}
 			}
 			
+			if(unit.getType().equals(UnitType.Terran_Siege_Tank_Tank_Mode) || unit.getType().equals(UnitType.Terran_Siege_Tank_Siege_Mode) ){
+				if(unit.getPlayer().hasResearched(TechType.Tank_Siege_Mode) && unit.canSiege()){
+					if(!ready.contains(unit)){
+						ready.add(unit);
+					}
+				}
+			}
+			
 					
 			if(isMelee(unit.getType()) && unit.getDistance(pos) < unit.getType().sightRange() + (unit.getType().groundWeapon().maxRange()) + 100){
 				if(!ready.contains(unit)){
@@ -698,6 +765,102 @@ public class Util {
 			if(unit.getDistance(pos) <= range){
 				if(!ready.contains(unit)){
 					ready.add(unit);
+				}
+			}
+		}
+		
+		if(ready.isEmpty()){
+			return null;
+		}
+		else {
+			return ready;
+		}
+		
+
+		
+	}
+	
+	ArrayList<FogUnit> combatReadyFogUnits(ArrayList<FogUnit> yes, Position pos){
+		// ICH WILL
+		// https://www.youtube.com/watch?v=EOnSh3QlpbQ
+		
+		if(yes == null){
+			return null;
+		}
+		
+		ArrayList<FogUnit> ready = new ArrayList<>();
+		
+		for(FogUnit f : yes){
+			Unit unit = f.unit;
+			Position pp = f.pos;
+			UnitType type = f.type;
+			Player ply = f.ply;
+			
+			if(isSpellCaster(f.type)){
+				if(unit.getType().groundWeapon().equals(WeaponType.None) || type.airWeapon().equals(WeaponType.None)){
+					// if this spellcaster is unarmed (which most are)
+					if(pp.getApproxDistance(pos) < unit.getType().sightRange() * 4){
+						if(!ready.contains(f)){
+							ready.add(f);
+						}
+					}
+				}
+				else{
+					// if spellcaster is armed
+					if(pp.getApproxDistance(pos) < unit.getType().sightRange() + (type.groundWeapon().maxRange())){
+						if(!ready.contains(f)){
+							ready.add(f);
+						}
+					}
+				}
+			}
+			
+			if(unit.getType().equals(UnitType.Terran_Vulture_Spider_Mine)){
+				if(pp.getApproxDistance(pos) < UnitType.Terran_Vulture_Spider_Mine.groundWeapon().maxRange()){
+					if(!ready.contains(f)){
+						ready.add(f);
+					}
+				}
+			}
+			
+			
+			// && 
+			
+			
+			if(unit.equals(UnitType.Terran_Bunker) && unit.getLoadedUnits().size() > 0){
+				if(!ready.contains(f)){
+					ready.add(f);
+				}
+			}
+			
+			if(type.equals(UnitType.Terran_Siege_Tank_Tank_Mode) || type.equals(UnitType.Terran_Siege_Tank_Siege_Mode) ){
+				if(ply.hasResearched(TechType.Tank_Siege_Mode)){
+					if(!ready.contains(f)){
+						ready.add(f);
+					}
+				}
+			}
+			
+					
+			if(isMelee(type) && pp.getApproxDistance(pos) < type.sightRange() + (type.groundWeapon().maxRange()) + 100){
+				if(!ready.contains(f)){
+					ready.add(f);
+				}
+			}
+			
+			
+			//TODO calculate speed to replace sight range + weapon range. if(speed < distance) or something
+			
+			if(unit.getType().isDetector() && pp.getApproxDistance(pos) < type.sightRange()){
+				if(!ready.contains(f)){
+					ready.add(f);
+				}
+			}
+			
+			int range = type.sightRange() + (type.groundWeapon().maxRange());
+			if(pp.getApproxDistance(pos) <= range){
+				if(!ready.contains(f)){
+					ready.add(f);
 				}
 			}
 		}
@@ -765,6 +928,17 @@ public class Util {
 	
 	boolean shouldKiteAgainst(Unit me, Unit target){
 		
+		
+		if(me.isLoaded()){
+			return false;
+		}
+		
+		if(target.getType().equals(UnitType.Zerg_Larva) || target.getType().equals(UnitType.Zerg_Egg) || target.getType().equals(UnitType.Zerg_Overlord) ||
+		target.getType().equals(UnitType.Terran_Medic) || target.getType().equals(UnitType.Terran_Science_Vessel) || target.getType().equals(UnitType.Protoss_Observer) || 
+		target.getType().equals(UnitType.Zerg_Lurker_Egg) ||target.getType().equals(UnitType.Protoss_High_Templar) || target.getType().equals(UnitType.Protoss_Dark_Archon) ){
+			return false;
+		}
+		
 		if(myData.getSimScore(me) > 0.85){
 		return false;
 		}
@@ -787,6 +961,9 @@ public class Util {
 				target.getOrder().equals(Order.AttackUnit) ||
 				target.getOrder().equals(Order.AttackTile)){
 					return true;
+				}
+				else {
+					return false;
 				}
 			}
 		}
@@ -818,12 +995,12 @@ public class Util {
 	
 	boolean shouldPushAgainst(Unit me, Unit target){
 		
-		if(myData.getSimScore(me) > 0.85){
-			return false;
-		}
+//		if(myData.getSimScore(me) > 0.85){
+//			return false;
+//		}
 		
 		if(target.getType().equals(UnitType.Terran_Siege_Tank_Siege_Mode) || target.getType().equals(UnitType.Terran_Siege_Tank_Tank_Mode) && myData.getSimScore(me) > 0.85){
-			return true;
+		return true;
 		}
 		
 		if(target.getType().isBuilding()){
@@ -836,6 +1013,7 @@ public class Util {
 		if(weaponRange < enemyWeaponRange){
 			return true;
 		}
+		
 		
 		return false;
 	}
@@ -912,6 +1090,11 @@ public class Util {
 	
 	boolean HasBuildingsNearby(Position pos, int radius){
 		List<Unit> buildCheck = game.getUnitsInRadius(pos, radius);
+		for(Unit u : buildCheck){
+			if(u.getType().isBuilding()){
+				return true;
+			}
+		}
 		return buildCheck.isEmpty();
 	}
 	
@@ -931,7 +1114,7 @@ public class Util {
 	}
 	
 	Position getPositionToFight(Unit unit){
-		for(Unit yes : game.getUnitsInRadius(unit.getPosition(), 300 + unit.getType().sightRange())){
+		for(Unit yes : game.getUnitsInRadius(unit.getPosition(), 500 + unit.getType().sightRange())){
 			if(game.enemies().contains(yes.getPlayer()) && unit.canAttack(unit)){
 				return yes.getPosition();
 			}
@@ -1041,18 +1224,23 @@ public class Util {
 	boolean hasRequirementFor(UnitType type){
 		int max = type.requiredUnits().keySet().size();
 		int i = 0;
-		for(UnitType t : type.requiredUnits().keySet()){
-			
-			if(t.equals(UnitType.Zerg_Larva)){
-				continue;
-			}
-			
+		ArrayList<UnitType> r = new ArrayList<>(type.requiredUnits().keySet());
+
+		if(r.contains(UnitType.Zerg_Larva)){
+			r.remove(UnitType.Zerg_Larva);
+			max--;
+		}
+
+		
+		for(UnitType t : r){
+				
 			if(self.completedUnitCount(t) > 0){
 				i++;
 				if(i>= max){
 					return true;
 				}
 			}
+			
 		}
 		
 		return false;
@@ -1069,7 +1257,8 @@ public class Util {
 	public boolean shouldMicro(UnitType type) {
 		// TODO Auto-generated method stub
 		
-		if(type.equals(UnitType.Protoss_Corsair)){
+		if(type.equals(UnitType.Protoss_Corsair) || type.equals(UnitType.Terran_Battlecruiser) || type.equals(UnitType.Protoss_Reaver) || type.equals(UnitType.Terran_Siege_Tank_Siege_Mode)
+				|| type.equals(UnitType.Zerg_Lurker)){
 			return false;
 		}
 		
@@ -1089,6 +1278,320 @@ public class Util {
 		return ret;
 	}
 	
+	
+	Unit getClosestUnitFromArray(Unit me, ArrayList<Unit> hostiles){
+		int low = 0;
+		Unit c = null;
+		for(Unit unit : hostiles){
+			int dist = me.getDistance(unit);
+			if(low == 0 || dist <= low){
+				low = dist;
+				c = unit;
+			}
+		}
+		
+		return c;
+		// return fuckYou;
+		// GOTT WEIB ICH WILL KEIN ENGEL SEIN
+	}
+	
+	Unit getClosestUnitFromArrayThatCanAttackMe(Unit me, ArrayList<Unit> hostiles){
+		int low = 0;
+		Unit c = null;
+		for(Unit unit : hostiles){
+			if(!unit.canAttack(me)){
+				continue;
+			}
+			
+			int dist = me.getDistance(unit);
+			if(low == 0 || dist <= low){
+				low = dist;
+				c = unit;
+			}
+		}
+		
+		return c;
+		// return fuckYou;
+		// GOTT WEIB ICH WILL KEIN ENGEL SEIN
+	}
+	
+	Position getClosestCopyPastaFogUnit(Unit me, ArrayList<FogUnit> hostiles){
+		// https://www.youtube.com/watch?v=lhjk5x54bsE
+		// ))))))))))))))
+		int low = 0;
+		Position c = null;
+		for(FogUnit fog : hostiles){
+			Position pos = fog.pos;
+			int dist = me.getDistance(pos);
+			if(low == 0 || dist <= low){
+				low = dist;
+				c = pos;
+			}
+		}
+		
+		return c;
+		// return fuckYou;
+		// GOTT WEIB ICH WILL KEIN ENGEL SEIN
+	}
+	
+	
+	Unit getClosestEnemyArmyUnit(Position start, int radius, boolean cc){
+		ArrayList<Unit> Asynchronous_mode = myData.GetEnemyUnitsNearby(start,radius,cc);
+		
+		if(!Asynchronous_mode.isEmpty()){
+			int l = 0;
+			Unit c = null;
+			for(Unit unit : Asynchronous_mode){
+				int dist = start.getApproxDistance(unit.getPosition());
+				if(dist < l || l == 0){
+					c=unit;
+					l=dist;
+				}
+				
+			}
+			return c;
+		}
+		
+		
+		return null;
+	}
+	
+	Unit getMineDragTarget(Position start, int radius){
+		ArrayList<Unit> A = myData.GetEnemyUnitsNearby(start,radius,false);
+		
+		if(!A.isEmpty()){
+			int l = 0;
+			Unit c = null;
+			for(Unit unit : A){
+				
+				if(unit.getType().isBuilding() || unit.getType().isFlyer()){
+					continue;
+					// fuck these guys
+					// they are no fun ):
+				}
+				
+				int dist = start.getApproxDistance(unit.getPosition());
+				if(dist < l || l == 0){
+					c=unit;
+					l=dist;
+				}
+				
+			}
+			return c;
+		}
+		
+		
+		return null;
+	}
+	
+	
+	
+	Unit getClosestEnemyArmyUnitFromArray(Position start, ArrayList<Unit> stuff){
+		
+		if(stuff.isEmpty()){
+			return null;
+		}
+		
+		int l = 0;
+		Unit c = null;
+		for(Unit unit : stuff){
+			int dist = start.getApproxDistance(unit.getPosition());
+			if(dist < l || l == 0){
+				c=unit;
+				l=dist;
+			}	
+		}
+		
+		return c;
+		
+
+	}
+
+	
+	boolean hasWeapons(UnitType type){
+			
+		if(type.groundWeapon() == WeaponType.None && type.airWeapon() == WeaponType.None){
+			return false;
+		}
+		else {
+			return true;
+		}
+	}
+	
+	boolean shouldResetUQ(UnitType type){
+		if(type.equals(UnitType.Terran_Academy) || type.equals(UnitType.Terran_Factory) || type.equals(UnitType.Zerg_Spire) || type.equals(UnitType.Zerg_Defiler_Mound) || type.equals(UnitType.Zerg_Hydralisk_Den) || type.equals(UnitType.Terran_Science_Facility) || type.equals(UnitType.Protoss_Templar_Archives) || type.equals(UnitType.Terran_Physics_Lab)){
+			if(uqReseters.contains(type)){
+				return true;
+			}
+			else {
+				uqReseters.add(type);
+				return false;
+				// https://www.youtube.com/watch?v=XRP9k9nlAfE
+			}
+		}
+		
+		
+
+		
+		return false;
+	}
+	
+	void addReserter(UnitType type){
+		if(!uqReseters.contains(type)){
+			uqReseters.add(type);
+		}
+	}
+	
+	boolean isBusy(Unit unit){
+		// https://www.youtube.com/watch?v=owTWCbq_nSk
+		// SOME SUPERHERO
+		// SOME FAIRY TALE BLISS
+		if(unit.getOrder().equals(Order.CastDarkSwarm) ||
+		   unit.getOrder().equals(Order.CastDefensiveMatrix) ||
+		   unit.getOrder().equals(Order.CastEMPShockwave) ||
+		   unit.getOrder().equals(Order.CastLockdown) ||
+		   //unit.getOrder().equals(Order.CastNuclearStrike) ||
+		   unit.getOrder().equals(Order.CastOpticalFlare) ||
+		   unit.getOrder().equals(Order.CastPlague) ||
+		   unit.getOrder().equals(Order.CastPsionicStorm) ||
+		   unit.getOrder().equals(Order.CastSpawnBroodlings) ||
+		   unit.getOrder().equals(Order.FireYamatoGun) ||
+		   unit.getOrder().equals(Order.CastEnsnare) ||
+		   unit.getOrder().equals(Order.PlaceMine) ||
+		   unit.getOrder().equals(Order.VultureMine) ||
+		   unit.getOrder().equals(Order.InfestingCommandCenter) ||
+		   unit.getOrder().equals(Order.MoveToInfest) ||
+		   unit.getOrder().equals(Order.CastInfestation) ||
+		   unit.getOrder().equals(Order.CastConsume) ||
+		   unit.getOrder().equals(Order.CastIrradiate) ||
+		   unit.getOrder().equals(Order.CastMindControl) ){
+			return true;
+		}
+		   
+		
+		
+		return false;
+		
+	}
+	
+	
+	Unit getUnitTarget(Unit unit){
+		Unit ret = null;
+		if(unit.getTarget() != null){
+			ret = unit.getTarget();
+		}
+		
+		if(ret == null){
+			if(unit.getOrderTarget() != null){
+				ret = unit.getOrderTarget();
+			}
+		}
+		
+		return ret;
+		
+	}
+	
+	
+	double getRealSpeed(Unit unit, BotPlayer p){
+		UnitType type = unit.getType();
+		
+		if(type.equals(UnitType.Protoss_Zealot)){
+			
+		}
+		
+		
+		return type.topSpeed();
+	}
+	
+	boolean isTrainingAUnit(Unit u){
+		if(u.getOrder().equals(Order.Train) || u.getOrder().equals(Order.WarpIn)){
+			return true;
+		}
+		else {
+			return false;
+		}
+	}
+	
+	boolean isAttacking(Unit u){
+		if(u.isAttacking() || u.isAttackFrame() || u.isStartingAttack() || u.getOrder().equals(Order.AttackMove) || u.getOrder().equals(Order.AttackUnit)){
+			return true;
+		}
+		else {
+			return false;
+		}
+	}
+	
+	int howManyCanIMake(UnitType type, int myMins, int myGas){
+		int gasFit = 0;
+		if(type.mineralPrice() > myMins && type.gasPrice() >= myGas){
+			return 0;
+		}
+		
+	
+		int minFit = Math.round(myMins / type.mineralPrice());
+		
+		if(type.gasPrice() == 0){
+		 gasFit = 1;
+		}
+		else {
+		 gasFit = Math.round(myGas / type.gasPrice());
+		}
+		
+
+		
+		if(type.gasPrice() > 0){
+			if(minFit > gasFit){
+				return gasFit; 
+			}
+		}
+		else {
+			return minFit;
+		}
+		
+		return 0;
+	}
+	
+	HashMap<UnitType, Integer> fuckingidunnojustgivemesomething(ArrayList<UnitType> types){
+		HashMap<UnitType,Integer> ret = new HashMap<>();
+		// https://www.youtube.com/watch?v=1M4ADcMn3dA
+		
+		if(types.isEmpty()){
+			return ret;
+		}
+		
+		for(UnitType keine : types){
+			ret.put(keine, 0);
+		}
+		
+
+		for(UnitType lust : types){
+			ret.put(lust, howManyCanIMake(lust, self.minerals(), self.gas()));
+		}
+		
+		return ret;
+		
+	}
+	
+	
+	Unit getClosestUnitFromPoint(ArrayList<Unit> units, Position pos){
+		Unit c = null;
+		int l = 0;
+		for(Unit unit : units){
+			int d = unit.getPosition().getApproxDistance(pos);
+			if(d < l || c == null){
+				c = unit;
+				l = d;
+			}
+		}
+		
+		
+		
+		return c; // return njoll
+	}
+	
+
+	
+
 	
 	// return new TilePosition(i, j).toPosition();
 	

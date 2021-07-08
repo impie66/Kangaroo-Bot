@@ -24,15 +24,10 @@ public class BotTech {
 	
 	// ***
 		//RequirementIDs
-	
 		// 0: no requirement
 		// 1: armyscore >= x
 		// 2: x amount of hydras
 		// 3: bio?
-	
-	
-	
-	
 	/// ***
 	
 	int type = 0;
@@ -90,6 +85,11 @@ public class BotTech {
 		}
 		
 		if(type == 3){
+			this.morphType = morph;
+			this.name = morph.toString();
+		}
+		
+		if(type == 4){
 			this.morphType = morph;
 			this.name = morph.toString();
 		}
@@ -176,6 +176,36 @@ public class BotTech {
 		
 		if(a == 11){
 			if(self.allUnitCount(UnitType.Zerg_Hydralisk) > 6){
+				return true;
+			}
+		}
+		
+		if(a == 12){
+			if(self.allUnitCount(UnitType.Protoss_Templar_Archives) > 0 || this.data.game.getFrameCount() >= 12000){
+				return true;
+			}
+		}
+		
+		if(a == 13){
+			if(self.allUnitCount(UnitType.Terran_Siege_Tank_Tank_Mode) + self.allUnitCount(UnitType.Terran_Siege_Tank_Tank_Mode) > 2 ){
+				return true;
+			}
+		}
+		
+		if(a == 14){
+			if(self.allUnitCount(UnitType.Terran_Vulture) > 2 ){
+				return true;
+			}
+		}
+		
+		if(a == 15){
+			if(self.allUnitCount(UnitType.Terran_Marine) > 10 ){
+				return true;
+			}
+		}
+		
+		if(a == 16){
+			if(self.allUnitCount(UnitType.Terran_Battlecruiser) >= 2 ){
 				return true;
 			}
 		}

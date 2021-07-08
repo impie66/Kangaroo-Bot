@@ -11,6 +11,7 @@ UnitType type;
 int frameCheck = 0;
 // ^^ CHeck if the building is done by this frame count, if not retry the building
 boolean isExpander;
+int frameToTryAgain;
 
 
 public Builder(Unit workerr, UnitType typee, TilePosition pos){
@@ -18,6 +19,7 @@ public Builder(Unit workerr, UnitType typee, TilePosition pos){
 	this.where = pos;
 	this.type = typee;
 	isExpander = false;
+	int frameToTryAgain = 0;
 }
 
 public Builder(Unit workerr, UnitType typee, TilePosition pos, int f){
@@ -25,6 +27,7 @@ public Builder(Unit workerr, UnitType typee, TilePosition pos, int f){
 	this.where = pos;
 	this.type = typee;
 	isExpander = false;
+	int frameToTryAgain = 0;
 }
 
 
@@ -33,6 +36,7 @@ public Builder(Unit workerr, UnitType typee, TilePosition pos, int f, boolean ex
 	this.where = pos;
 	this.type = typee;
 	isExpander = exp;
+	int frameToTryAgain = 0;
 }
 
 	

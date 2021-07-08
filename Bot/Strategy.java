@@ -38,6 +38,11 @@ public class Strategy {
 	int GFR; // How many frames till we start REALLY making our goals?
 	boolean moveRegroup = false;
 	boolean canGatherGasEarly = false;
+	UnitType requirementToMemeMassExpand; // I want this before i meme the game.
+	UnitType filler;
+	ArrayList<UnitType> emptyBuildQueue = new ArrayList<>(); // stuffToBuildWhenEmpty
+	HashMap<UnitType, Integer> floatUnits = new HashMap<>(); // What unitType we should make when floating, and at what cost
+	HashMap<UnitType, Integer> floatBuildings = new HashMap<>(); // What unitType we should make when floating, and at what cost
 	
 	Strategy(Race ee, ArrayList<Base> ep, Data myDataa, Game gamee, ArrayList<ChokePoint> cocks){
 		this.enemy = ee;
@@ -59,6 +64,8 @@ public class Strategy {
 		this.GFR = 8000;
 		this.moveRegroup = false;
 		this.canGatherGasEarly = false;
+		this.filler = UnitType.None;
+		this.emptyBuildQueue = new ArrayList<>();
 		Opener();
 	}
 
@@ -68,59 +75,63 @@ public class Strategy {
 		if(self.getRace().equals(Race.Zerg)){
 			this.AB.add(UnitType.Zerg_Hydralisk_Den);
 			//if z
-			int chosenBuild = 4;
+			int chosenBuild = 0;
 			Random rand = new Random();
 			int n = rand.nextInt(4) + 1;
-			if(n == 4 || chosenBuild == 4){
-				this.buildName = "Meme Proxy Sunken Build"; // NAME IS IMPORTANT. DON'T CHANGE
-				pBuilding one = new pBuilding(UnitType.Zerg_Hatchery, null, Race.Terran);
-				one.maxRange = 200;
-				one.proxy = true;
-				one.save = 1;
-				one.waitForCreep = false;
-				one.buildWithScout = true;
-				pBuildings.add(one);
-				pBuilding two = new pBuilding(UnitType.Zerg_Hatchery, null, Race.Protoss);
-				two.proxy = true;
-				two.maxRange = 200;
-				two.save = 1;
-				two.waitForCreep = false;
-				pBuildings.add(two);
-				two.buildWithScout = true;
-				pBuildings.add(new pBuilding(UnitType.Zerg_Spawning_Pool, self.getStartLocation()) );
-				pBuilding b = new pBuilding(UnitType.Zerg_Creep_Colony, null, Race.Zerg);
-				b.proxy = true;
-				b.save = 1;
-				b.buildWithScout = true;
-				pBuildings.add(b);
-				for(int i = 0; i<=6;i++){
-					pBuilding yes = new pBuilding(UnitType.Zerg_Creep_Colony, Expands.get(0).getLocation(), 50, true, false, 1);
-					yes.proxy = true;
-					pBuildings.add(yes);
-					stuffQueue.add(new BotTech(3, 0, TechType.None, UpgradeType.None, UnitType.Zerg_Sunken_Colony, myData, true));
-				}
-				pBuildings.add(new pBuilding(UnitType.Zerg_Hatchery, null));
-				pBuildings.add(new pBuilding(UnitType.Zerg_Hydralisk_Den, self.getStartLocation(), 300));
-				pBuildings.add(new pBuilding(UnitType.Zerg_Spire, self.getStartLocation()));
-			}
-			else {
+//			if(n == 4 || chosenBuild == 4){
+//				this.buildName = "Meme Proxy Sunken Build"; // NAME IS IMPORTANT. DON'T CHANGE
+//				this.requirementToMemeMassExpand = UnitType.Zerg_Spire;
+//				pBuilding one = new pBuilding(UnitType.Zerg_Hatchery, null, Race.Terran);
+//				one.maxRange = 200;
+//				one.proxy = true;
+//				one.save = 1;
+//				one.waitForCreep = false;
+//				one.buildWithScout = true;
+//				pBuildings.add(one);
+//				pBuilding two = new pBuilding(UnitType.Zerg_Hatchery, null, Race.Protoss);
+//				two.proxy = true;
+//				two.maxRange = 200;
+//				two.save = 1;
+//				two.waitForCreep = false;
+//				pBuildings.add(two);
+//				two.buildWithScout = true;
+//				pBuildings.add(new pBuilding(UnitType.Zerg_Spawning_Pool, self.getStartLocation()) );
+//				pBuilding b = new pBuilding(UnitType.Zerg_Creep_Colony, null, Race.Zerg);
+//				b.proxy = true;
+//				b.save = 1;
+//				b.buildWithScout = true;
+//				pBuildings.add(b);
+//				for(int i = 0; i<=6;i++){
+//					pBuilding yes = new pBuilding(UnitType.Zerg_Creep_Colony, Expands.get(0).getLocation(), 50, true, false, 1);
+//					yes.proxy = true;
+//					pBuildings.add(yes);
+//					stuffQueue.add(new BotTech(3, 0, TechType.None, UpgradeType.None, UnitType.Zerg_Sunken_Colony, myData, true));
+//				}
+//				pBuildings.add(new pBuilding(UnitType.Zerg_Hatchery, null));
+//				pBuildings.add(new pBuilding(UnitType.Zerg_Hydralisk_Den, self.getStartLocation(), 300));
+//				pBuildings.add(new pBuilding(UnitType.Zerg_Spire, self.getStartLocation()));
+//			}
+//			else {
 				if(this.enemy.equals(Race.Zerg)){
 					this.buildName = "ZvZ Generic";
 					this.mainGoal.add(UnitType.Zerg_Mutalisk);
 					this.techGoals.add(UnitType.Zerg_Spire);
 					this.canGatherGasEarly = true;
+					this.requirementToMemeMassExpand = UnitType.Zerg_Spire;
+					this.emptyBuildQueue.add(UnitType.Zerg_Hatchery);
+					this.floatUnits.put(UnitType.Zerg_Zergling, 700);
 					pBuilding neww = new pBuilding(UnitType.Zerg_Hatchery, Expands.get(0).getLocation(), true);
 					neww.canBeCancelled = false;
 					neww.save = 0;
 					pBuildings.add(neww);
 					pBuildings.add(new pBuilding(UnitType.Zerg_Spawning_Pool, self.getStartLocation(), 300));
 					pBuildings.add(new pBuilding(UnitType.Zerg_Extractor, null));
-					pBuildings.add(new pBuilding(UnitType.Zerg_Creep_Colony, Expands.get(0).getLocation(), 15, true, false, 1));
-					pBuildings.add(new pBuilding(UnitType.Zerg_Creep_Colony, Expands.get(0).getLocation(), 15, true, false, 1));
-					pBuildings.add(new pBuilding(UnitType.Zerg_Spire, self.getStartLocation()));
+					pBuildings.add(new pBuilding(UnitType.Zerg_Creep_Colony, Expands.get(0).getLocation(), 35, true, false, 1));
+					pBuildings.add(new pBuilding(UnitType.Zerg_Creep_Colony, Expands.get(0).getLocation(), 35, true, false, 1));
+					pBuildings.add(new pBuilding(UnitType.Zerg_Spire, self.getStartLocation(), 300, 1));
 					pBuildings.add(new pBuilding(UnitType.Zerg_Hatchery, self.getStartLocation()));
-					pBuildings.add(new pBuilding(UnitType.Zerg_Creep_Colony, Expands.get(0).getLocation(), 20));
-					pBuildings.add(new pBuilding(UnitType.Zerg_Creep_Colony, self.getStartLocation(), 20));
+					pBuildings.add(new pBuilding(UnitType.Zerg_Creep_Colony, Expands.get(0).getLocation(), 35));
+					pBuildings.add(new pBuilding(UnitType.Zerg_Creep_Colony, self.getStartLocation(), 35));
 					pBuildings.add(new pBuilding(UnitType.Zerg_Evolution_Chamber, null));
 					pBuildings.add(new pBuilding(UnitType.Zerg_Hatchery, null, true));
 					pBuildings.add(new pBuilding(UnitType.Zerg_Queens_Nest, self.getStartLocation()));
@@ -165,16 +176,20 @@ public class Strategy {
 					this.techGoals.add(UnitType.Zerg_Spire);
 					this.mainGoal.add(UnitType.Zerg_Mutalisk);
 					this.canGatherGasEarly = true;
+					this.requirementToMemeMassExpand = UnitType.Zerg_Spire;
+					this.filler = UnitType.Zerg_Hatchery;
+					this.emptyBuildQueue.add(UnitType.Zerg_Hatchery);
+					this.floatUnits.put(UnitType.Zerg_Zergling, 700);
 					pBuilding neww = new pBuilding(UnitType.Zerg_Hatchery, Expands.get(0).getLocation(), true);
 					neww.canBeCancelled = false;
 					neww.save = 0;
 					pBuildings.add(neww);
 					pBuildings.add(new pBuilding(UnitType.Zerg_Spawning_Pool, self.getStartLocation(), 300));
 					pBuildings.add(new pBuilding(UnitType.Zerg_Extractor, null));
-					pBuildings.add(new pBuilding(UnitType.Zerg_Creep_Colony, Expands.get(0).getLocation(), 15, true, false, 1));
-					pBuildings.add(new pBuilding(UnitType.Zerg_Creep_Colony, Expands.get(0).getLocation(), 15, true, false, 1));
-					pBuildings.add(new pBuilding(UnitType.Zerg_Creep_Colony, Expands.get(0).getLocation(), 15, true, false, 1));
-					pBuildings.add(new pBuilding(UnitType.Zerg_Spire, self.getStartLocation()));
+					pBuildings.add(new pBuilding(UnitType.Zerg_Creep_Colony, Expands.get(0).getLocation(), 35, true, false, 1));
+					pBuildings.add(new pBuilding(UnitType.Zerg_Creep_Colony, Expands.get(0).getLocation(), 35, true, false, 1));
+					pBuildings.add(new pBuilding(UnitType.Zerg_Creep_Colony, Expands.get(0).getLocation(), 35, true, false, 1));
+					pBuildings.add(new pBuilding(UnitType.Zerg_Spire, self.getStartLocation(), 300, 1));
 					pBuildings.add(new pBuilding(UnitType.Zerg_Hydralisk_Den, self.getStartLocation()));
 					pBuildings.add(new pBuilding(UnitType.Zerg_Evolution_Chamber, null));
 					pBuildings.add(new pBuilding(UnitType.Zerg_Hatchery, self.getStartLocation()));
@@ -221,23 +236,28 @@ public class Strategy {
 					this.techGoals.add(UnitType.None);
 					this.mainGoal.add(UnitType.Zerg_Hydralisk);
 					this.canGatherGasEarly = true;
+					this.requirementToMemeMassExpand = UnitType.Zerg_Queens_Nest;
+					this.filler = UnitType.Zerg_Hatchery;
+					this.emptyBuildQueue.add(UnitType.Zerg_Hatchery);
+					this.floatUnits.put(UnitType.Zerg_Zergling, 700);
 					pBuilding neww = new pBuilding(UnitType.Zerg_Hatchery, Expands.get(0).getLocation(), true);
 					neww.canBeCancelled = false;
 					neww.save = 0;
 					pBuildings.add(neww);
 					pBuildings.add(new pBuilding(UnitType.Zerg_Spawning_Pool, self.getStartLocation(), 50));
 					pBuildings.add(new pBuilding(UnitType.Zerg_Extractor, null));
-					pBuildings.add(new pBuilding(UnitType.Zerg_Creep_Colony, Expands.get(0).getLocation(), 15, true, false, 1));
-					pBuildings.add(new pBuilding(UnitType.Zerg_Creep_Colony, Expands.get(0).getLocation(), 15, true, false, 1));
-					pBuildings.add(new pBuilding(UnitType.Zerg_Creep_Colony, Expands.get(0).getLocation(), 15, true, false, 1));
-					pBuildings.add(new pBuilding(UnitType.Zerg_Hydralisk_Den, self.getStartLocation(), 200, 1));
+					pBuildings.add(new pBuilding(UnitType.Zerg_Creep_Colony, Expands.get(0).getLocation(), 35, true, false, 1));
+					pBuildings.add(new pBuilding(UnitType.Zerg_Creep_Colony, Expands.get(0).getLocation(), 35, true, false, 1));
+					pBuildings.add(new pBuilding(UnitType.Zerg_Creep_Colony, Expands.get(0).getLocation(), 35, true, false, 1));
+					pBuildings.add(new pBuilding(UnitType.Zerg_Creep_Colony, Expands.get(0).getLocation(), 35, true, false, 1));
+					pBuildings.add(new pBuilding(UnitType.Zerg_Hydralisk_Den, self.getStartLocation(), 200));
 					pBuildings.add(new pBuilding(UnitType.Zerg_Evolution_Chamber, null));
-					pBuildings.add(new pBuilding(UnitType.Zerg_Creep_Colony, Expands.get(0).getLocation(), 20));
-					pBuildings.add(new pBuilding(UnitType.Zerg_Creep_Colony, self.getStartLocation(), 20));
+					pBuildings.add(new pBuilding(UnitType.Zerg_Creep_Colony, Expands.get(0).getLocation(), 50));
+					pBuildings.add(new pBuilding(UnitType.Zerg_Creep_Colony, self.getStartLocation(), 50));
 					pBuildings.add(new pBuilding(UnitType.Zerg_Hatchery, self.getStartLocation()));
 					pBuildings.add(new pBuilding(UnitType.Zerg_Evolution_Chamber, null));
 					pBuildings.add(new pBuilding(UnitType.Zerg_Hatchery, null, true));
-					pBuildings.add(new pBuilding(UnitType.Zerg_Spire, self.getStartLocation()));
+					pBuildings.add(new pBuilding(UnitType.Zerg_Spire, self.getStartLocation(), 300));
 					pBuildings.add(new pBuilding(UnitType.Zerg_Queens_Nest, self.getStartLocation()));
 					pBuildings.add(new pBuilding(UnitType.Zerg_Hatchery, self.getStartLocation()));
 					pBuildings.add(new pBuilding(UnitType.Zerg_Hatchery	, self.getStartLocation()));
@@ -254,7 +274,7 @@ public class Strategy {
 					pBuildings.add(new pBuilding(UnitType.Zerg_Hatchery, self.getStartLocation()));
 					stuffQueue.add(new BotTech(1, 2, TechType.Lurker_Aspect, UpgradeType.None, UnitType.None, myData));
 					stuffQueue.add(new BotTech(2, 0, TechType.None, UpgradeType.Metabolic_Boost, UnitType.None, myData));
-					stuffQueue.add(new BotTech(2, 2, TechType.None, UpgradeType.Muscular_Augments, UnitType.None, myData));
+					stuffQueue.add(new BotTech(2, 2, TechType.None, UpgradeType.Muscular_Augments, UnitType.None, myData, true));
 					stuffQueue.add(new BotTech(2, 2, TechType.None, UpgradeType.Grooved_Spines, UnitType.None, myData));
 					stuffQueue.add(new BotTech(2, 10, TechType.None, UpgradeType.Zerg_Melee_Attacks, UnitType.None, myData));
 					stuffQueue.add(new BotTech(2, 11, TechType.None, UpgradeType.Zerg_Missile_Attacks, UnitType.None, myData));
@@ -262,6 +282,7 @@ public class Strategy {
 					stuffQueue.add(new BotTech(2, 1, TechType.None, UpgradeType.Pneumatized_Carapace, UnitType.None, myData));
 					stuffQueue.add(new BotTech(2, 1, TechType.None, UpgradeType.Adrenal_Glands, UnitType.None, myData));
 					stuffQueue.add(new BotTech(1, 1, TechType.Ensnare, UpgradeType.None, UnitType.None, myData));
+					stuffQueue.add(new BotTech(3, 0, TechType.None, UpgradeType.None, UnitType.Zerg_Sunken_Colony, myData));
 					stuffQueue.add(new BotTech(3, 0, TechType.None, UpgradeType.None, UnitType.Zerg_Sunken_Colony, myData));
 					stuffQueue.add(new BotTech(3, 0, TechType.None, UpgradeType.None, UnitType.Zerg_Sunken_Colony, myData));
 					stuffQueue.add(new BotTech(3, 0, TechType.None, UpgradeType.None, UnitType.Zerg_Sunken_Colony, myData));
@@ -276,9 +297,13 @@ public class Strategy {
 				else {
 					// if unknown
 					this.buildName = "ZvU Generic";
-					this.mainGoal.add(UnitType.Zerg_Mutalisk);
+					//this.mainGoal.add(UnitType.Zerg_Mutalisk);
 					this.techGoals.add(UnitType.Zerg_Spire);
+					this.requirementToMemeMassExpand = UnitType.Zerg_Spire;
 					this.canGatherGasEarly = true;
+					this.filler = UnitType.Zerg_Hatchery;
+					this.emptyBuildQueue.add(UnitType.Zerg_Hatchery);
+					this.floatUnits.put(UnitType.Zerg_Zergling, 700);
 					pBuilding neww = new pBuilding(UnitType.Zerg_Hatchery, Expands.get(0).getLocation(), true);
 					neww.canBeCancelled = false;
 					neww.save = 0;
@@ -289,7 +314,7 @@ public class Strategy {
 					pBuildings.add(new pBuilding(UnitType.Zerg_Creep_Colony, Expands.get(0).getLocation(), 15, true, false, 1));
 					pBuildings.add(new pBuilding(UnitType.Zerg_Creep_Colony, Expands.get(0).getLocation(), 20));
 					pBuildings.add(new pBuilding(UnitType.Zerg_Hydralisk_Den, self.getStartLocation(), Race.Protoss));
-					pBuildings.add(new pBuilding(UnitType.Zerg_Spire, self.getStartLocation()));
+					pBuildings.add(new pBuilding(UnitType.Zerg_Spire, self.getStartLocation(), 300, 1));
 					pBuildings.add(new pBuilding(UnitType.Zerg_Hatchery, self.getStartLocation()));
 					pBuildings.add(new pBuilding(UnitType.Zerg_Creep_Colony, self.getStartLocation(), 20));
 					pBuildings.add(new pBuilding(UnitType.Zerg_Evolution_Chamber, null));
@@ -332,24 +357,30 @@ public class Strategy {
 					stuffQueue.add(new BotTech(1, 2, TechType.Consume, UpgradeType.None, UnitType.None, myData));
 					stuffQueue.add(new BotTech(1, 2, TechType.Plague, UpgradeType.None, UnitType.None, myData));
 				}
-			}
+			//}
 
 
 		
 	}
 	// UnitType ype, TilePosition where, int max, boolean creep, boolean isExpand, int save
 	else if (self.getRace().equals(Race.Terran)){
-		boolean tryP = false;
+		boolean tryP = true;
 		// https://www.youtube.com/watch?v=6FEDrU85FLE
 		if(game.enemy().getRace().equals(Race.Protoss) || tryP == true){
 			Random rand = new Random();
-			int n = rand.nextInt(3) + 1;
+			//int n = rand.nextInt(3) + 1;
+			int n = 3;
 			// if we are T and the enemy is P.
 			if(n==1){
 			this.type = "mech";
 			this.buildName = "2 Fac";
 			this.techGoals.add(UnitType.Terran_Armory);
 			this.mainGoal.add(UnitType.Terran_Siege_Tank_Tank_Mode);
+			this.requirementToMemeMassExpand = UnitType.Terran_Armory;
+			this.filler = UnitType.None;
+			this.emptyBuildQueue.add(UnitType.Terran_Factory);
+			this.emptyBuildQueue.add(UnitType.Terran_Factory);
+			this.floatUnits.put(UnitType.Terran_Vulture, 500);
 			pBuildings.add(new pBuilding(UnitType.Terran_Supply_Depot, null, 300));
 			pBuildings.add(new pBuilding(UnitType.Terran_Barracks, null, 300));
 			pBuildings.add(new pBuilding(UnitType.Terran_Refinery, null, 300));
@@ -357,29 +388,25 @@ public class Strategy {
 			pBuildings.add(new pBuilding(UnitType.Terran_Factory, self.getStartLocation(), 300));
 			pBuildings.add(new pBuilding(UnitType.Terran_Factory, self.getStartLocation(), 300));
 			pBuildings.add(new pBuilding(UnitType.Terran_Armory, self.getStartLocation(), 300));
-			pBuildings.add(new pBuilding(UnitType.Terran_Barracks, self.getStartLocation(), 300));
 			pBuildings.add(new pBuilding(UnitType.Terran_Academy, self.getStartLocation(), 300));
 			pBuildings.add(new pBuilding(UnitType.Terran_Engineering_Bay, null, 300));
 			pBuildings.add(new pBuilding(UnitType.Terran_Missile_Turret, null, 300));
-			pBuildings.add(new pBuilding(UnitType.Terran_Barracks, null, 300));
 			pBuildings.add(new pBuilding(UnitType.Terran_Starport, null, 300));
+			pBuildings.add(new pBuilding(UnitType.Terran_Factory, self.getStartLocation(), 300));
 			pBuildings.add(new pBuilding(UnitType.Terran_Science_Facility, self.getStartLocation(), 300));
-			pBuildings.add(new pBuilding(UnitType.Terran_Barracks, null, 300));
-			pBuildings.add(new pBuilding(UnitType.Terran_Barracks, null, 300));
+			pBuildings.add(new pBuilding(UnitType.Terran_Barracks, self.getStartLocation(), 300));
 			pBuildings.add(new pBuilding(UnitType.Terran_Starport, null, 300));
 			pBuildings.add(new pBuilding(UnitType.Terran_Factory, null, 300));
 			pBuildings.add(new pBuilding(UnitType.Terran_Factory, null, 300));
-			pBuildings.add(new pBuilding(UnitType.Terran_Barracks, null, 300));
-			pBuildings.add(new pBuilding(UnitType.Terran_Barracks, null, 300));
-			stuffQueue.add(new BotTech(1, 0, TechType.Stim_Packs, UpgradeType.None, UnitType.None, myData));
-			stuffQueue.add(new BotTech(2, 0, TechType.None, UpgradeType.U_238_Shells, UnitType.None, myData));
-			stuffQueue.add(new BotTech(1, 7, TechType.Optical_Flare, UpgradeType.None, UnitType.None, myData));
-			stuffQueue.add(new BotTech(1, 1, TechType.Tank_Siege_Mode, UpgradeType.None, UnitType.None, myData));
+			stuffQueue.add(new BotTech(1, 15, TechType.Stim_Packs, UpgradeType.None, UnitType.None, myData));
+			stuffQueue.add(new BotTech(2, 15, TechType.None, UpgradeType.U_238_Shells, UnitType.None, myData));
+			//stuffQueue.add(new BotTech(1, 7, TechType.Optical_Flare, UpgradeType.None, UnitType.None, myData));
+			stuffQueue.add(new BotTech(1, 6, TechType.Tank_Siege_Mode, UpgradeType.None, UnitType.None, myData, true));
 			stuffQueue.add(new BotTech(1, 9, TechType.Lockdown, UpgradeType.None, UnitType.None, myData));
 			stuffQueue.add(new BotTech(1, 1, TechType.Irradiate, UpgradeType.None, UnitType.None, myData));
 			stuffQueue.add(new BotTech(1, 6, TechType.Spider_Mines, UpgradeType.None, UnitType.None, myData, true));
-			stuffQueue.add(new BotTech(2, 0, TechType.None, UpgradeType.Terran_Infantry_Weapons, UnitType.None, myData));
-			stuffQueue.add(new BotTech(2, 0, TechType.None, UpgradeType.Terran_Infantry_Armor, UnitType.None, myData));
+			stuffQueue.add(new BotTech(2, 15, TechType.None, UpgradeType.Terran_Infantry_Weapons, UnitType.None, myData));
+			stuffQueue.add(new BotTech(2, 15, TechType.None, UpgradeType.Terran_Infantry_Armor, UnitType.None, myData));
 			stuffQueue.add(new BotTech(1, 0, TechType.Personnel_Cloaking, UpgradeType.None, UnitType.None, myData));
 			stuffQueue.add(new BotTech(2, 0, TechType.None, UpgradeType.Moebius_Reactor, UnitType.None, myData));
 			stuffQueue.add(new BotTech(2, 0, TechType.None, UpgradeType.Terran_Vehicle_Plating, UnitType.None, myData));
@@ -396,13 +423,19 @@ public class Strategy {
 				this.mainGoal.add(UnitType.Terran_Siege_Tank_Siege_Mode);
 				this.GFR = 4500;
 				this.moveRegroup = true;
+				this.requirementToMemeMassExpand = UnitType.Terran_Science_Facility;
+				this.filler = UnitType.Terran_Barracks;
+				this.emptyBuildQueue.add(UnitType.Terran_Factory);
+				this.emptyBuildQueue.add(UnitType.Terran_Barracks);
+				this.floatUnits.put(UnitType.Terran_Marine, 500);
+				this.floatUnits.put(UnitType.Terran_Vulture, 500);
 				pBuildings.add(new pBuilding(UnitType.Terran_Barracks, null, 300));
 				pBuildings.add(new pBuilding(UnitType.Terran_Academy, self.getStartLocation(), 300));
+				pBuildings.add(new pBuilding(UnitType.Terran_Barracks, null, 300));
+				pBuildings.add(new pBuilding(UnitType.Terran_Barracks, null, 300));
 				pBuildings.add(new pBuilding(UnitType.Terran_Bunker, myData.mainChoke.getCenter().toTilePosition(), 5));
 				pBuildings.add(new pBuilding(UnitType.Terran_Bunker, myData.mainChoke.getCenter().toTilePosition(), 5));
 				pBuildings.add(new pBuilding(UnitType.Terran_Refinery, null, 300));
-				pBuildings.add(new pBuilding(UnitType.Terran_Barracks, null, 300));
-				pBuildings.add(new pBuilding(UnitType.Terran_Barracks, null, 300));
 				pBuildings.add(new pBuilding(UnitType.Terran_Factory, self.getStartLocation(), 300));
 				pBuildings.add(new pBuilding(UnitType.Terran_Engineering_Bay, self.getStartLocation(), 300));
 				pBuildings.add(new pBuilding(UnitType.Terran_Missile_Turret, myData.mainChoke.getCenter().toTilePosition(), 5));
@@ -425,10 +458,10 @@ public class Strategy {
 				pBuildings.add(new pBuilding(UnitType.Terran_Factory, null, 300));
 				stuffQueue.add(new BotTech(1, 0, TechType.Stim_Packs, UpgradeType.None, UnitType.None, myData, true));
 				stuffQueue.add(new BotTech(2, 0, TechType.None, UpgradeType.U_238_Shells, UnitType.None, myData, true));
-				stuffQueue.add(new BotTech(1, 7, TechType.Optical_Flare, UpgradeType.None, UnitType.None, myData));
+				//stuffQueue.add(new BotTech(1, 7, TechType.Optical_Flare, UpgradeType.None, UnitType.None, myData));
 				stuffQueue.add(new BotTech(1, 1, TechType.Tank_Siege_Mode, UpgradeType.None, UnitType.None, myData));
 				stuffQueue.add(new BotTech(1, 9, TechType.Lockdown, UpgradeType.None, UnitType.None, myData));
-				stuffQueue.add(new BotTech(1, 1, TechType.Spider_Mines, UpgradeType.None, UnitType.None, myData));
+				stuffQueue.add(new BotTech(1, 13, TechType.Spider_Mines, UpgradeType.None, UnitType.None, myData));
 				stuffQueue.add(new BotTech(2, 0, TechType.None, UpgradeType.Terran_Infantry_Weapons, UnitType.None, myData));
 				stuffQueue.add(new BotTech(2, 0, TechType.None, UpgradeType.Terran_Infantry_Armor, UnitType.None, myData));
 				stuffQueue.add(new BotTech(2, 1, TechType.Personnel_Cloaking, UpgradeType.None, UnitType.None, myData));
@@ -440,9 +473,15 @@ public class Strategy {
 			else {
 				// if n == 3
 				buildName = "McRave 12 BUNKERBUNKERBUNKERBUNKERBUNKERBUNKERBUNKERBUNKERBUNKERBUNKERBUNKERBUNKERBUNKER";
-				type = "Dunno lol";
+				// NAME IS IMPORTANT DONT CHANGE
+				type = "Mech";
 				this.AB.add(UnitType.Terran_Barracks); // make this if the enemy is being a cunt
 				this.mainGoal.add(UnitType.Terran_Battlecruiser);
+				this.requirementToMemeMassExpand = UnitType.Terran_Science_Facility;
+				this.filler = UnitType.Terran_Barracks;
+				this.emptyBuildQueue.add(UnitType.Terran_Starport);
+				this.emptyBuildQueue.add(UnitType.Terran_Starport);
+				this.floatUnits.put(UnitType.Terran_Marine, 500);
 				pBuildings.add(new pBuilding(UnitType.Terran_Supply_Depot, null, 300));
 				pBuildings.add(new pBuilding(UnitType.Terran_Barracks, null, 300));
 				pBuilding neww = new pBuilding(UnitType.Terran_Command_Center, Expands.get(0).getLocation(), true);
@@ -452,21 +491,28 @@ public class Strategy {
 				pBuildings.add(new pBuilding(UnitType.Terran_Bunker, null, 50));
 				pBuildings.add(new pBuilding(UnitType.Terran_Bunker, null, 50));
 				pBuildings.add(new pBuilding(UnitType.Terran_Bunker, null, 50));
-				pBuildings.add(new pBuilding(UnitType.Terran_Bunker, null, 50));
-				pBuildings.add(new pBuilding(UnitType.Terran_Bunker, null, 50));
-				pBuildings.add(new pBuilding(UnitType.Terran_Bunker, null, 50));
-				pBuildings.add(new pBuilding(UnitType.Terran_Bunker, null, 50));
-				pBuildings.add(new pBuilding(UnitType.Terran_Bunker, null, 50));
-				pBuildings.add(new pBuilding(UnitType.Terran_Bunker, null, 50));
-				pBuildings.add(new pBuilding(UnitType.Terran_Bunker, null, 50));
-				pBuildings.add(new pBuilding(UnitType.Terran_Bunker, null, 50));
-				pBuildings.add(new pBuilding(UnitType.Terran_Bunker, null, 50));
-				pBuildings.add(new pBuilding(UnitType.Terran_Bunker, null, 50)); // adding one more to literally out-do mcrave
-				pBuildings.add(new pBuilding(UnitType.Terran_Barracks, null, 300));
-				pBuildings.add(new pBuilding(UnitType.Terran_Factory, null, 300, true));
-				pBuildings.add(new pBuilding(UnitType.Terran_Starport, null, 300, true));
-				pBuildings.add(new pBuilding(UnitType.Terran_Science_Facility, null, 300, true));
-
+				pBuildings.add(new pBuilding(UnitType.Terran_Barracks, self.getStartLocation(), 300));
+				pBuildings.add(new pBuilding(UnitType.Terran_Factory, self.getStartLocation(), 300));
+				pBuildings.add(new pBuilding(UnitType.Terran_Barracks, self.getStartLocation(), Race.Protoss));
+				pBuildings.add(new pBuilding(UnitType.Terran_Academy, self.getStartLocation()));
+				pBuildings.add(new pBuilding(UnitType.Terran_Starport, self.getStartLocation(), 300, 1));
+				pBuildings.add(new pBuilding(UnitType.Terran_Science_Facility, self.getStartLocation(), 300, 1));
+				pBuildings.add(new pBuilding(UnitType.Terran_Starport, null));
+				pBuildings.add(new pBuilding(UnitType.Terran_Starport, null));
+				stuffQueue.add(new BotTech(1, 0, TechType.Stim_Packs, UpgradeType.None, UnitType.None, myData));
+				stuffQueue.add(new BotTech(2, 0, TechType.None, UpgradeType.U_238_Shells, UnitType.None, myData));
+				//stuffQueue.add(new BotTech(1, 7, TechType.Optical_Flare, UpgradeType.None, UnitType.None, myData));
+				stuffQueue.add(new BotTech(1, 13, TechType.Tank_Siege_Mode, UpgradeType.None, UnitType.None, myData));
+				stuffQueue.add(new BotTech(1, 9, TechType.Lockdown, UpgradeType.None, UnitType.None, myData));
+				stuffQueue.add(new BotTech(1, 14, TechType.Spider_Mines, UpgradeType.None, UnitType.None, myData));
+				stuffQueue.add(new BotTech(2, 15, TechType.None, UpgradeType.Terran_Infantry_Weapons, UnitType.None, myData));
+				stuffQueue.add(new BotTech(2, 15, TechType.None, UpgradeType.Terran_Infantry_Armor, UnitType.None, myData));
+				stuffQueue.add(new BotTech(2, 1, TechType.Personnel_Cloaking, UpgradeType.None, UnitType.None, myData));
+				stuffQueue.add(new BotTech(2, 0, TechType.None, UpgradeType.Moebius_Reactor, UnitType.None, myData));
+				stuffQueue.add(new BotTech(2, 0, TechType.None, UpgradeType.Terran_Vehicle_Plating, UnitType.None, myData));
+				stuffQueue.add(new BotTech(2, 0, TechType.None, UpgradeType.Terran_Vehicle_Weapons, UnitType.None, myData));
+				stuffQueue.add(new BotTech(1, 1, TechType.Irradiate, UpgradeType.None, UnitType.None, myData));
+				stuffQueue.add(new BotTech(1, 16, TechType.Yamato_Gun, UpgradeType.None, UnitType.None, myData));
 			}
 			
 		}
@@ -474,7 +520,7 @@ public class Strategy {
 			// default build
 			int chosenBuild = 0;
 			Random rand = new Random();
-			int n = rand.nextInt(4) + 1;
+			int n = rand.nextInt(3) + 1;
 			if(n == 1 || chosenBuild == 1){
 				this.buildName = "The Neohuman Build";
 				this.type = "bio";
@@ -486,6 +532,11 @@ public class Strategy {
 				this.mainGoal.add(UnitType.Terran_Ghost);
 				this.mainGoal.add(UnitType.Terran_Marine);
 				this.GFR = 8000;
+				this.requirementToMemeMassExpand = UnitType.Terran_Science_Facility;
+				this.filler = UnitType.Terran_Barracks;
+				this.emptyBuildQueue.add(UnitType.Terran_Barracks);
+				this.emptyBuildQueue.add(UnitType.Terran_Barracks);
+				this.floatUnits.put(UnitType.Terran_Marine, 500);
 				pBuildings.add(new pBuilding(UnitType.Terran_Supply_Depot, null, 300));
 				pBuildings.add(new pBuilding(UnitType.Terran_Barracks, null, 300));
 				pBuildings.add(new pBuilding(UnitType.Terran_Barracks, null, 300));	
@@ -516,7 +567,7 @@ public class Strategy {
 				pBuildings.add(new pBuilding(UnitType.Terran_Barracks, null, 300));
 				stuffQueue.add(new BotTech(1, 0, TechType.Stim_Packs, UpgradeType.None, UnitType.None, myData));
 				stuffQueue.add(new BotTech(2, 0, TechType.None, UpgradeType.U_238_Shells, UnitType.None, myData));
-				stuffQueue.add(new BotTech(1, 7, TechType.Optical_Flare, UpgradeType.None, UnitType.None, myData));
+				//stuffQueue.add(new BotTech(1, 7, TechType.Optical_Flare, UpgradeType.None, UnitType.None, myData));
 				stuffQueue.add(new BotTech(1, 1, TechType.Tank_Siege_Mode, UpgradeType.None, UnitType.None, myData));
 				stuffQueue.add(new BotTech(1, 9, TechType.Lockdown, UpgradeType.None, UnitType.None, myData));
 				stuffQueue.add(new BotTech(1, 1, TechType.Spider_Mines, UpgradeType.None, UnitType.None, myData));
@@ -536,10 +587,20 @@ public class Strategy {
 				this.AB.add(UnitType.Terran_Barracks);
 				this.mainGoal.add(UnitType.Terran_Marine);
 				this.mainGoal.add(UnitType.Terran_Siege_Tank_Siege_Mode);
+				this.requirementToMemeMassExpand = UnitType.Terran_Science_Facility;
+				this.filler = UnitType.Terran_Barracks;
+				this.emptyBuildQueue.add(UnitType.Terran_Barracks);
+				this.emptyBuildQueue.add(UnitType.Terran_Factory);
+				this.floatUnits.put(UnitType.Terran_Marine, 500);
+				this.floatUnits.put(UnitType.Terran_Vulture, 600);
 				pBuildings.add(new pBuilding(UnitType.Terran_Barracks, null, 300));
 				pBuildings.add(new pBuilding(UnitType.Terran_Academy, self.getStartLocation(), 300));
+				pBuildings.add(new pBuilding(UnitType.Terran_Barracks, null, 300));
+				pBuildings.add(new pBuilding(UnitType.Terran_Barracks, null, 300));
+				pBuildings.add(new pBuilding(UnitType.Terran_Bunker, null, 20));
 				pBuildings.add(new pBuilding(UnitType.Terran_Refinery, null, 300));
-				pBuildings.add(new pBuilding(UnitType.Terran_Bunker, null, 5));
+				pBuildings.add(new pBuilding(UnitType.Terran_Bunker, null, Race.Protoss));
+				pBuildings.add(new pBuilding(UnitType.Terran_Bunker, null, Race.Protoss));
 				pBuildings.add(new pBuilding(UnitType.Terran_Factory, self.getStartLocation(), 300));
 				pBuildings.add(new pBuilding(UnitType.Terran_Engineering_Bay, self.getStartLocation(), 300));
 				pBuildings.add(new pBuilding(UnitType.Terran_Missile_Turret, null, 5));
@@ -562,7 +623,7 @@ public class Strategy {
 				pBuildings.add(new pBuilding(UnitType.Terran_Factory, null, 300));
 				stuffQueue.add(new BotTech(1, 0, TechType.Stim_Packs, UpgradeType.None, UnitType.None, myData, true));
 				stuffQueue.add(new BotTech(2, 0, TechType.None, UpgradeType.U_238_Shells, UnitType.None, myData, true));
-				stuffQueue.add(new BotTech(1, 7, TechType.Optical_Flare, UpgradeType.None, UnitType.None, myData));
+				//stuffQueue.add(new BotTech(1, 7, TechType.Optical_Flare, UpgradeType.None, UnitType.None, myData));
 				stuffQueue.add(new BotTech(1, 1, TechType.Tank_Siege_Mode, UpgradeType.None, UnitType.None, myData));
 				stuffQueue.add(new BotTech(1, 9, TechType.Lockdown, UpgradeType.None, UnitType.None, myData));
 				stuffQueue.add(new BotTech(1, 1, TechType.Spider_Mines, UpgradeType.None, UnitType.None, myData));
@@ -577,7 +638,15 @@ public class Strategy {
 			else if (n == 3 || chosenBuild == 3){
 				buildName = "Boring ass Mech Build";
 				type = "mech";
+				this.mainGoal.add(UnitType.Terran_Siege_Tank_Siege_Mode);
+				this.mainGoal.add(UnitType.Terran_Vulture);
+				this.mainGoal.add(UnitType.Terran_Goliath);
 				this.techGoals.add(UnitType.Terran_Armory);
+				this.requirementToMemeMassExpand = UnitType.Terran_Factory;
+				this.filler = UnitType.None;
+				this.emptyBuildQueue.add(UnitType.Terran_Factory);
+				this.emptyBuildQueue.add(UnitType.Terran_Factory);
+				this.floatUnits.put(UnitType.Terran_Vulture, 600);
 				pBuildings.add(new pBuilding(UnitType.Terran_Supply_Depot, null, 300));
 				pBuildings.add(new pBuilding(UnitType.Terran_Barracks, null, 300));
 				pBuildings.add(new pBuilding(UnitType.Terran_Refinery, null, 300));
@@ -585,13 +654,10 @@ public class Strategy {
 				pBuildings.add(new pBuilding(UnitType.Terran_Factory, null, 300));
 				pBuildings.add(new pBuilding(UnitType.Terran_Factory, null, 300));
 				pBuildings.add(new pBuilding(UnitType.Terran_Academy, self.getStartLocation(), 300));
-				pBuildings.add(new pBuilding(UnitType.Terran_Barracks, self.getStartLocation(), 300));
-				pBuildings.add(new pBuilding(UnitType.Terran_Barracks, self.getStartLocation(), 300));
+				pBuildings.add(new pBuilding(UnitType.Terran_Armory, self.getStartLocation(), 300));
 				pBuildings.add(new pBuilding(UnitType.Terran_Engineering_Bay, self.getStartLocation(), 300));
 				pBuildings.add(new pBuilding(UnitType.Terran_Missile_Turret, null, 300));
-				pBuildings.add(new pBuilding(UnitType.Terran_Barracks, self.getStartLocation(), 300));
-				pBuildings.add(new pBuilding(UnitType.Terran_Armory, self.getStartLocation(), 300));
-				pBuildings.add(new pBuilding(UnitType.Terran_Barracks, self.getStartLocation(), 300));
+				pBuildings.add(new pBuilding(UnitType.Terran_Factory, null, 300));
 				pBuildings.add(new pBuilding(UnitType.Terran_Starport, self.getStartLocation(), 300));
 				pBuildings.add(new pBuilding(UnitType.Terran_Science_Facility, self.getStartLocation(), 300));
 				pBuildings.add(new pBuilding(UnitType.Terran_Barracks, null, 300));
@@ -601,21 +667,21 @@ public class Strategy {
 				pBuildings.add(new pBuilding(UnitType.Terran_Factory, null, 300));
 				pBuildings.add(new pBuilding(UnitType.Terran_Barracks, null, 300));
 				pBuildings.add(new pBuilding(UnitType.Terran_Barracks, null, 300));
-				stuffQueue.add(new BotTech(1, 0, TechType.Stim_Packs, UpgradeType.None, UnitType.None, myData));
-				stuffQueue.add(new BotTech(2, 0, TechType.None, UpgradeType.U_238_Shells, UnitType.None, myData));
-				stuffQueue.add(new BotTech(1, 7, TechType.Optical_Flare, UpgradeType.None, UnitType.None, myData));
+				stuffQueue.add(new BotTech(1, 15, TechType.Stim_Packs, UpgradeType.None, UnitType.None, myData));
+				stuffQueue.add(new BotTech(2, 15, TechType.None, UpgradeType.U_238_Shells, UnitType.None, myData));
+				//stuffQueue.add(new BotTech(1, 7, TechType.Optical_Flare, UpgradeType.None, UnitType.None, myData));
 				stuffQueue.add(new BotTech(1, 1, TechType.Tank_Siege_Mode, UpgradeType.None, UnitType.None, myData));
 				stuffQueue.add(new BotTech(1, 9, TechType.Lockdown, UpgradeType.None, UnitType.None, myData));
 				stuffQueue.add(new BotTech(1, 1, TechType.Irradiate, UpgradeType.None, UnitType.None, myData));
 				stuffQueue.add(new BotTech(1, 6, TechType.Spider_Mines, UpgradeType.None, UnitType.None, myData, true));
-				stuffQueue.add(new BotTech(2, 0, TechType.None, UpgradeType.Terran_Infantry_Weapons, UnitType.None, myData));
-				stuffQueue.add(new BotTech(2, 0, TechType.None, UpgradeType.Terran_Infantry_Armor, UnitType.None, myData));
+				stuffQueue.add(new BotTech(2, 15, TechType.None, UpgradeType.Terran_Infantry_Weapons, UnitType.None, myData));
+				stuffQueue.add(new BotTech(2, 15, TechType.None, UpgradeType.Terran_Infantry_Armor, UnitType.None, myData));
 				stuffQueue.add(new BotTech(1, 0, TechType.Personnel_Cloaking, UpgradeType.None, UnitType.None, myData));
 				stuffQueue.add(new BotTech(2, 0, TechType.None, UpgradeType.Moebius_Reactor, UnitType.None, myData));
 				stuffQueue.add(new BotTech(2, 0, TechType.None, UpgradeType.Terran_Vehicle_Plating, UnitType.None, myData));
 				stuffQueue.add(new BotTech(2, 0, TechType.None, UpgradeType.Terran_Vehicle_Weapons, UnitType.None, myData));
 			}
-			else if (n == 4){
+			else if (n == 4 || chosenBuild == 4){
 				buildName = "Starship Troopers";
 				type = "bio";
 				this.techGoals.add(UnitType.Terran_Factory);
@@ -624,6 +690,12 @@ public class Strategy {
 				this.AB.add(UnitType.Terran_Barracks);
 				this.AB.add(UnitType.Terran_Barracks);
 				this.mainGoal.add(UnitType.Terran_Marine);
+				this.requirementToMemeMassExpand = UnitType.Terran_Science_Facility;
+				this.filler = UnitType.Terran_Barracks;
+				this.emptyBuildQueue.add(UnitType.Terran_Barracks);
+				this.emptyBuildQueue.add(UnitType.Terran_Barracks);
+				this.floatUnits.put(UnitType.Terran_Marine, 500);
+				this.floatUnits.put(UnitType.Terran_Vulture, 600);
 				pBuildings.add(new pBuilding(UnitType.Terran_Barracks, null, 300));
 				pBuildings.add(new pBuilding(UnitType.Terran_Academy, self.getStartLocation(), 300));
 				pBuildings.add(new pBuilding(UnitType.Terran_Refinery, null, 300));
@@ -646,7 +718,7 @@ public class Strategy {
 				pBuildings.add(new pBuilding(UnitType.Terran_Factory, null, 300));
 				stuffQueue.add(new BotTech(1, 0, TechType.Stim_Packs, UpgradeType.None, UnitType.None, myData, true));
 				stuffQueue.add(new BotTech(2, 0, TechType.None, UpgradeType.U_238_Shells, UnitType.None, myData, true));
-				stuffQueue.add(new BotTech(1, 7, TechType.Optical_Flare, UpgradeType.None, UnitType.None, myData));
+				//stuffQueue.add(new BotTech(1, 7, TechType.Optical_Flare, UpgradeType.None, UnitType.None, myData));
 				stuffQueue.add(new BotTech(1, 1, TechType.Tank_Siege_Mode, UpgradeType.None, UnitType.None, myData));
 				stuffQueue.add(new BotTech(1, 9, TechType.Lockdown, UpgradeType.None, UnitType.None, myData, true));
 				stuffQueue.add(new BotTech(1, 1, TechType.Spider_Mines, UpgradeType.None, UnitType.None, myData));
@@ -663,8 +735,17 @@ public class Strategy {
 				type = "Dunno lol";
 				this.AB.add(UnitType.Terran_Barracks); // make this if the enemy is being a cunt
 				this.mainGoal.add(UnitType.Terran_Battlecruiser);
+				this.requirementToMemeMassExpand = UnitType.Terran_Science_Facility;
+				this.filler = UnitType.None;
+				this.emptyBuildQueue.add(UnitType.Terran_Starport);
+				this.emptyBuildQueue.add(UnitType.Terran_Starport);
+				this.floatUnits.put(UnitType.Terran_Marine, 500);
+				this.floatUnits.put(UnitType.Terran_Vulture, 600);
 				pBuildings.add(new pBuilding(UnitType.Terran_Supply_Depot, null, 300));
 				pBuildings.add(new pBuilding(UnitType.Terran_Barracks, null, 300));
+				pBuildings.add(new pBuilding(UnitType.Terran_Barracks, null, 300));
+				pBuildings.add(new pBuilding(UnitType.Terran_Bunker, null, 50));
+				pBuildings.add(new pBuilding(UnitType.Terran_Bunker, null, 50));
 				pBuilding neww = new pBuilding(UnitType.Terran_Command_Center, Expands.get(0).getLocation(), true);
 				neww.canBeCancelled = false;
 				pBuildings.add(neww);// don't ask
@@ -673,22 +754,27 @@ public class Strategy {
 				pBuildings.add(new pBuilding(UnitType.Terran_Bunker, null, 50));
 				pBuildings.add(new pBuilding(UnitType.Terran_Bunker, null, 50));
 				pBuildings.add(new pBuilding(UnitType.Terran_Bunker, null, 50));
-				pBuildings.add(new pBuilding(UnitType.Terran_Bunker, null, 50));
-				pBuildings.add(new pBuilding(UnitType.Terran_Bunker, null, 50));
-				pBuildings.add(new pBuilding(UnitType.Terran_Bunker, null, 50));
-				pBuildings.add(new pBuilding(UnitType.Terran_Bunker, null, 50));
-				pBuildings.add(new pBuilding(UnitType.Terran_Bunker, null, 50));
-				pBuildings.add(new pBuilding(UnitType.Terran_Bunker, null, 50));
-				pBuildings.add(new pBuilding(UnitType.Terran_Bunker, null, 50));
-				pBuildings.add(new pBuilding(UnitType.Terran_Bunker, null, 50));
-				pBuildings.add(new pBuilding(UnitType.Terran_Bunker, null, 50)); // adding one more to literally out-do mcrave
-				pBuildings.add(new pBuilding(UnitType.Terran_Barracks, null, 300));
-				pBuildings.add(new pBuilding(UnitType.Terran_Factory, null, 300, true));
-				pBuildings.add(new pBuilding(UnitType.Terran_Starport, null, 300, true));
-				pBuildings.add(new pBuilding(UnitType.Terran_Science_Facility, null, 300, true));
-				pBuildings.add(new pBuilding(UnitType.Terran_Starport, null, 300, true));
-				pBuildings.add(new pBuilding(UnitType.Terran_Starport, null, 300, true));
-				pBuildings.add(new pBuilding(UnitType.Terran_Starport, null, 300, true));
+				pBuildings.add(new pBuilding(UnitType.Terran_Barracks, self.getStartLocation(), 300));
+				pBuildings.add(new pBuilding(UnitType.Terran_Factory, self.getStartLocation(), 300));
+				pBuildings.add(new pBuilding(UnitType.Terran_Academy, self.getStartLocation()));
+				pBuildings.add(new pBuilding(UnitType.Terran_Starport, self.getStartLocation(), 300, 1));
+				pBuildings.add(new pBuilding(UnitType.Terran_Science_Facility, null, 300, 1));
+				pBuildings.add(new pBuilding(UnitType.Terran_Starport, null));
+				pBuildings.add(new pBuilding(UnitType.Terran_Starport, null));
+				pBuildings.add(new pBuilding(UnitType.Terran_Starport, null));				
+				stuffQueue.add(new BotTech(1, 15, TechType.Stim_Packs, UpgradeType.None, UnitType.None, myData));
+				stuffQueue.add(new BotTech(2, 15, TechType.None, UpgradeType.U_238_Shells, UnitType.None, myData));
+				//stuffQueue.add(new BotTech(1, 7, TechType.Optical_Flare, UpgradeType.None, UnitType.None, myData));
+				stuffQueue.add(new BotTech(1, 13, TechType.Tank_Siege_Mode, UpgradeType.None, UnitType.None, myData));
+				stuffQueue.add(new BotTech(1, 9, TechType.Lockdown, UpgradeType.None, UnitType.None, myData));
+				stuffQueue.add(new BotTech(1, 14, TechType.Spider_Mines, UpgradeType.None, UnitType.None, myData));
+				stuffQueue.add(new BotTech(2, 0, TechType.None, UpgradeType.Terran_Infantry_Weapons, UnitType.None, myData));
+				stuffQueue.add(new BotTech(2, 0, TechType.None, UpgradeType.Terran_Infantry_Armor, UnitType.None, myData));
+				stuffQueue.add(new BotTech(2, 1, TechType.Personnel_Cloaking, UpgradeType.None, UnitType.None, myData));
+				stuffQueue.add(new BotTech(2, 0, TechType.None, UpgradeType.Moebius_Reactor, UnitType.None, myData));
+				stuffQueue.add(new BotTech(2, 0, TechType.None, UpgradeType.Terran_Vehicle_Plating, UnitType.None, myData));
+				stuffQueue.add(new BotTech(2, 0, TechType.None, UpgradeType.Terran_Vehicle_Weapons, UnitType.None, myData));
+				stuffQueue.add(new BotTech(1, 1, TechType.Irradiate, UpgradeType.None, UnitType.None, myData));
 			}
 		}
 		
@@ -696,7 +782,7 @@ public class Strategy {
 		// p
 		// https://www.youtube.com/watch?v=fe4EK4HSPkI
 		// DOOT DOOT DOOT DOOT DOOT DOOT DOOOOT DOOOOOOOOOOOOOT DOOOOOOOOOOOOOOOOOOOOOOOOOOOOT
-		int chosenBuild = 3;
+		int chosenBuild = 0;
 		Random rand = new Random();
 		int n;	
 		if(chosenBuild != 0){
@@ -705,25 +791,30 @@ public class Strategy {
 		else {
 		n = rand.nextInt(5) + 1;
 		}
+		this.floatUnits.put(UnitType.Protoss_Zealot, 600);
+		this.emptyBuildQueue.add(UnitType.Protoss_Gateway);
+		this.emptyBuildQueue.add(UnitType.Protoss_Gateway);
 
 		if (n == 1 || n == 2){
 			this.buildName = "12 Nexus into retardation";
 			this.techGoals.add(UnitType.Protoss_Citadel_of_Adun);
 			this.techGoals.add(UnitType.Protoss_Templar_Archives);
+			this.requirementToMemeMassExpand = UnitType.Protoss_Citadel_of_Adun;
+			this.filler = UnitType.Protoss_Gateway;
 			pBuildings.add(new pBuilding(UnitType.Protoss_Pylon, self.getStartLocation()));
 			pBuilding neww = new pBuilding(UnitType.Protoss_Nexus, Expands.get(0).getLocation(), true);
 			neww.canBeCancelled = false;
 			pBuildings.add(neww);
 			pBuildings.add(new pBuilding(UnitType.Protoss_Gateway, self.getStartLocation()));
 			pBuildings.add(new pBuilding(UnitType.Protoss_Gateway, self.getStartLocation()));
-			pBuildings.add(new pBuilding(UnitType.Protoss_Pylon, null));
+			pBuildings.add(new pBuilding(UnitType.Protoss_Pylon, self.getStartLocation()));
 			pBuildings.add(new pBuilding(UnitType.Protoss_Cybernetics_Core, self.getStartLocation()));
 			pBuildings.add(new pBuilding(UnitType.Protoss_Assimilator, null));
-			pBuildings.add(new pBuilding(UnitType.Protoss_Pylon, null));
+			pBuildings.add(new pBuilding(UnitType.Protoss_Pylon, self.getStartLocation()));
 			pBuildings.add(new pBuilding(UnitType.Protoss_Citadel_of_Adun, self.getStartLocation()));
 			pBuildings.add(new pBuilding(UnitType.Protoss_Gateway, self.getStartLocation()));
 			pBuildings.add(new pBuilding(UnitType.Protoss_Forge, self.getStartLocation()));
-			pBuildings.add(new pBuilding(UnitType.Protoss_Pylon, null));
+			pBuildings.add(new pBuilding(UnitType.Protoss_Pylon, self.getStartLocation()));
 			pBuildings.add(new pBuilding(UnitType.Protoss_Robotics_Facility, self.getStartLocation()));
 			pBuildings.add(new pBuilding(UnitType.Protoss_Observatory, self.getStartLocation()));
 			pBuildings.add(new pBuilding(UnitType.Protoss_Pylon, self.getStartLocation()));
@@ -744,30 +835,33 @@ public class Strategy {
 			stuffQueue.add(new BotTech(1, 0, TechType.Psionic_Storm, UpgradeType.None, UnitType.None, myData));
 			stuffQueue.add(new BotTech(2, 0, TechType.None, UpgradeType.Khaydarin_Amulet, UnitType.None, myData));
 			stuffQueue.add(new BotTech(2, 0, TechType.None, UpgradeType.Carrier_Capacity, UnitType.None, myData));
+			stuffQueue.add(new BotTech(1, 0, TechType.Mind_Control, UpgradeType.None, UnitType.None, myData));
 		}
 		else if (n == 3 || chosenBuild == 3){
 			this.buildName = "Dumb DT build";
 			this.mainGoal.add(UnitType.Protoss_Dark_Templar);
 			this.techGoals.add(UnitType.Protoss_Citadel_of_Adun);
 			this.techGoals.add(UnitType.Protoss_Templar_Archives);
-			pBuildings.add(new pBuilding(UnitType.Protoss_Pylon, null));
+			this.requirementToMemeMassExpand = UnitType.Protoss_Templar_Archives;
+			this.filler = UnitType.Protoss_Gateway;
+			pBuildings.add(new pBuilding(UnitType.Protoss_Pylon, self.getStartLocation()));
 			pBuildings.add(new pBuilding(UnitType.Protoss_Gateway, self.getStartLocation()));
 			pBuildings.add(new pBuilding(UnitType.Protoss_Cybernetics_Core, self.getStartLocation()));
 			pBuildings.add(new pBuilding(UnitType.Protoss_Assimilator, null));
-			pBuildings.add(new pBuilding(UnitType.Protoss_Pylon, null));
+			pBuildings.add(new pBuilding(UnitType.Protoss_Pylon, self.getStartLocation()));
 			pBuildings.add(new pBuilding(UnitType.Protoss_Citadel_of_Adun, self.getStartLocation()));
 			pBuildings.add(new pBuilding(UnitType.Protoss_Stargate, self.getStartLocation(), Race.Zerg)); // build Stargate only against Z. (Corsair DT)
 			pBuildings.add(new pBuilding(UnitType.Protoss_Gateway, self.getStartLocation()));
 			pBuildings.add(new pBuilding(UnitType.Protoss_Templar_Archives, self.getStartLocation()));
-			pBuildings.add(new pBuilding(UnitType.Protoss_Pylon, null));
-			pBuildings.add(new pBuilding(UnitType.Protoss_Gateway, null));
-			pBuildings.add(new pBuilding(UnitType.Protoss_Gateway, null));
-			pBuildings.add(new pBuilding(UnitType.Protoss_Forge, null));
-			pBuildings.add(new pBuilding(UnitType.Protoss_Pylon, null));
+			pBuildings.add(new pBuilding(UnitType.Protoss_Pylon, self.getStartLocation()));
+			pBuildings.add(new pBuilding(UnitType.Protoss_Gateway, self.getStartLocation()));
+			pBuildings.add(new pBuilding(UnitType.Protoss_Gateway, self.getStartLocation()));
+			pBuildings.add(new pBuilding(UnitType.Protoss_Forge, self.getStartLocation()));
+			pBuildings.add(new pBuilding(UnitType.Protoss_Pylon, self.getStartLocation()));
 			pBuildings.add(new pBuilding(UnitType.Protoss_Robotics_Facility, self.getStartLocation()));
 			pBuildings.add(new pBuilding(UnitType.Protoss_Observatory, self.getStartLocation()));
 			pBuildings.add(new pBuilding(UnitType.Protoss_Pylon, self.getStartLocation()));
-			pBuildings.add(new pBuilding(UnitType.Protoss_Gateway, null));
+			pBuildings.add(new pBuilding(UnitType.Protoss_Gateway, self.getStartLocation()));
 			pBuildings.add(new pBuilding(UnitType.Protoss_Forge, null));
 			pBuildings.add(new pBuilding(UnitType.Protoss_Pylon, null));
 			pBuildings.add(new pBuilding(UnitType.Protoss_Stargate, null));
@@ -776,33 +870,37 @@ public class Strategy {
 			pBuildings.add(new pBuilding(UnitType.Protoss_Fleet_Beacon, null));
 			pBuildings.add(new pBuilding(UnitType.Protoss_Stargate, null));
 			pBuildings.add(new pBuilding(UnitType.Protoss_Stargate, null));
-			stuffQueue.add(new BotTech(2, 0, TechType.None, UpgradeType.Singularity_Charge, UnitType.None, myData));
-			stuffQueue.add(new BotTech(2, 0, TechType.None, UpgradeType.Leg_Enhancements, UnitType.None, myData));
-			stuffQueue.add(new BotTech(2, 0, TechType.None, UpgradeType.Protoss_Ground_Weapons, UnitType.None, myData));
-			stuffQueue.add(new BotTech(2, 0, TechType.None, UpgradeType.Protoss_Ground_Armor, UnitType.None, myData));
-			stuffQueue.add(new BotTech(2, 0, TechType.None, UpgradeType.Protoss_Plasma_Shields, UnitType.None, myData));
-			stuffQueue.add(new BotTech(1, 0, TechType.Psionic_Storm, UpgradeType.None, UnitType.None, myData));
-			stuffQueue.add(new BotTech(2, 0, TechType.None, UpgradeType.Khaydarin_Amulet, UnitType.None, myData));
-			stuffQueue.add(new BotTech(2, 0, TechType.None, UpgradeType.Carrier_Capacity, UnitType.None, myData));
+			stuffQueue.add(new BotTech(2, 12, TechType.None, UpgradeType.Singularity_Charge, UnitType.None, myData));
+			stuffQueue.add(new BotTech(2, 12, TechType.None, UpgradeType.Leg_Enhancements, UnitType.None, myData));
+			stuffQueue.add(new BotTech(2, 12, TechType.None, UpgradeType.Protoss_Ground_Weapons, UnitType.None, myData));
+			stuffQueue.add(new BotTech(2, 12, TechType.None, UpgradeType.Protoss_Ground_Armor, UnitType.None, myData));
+			stuffQueue.add(new BotTech(2, 12, TechType.None, UpgradeType.Protoss_Plasma_Shields, UnitType.None, myData));
+			stuffQueue.add(new BotTech(1, 12, TechType.Psionic_Storm, UpgradeType.None, UnitType.None, myData));
+			stuffQueue.add(new BotTech(2, 12, TechType.None, UpgradeType.Khaydarin_Amulet, UnitType.None, myData));
+			stuffQueue.add(new BotTech(2, 12, TechType.None, UpgradeType.Carrier_Capacity, UnitType.None, myData));
+			//stuffQueue.add(new BotTech(1, 0, TechType.Mind_Control, UpgradeType.None, UnitType.None, myData));
 		}
 		else {
 			this.buildName = "Generic 2 Gate build Much wow";
 			this.techGoals.add(UnitType.Protoss_Citadel_of_Adun);
 			this.techGoals.add(UnitType.Protoss_Templar_Archives);
-			pBuildings.add(new pBuilding(UnitType.Protoss_Pylon, null));
-			pBuildings.add(new pBuilding(UnitType.Protoss_Gateway, null));
-			pBuildings.add(new pBuilding(UnitType.Protoss_Gateway, null));
-			pBuildings.add(new pBuilding(UnitType.Protoss_Cybernetics_Core, null));
+			this.requirementToMemeMassExpand = UnitType.Protoss_Templar_Archives;
+			this.filler = UnitType.Protoss_Gateway;
+			pBuildings.add(new pBuilding(UnitType.Protoss_Pylon, self.getStartLocation()));
+			pBuildings.add(new pBuilding(UnitType.Protoss_Gateway, self.getStartLocation()));
+			pBuildings.add(new pBuilding(UnitType.Protoss_Gateway, self.getStartLocation()));
+			pBuildings.add(new pBuilding(UnitType.Protoss_Pylon, self.getStartLocation()));
+			pBuildings.add(new pBuilding(UnitType.Protoss_Cybernetics_Core, self.getStartLocation()));
 			pBuildings.add(new pBuilding(UnitType.Protoss_Assimilator, null));
-			pBuildings.add(new pBuilding(UnitType.Protoss_Pylon, null));
-			pBuildings.add(new pBuilding(UnitType.Protoss_Forge, null));
-			pBuildings.add(new pBuilding(UnitType.Protoss_Pylon, null));
+			pBuildings.add(new pBuilding(UnitType.Protoss_Pylon, self.getStartLocation()));
+			pBuildings.add(new pBuilding(UnitType.Protoss_Forge, self.getStartLocation()));
+			pBuildings.add(new pBuilding(UnitType.Protoss_Pylon, self.getStartLocation()));
 			pBuildings.add(new pBuilding(UnitType.Protoss_Photon_Cannon, self.getStartLocation()));
-			pBuildings.add(new pBuilding(UnitType.Protoss_Citadel_of_Adun, null));
-			pBuildings.add(new pBuilding(UnitType.Protoss_Gateway, null));
-			pBuildings.add(new pBuilding(UnitType.Protoss_Pylon, null));
-			pBuildings.add(new pBuilding(UnitType.Protoss_Robotics_Facility, null));
-			pBuildings.add(new pBuilding(UnitType.Protoss_Observatory, null));
+			pBuildings.add(new pBuilding(UnitType.Protoss_Citadel_of_Adun, self.getStartLocation()));
+			pBuildings.add(new pBuilding(UnitType.Protoss_Gateway, self.getStartLocation()));
+			pBuildings.add(new pBuilding(UnitType.Protoss_Pylon, self.getStartLocation()));
+			pBuildings.add(new pBuilding(UnitType.Protoss_Robotics_Facility, self.getStartLocation()));
+			pBuildings.add(new pBuilding(UnitType.Protoss_Observatory, self.getStartLocation()));
 			pBuildings.add(new pBuilding(UnitType.Protoss_Pylon, null));
 			pBuildings.add(new pBuilding(UnitType.Protoss_Gateway, null));
 			pBuildings.add(new pBuilding(UnitType.Protoss_Gateway, null));
@@ -823,15 +921,17 @@ public class Strategy {
 			stuffQueue.add(new BotTech(1, 0, TechType.Psionic_Storm, UpgradeType.None, UnitType.None, myData));
 			stuffQueue.add(new BotTech(2, 0, TechType.None, UpgradeType.Khaydarin_Amulet, UnitType.None, myData));
 			stuffQueue.add(new BotTech(2, 0, TechType.None, UpgradeType.Carrier_Capacity, UnitType.None, myData));
+			stuffQueue.add(new BotTech(1, 0, TechType.Mind_Control, UpgradeType.None, UnitType.None, myData));
 		}
 		
 	}
 		
 	}
+		// https://www.youtube.com/watch?v=4m48GqaOz90
 		// https://www.youtube.com/watch?v=PBvwcH4XX6U
 		// Denn du bist, was du isst
 		// Und ihr wisst, was es ist
-		// DAS IST MEIN TEIL (NEIN)
+		// ES IST MEIN TEIL (NEIN)
 
 	// hippity hoppity give me your property
 	
