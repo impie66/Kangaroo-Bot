@@ -34,6 +34,20 @@ and a fork from [McRave](https://github.com/Cmccrave/McRave) using [jBWAPI](http
 
 <h1>Updates</h1>
 
+<b>20/07/2012</b>
+<br />
+<p>No comment</p>
+<br/ >
+
+* Tanks are now known as siege tanks (They siege now)
+* Lurkers are no longer lazy
+* I did something to repairing but its broken so whatever
+* Goliaths no longer think they are top bitch
+* Bot will now attempt to hide behind defences when defending.
+* And a ton of other shit i don't even remember what i did
+
+<br />
+
 <b>8/07/2021</b>
 <br />
 <br>1.1</br>
